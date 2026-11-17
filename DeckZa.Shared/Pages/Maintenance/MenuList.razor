@@ -1,0 +1,226 @@
+@page "/dashboard/maintenance/menu-list"
+@layout AuthenticatedLayout
+@attribute [Authorize]
+@attribute [Authorize(Roles = "00")]
+@inject SettingApiService SettingApi
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject ExportApiService ExportApi
+@inject NavigationManager Navigation
+
+<MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
+
+<div class="page-heading">
+    <div>
+        <div class="dashboard-kicker">Maintenance</div>
+        <h1>Menu Maintenance</h1>
+        <p>Manage navigation menus and screen definitions.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(_ => OpenAddAsync())">Add Menu</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FileDownload" Class="@("ryz-busy-button" + (_isExporting ? " is-busy" : string.Empty))" Disabled="@_isExporting" OnClick="ExportExcelAsync">
+            @(_isExporting ? "Exporting..." : "Export Excel")
+        </MudButton>
+    </div>
+</div>
+
+<MudPaper Elevation="0" Class="dashboard-card">
+    <MudTable T="MenuListItemDto"
+              @ref="_table"
+              ServerData="LoadServerData"
+              Hover="true"
+              Dense="false"
+              Breakpoint="Breakpoint.Sm"
+              Elevation="0"
+              HorizontalScrollbar="true">
+        <ToolBarContent>
+            <MudSpacer />
+            <MudTextField @bind-Value="_search"
+                          @bind-Value:after="OnSearchChanged"
+                          Label="Search"
+                          Placeholder="Search menu..."
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          Class="user-search" />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh Style="text-align:center;">Actions</MudTh>
+            <MudTh><MudTableSortLabel T="MenuListItemDto" SortLabel="id">ID</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="MenuListItemDto" SortLabel="menuunique">Unique</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="MenuListItemDto" SortLabel="menuname">Name</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="MenuListItemDto" SortLabel="parentlevelid">Level</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="MenuListItemDto" SortLabel="menuparent">Parent</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="MenuListItemDto" SortLabel="orderseq">Order</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="MenuListItemDto" SortLabel="isactive">Status</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Actions" Style="text-align:center; white-space:nowrap;">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(_ => OpenEditAsync(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(_ => DeleteAsync(context))" />
+            </MudTd>
+            <MudTd DataLabel="ID">@context.Id</MudTd>
+            <MudTd DataLabel="Unique">@context.MenuUnique</MudTd>
+            <MudTd DataLabel="Name">@context.MenuName</MudTd>
+            <MudTd DataLabel="Level">@context.ParentLevelId</MudTd>
+            <MudTd DataLabel="Parent">@(context.ParentName ?? context.MenuUniqueParent)</MudTd>
+            <MudTd DataLabel="Order">@context.OrderSeq</MudTd>
+            <MudTd DataLabel="Status">
+                @if (context.IsActive)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default">Inactive</MudChip>
+                }
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>No menus found.</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudProgressLinear Indeterminate="true" />
+        </LoadingContent>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private readonly List<BreadcrumbItem> _breadcrumbs =
+    [
+        new("Dashboard", href: "/dashboard"),
+        new("Maintenance", href: null),
+        new("Menu Maintenance", href: null, disabled: true),
+    ];
+
+    private MudTable<MenuListItemDto>? _table;
+    private string? _search;
+    private bool _isExporting;
+
+    private async Task<TableData<MenuListItemDto>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var sortDirection = state.SortDirection == SortDirection.Descending ? "desc" : "asc";
+        var response = await SettingApi.GetMenusAsync(new DataTableRequestDto
+        {
+            PageNumber = state.Page + 1,
+            PageSize = state.PageSize,
+            SearchTerm = _search,
+            SortColumn = state.SortLabel,
+            SortDirection = sortDirection,
+        });
+
+        return new TableData<MenuListItemDto>
+        {
+            Items = response.Data,
+            TotalItems = response.TotalCount,
+        };
+    }
+
+    private async Task OnSearchChanged()
+    {
+        if (_table != null)
+        {
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task ReloadAsync()
+    {
+        if (_table != null)
+        {
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task OpenAddAsync()
+    {
+        var dialog = await DialogService.ShowAsync<AddEditMenuDialog>("Add Menu");
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private async Task OpenEditAsync(MenuListItemDto menu)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Menu"] = new MenuEditDto
+            {
+                Id = menu.Id,
+                MenuUnique = menu.MenuUnique,
+                MenuName = menu.MenuName,
+                MenuUrl = menu.MenuUrl,
+                ParentLevelId = menu.ParentLevelId,
+                MenuUniqueParent = menu.MenuUniqueParent,
+                MenuIcon = menu.MenuIcon,
+                OrderSeq = menu.OrderSeq,
+                ComponentType = menu.ComponentType,
+                IsActive = menu.IsActive,
+            },
+        };
+
+        var dialog = await DialogService.ShowAsync<AddEditMenuDialog>("Edit Menu", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(MenuListItemDto menu)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Title"] = "Delete Menu",
+            ["Message"] = $"Delete menu {menu.MenuName} ({menu.MenuUnique})?",
+            ["ConfirmText"] = "Delete",
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Menu", parameters);
+        var result = await dialog.Result;
+        if (result is not { Canceled: false })
+        {
+            return;
+        }
+
+        var response = await SettingApi.DeleteMenuAsync(menu.Id);
+        Snackbar.Add(response.Message ?? "Delete failed.", response.Success ? Severity.Success : Severity.Error);
+        await ReloadAsync();
+    }
+
+    private async Task ExportExcelAsync()
+    {
+        if (_isExporting)
+        {
+            return;
+        }
+
+        _isExporting = true;
+        try
+        {
+            var url = await ExportApi.ExportManagementAsync("api/export/menus", _search);
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                Snackbar.Add("Export failed. Please try again.", Severity.Error);
+                return;
+            }
+
+            Navigation.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isExporting = false;
+        }
+    }
+}

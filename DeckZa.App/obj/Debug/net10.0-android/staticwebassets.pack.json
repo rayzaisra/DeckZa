@@ -1,0 +1,53 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.App\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.App\\wwwroot\\images\\branding\\app-logo.png",
+      "PackagePath": "staticwebassets\\images\\branding\\app-logo.png"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.App\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.App\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.App\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "D:\\Program\\Microsoft Visual Studio\\Nuget\\packages\\microsoft.aspnetcore.components.webview\\10.0.0\\staticwebassets\\blazor.modules.json",
+      "PackagePath": "staticwebassets\\_framework\\blazor.modules.json"
+    },
+    {
+      "Id": "D:\\Program\\Microsoft Visual Studio\\Nuget\\packages\\microsoft.aspnetcore.components.webview\\10.0.0\\staticwebassets\\blazor.webview.js",
+      "PackagePath": "staticwebassets\\_framework\\blazor.webview.js"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0-android\\staticwebassets\\msbuild.DeckZa.App.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0-android\\staticwebassets\\msbuild.DeckZa.App.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0-android\\staticwebassets\\msbuild.build.DeckZa.App.props",
+      "PackagePath": "build\\DeckZa.App.props"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0-android\\staticwebassets\\msbuild.buildMultiTargeting.DeckZa.App.props",
+      "PackagePath": "buildMultiTargeting\\DeckZa.App.props"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0-android\\staticwebassets\\msbuild.buildTransitive.DeckZa.App.props",
+      "PackagePath": "buildTransitive\\DeckZa.App.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

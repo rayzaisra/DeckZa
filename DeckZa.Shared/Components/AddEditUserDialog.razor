@@ -1,0 +1,148 @@
+@using DeckZa.Application.DTOs.General
+@using DeckZa.Application.DTOs.User
+@inject SettingApiService SettingApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_model.UserId"
+                                  Label="User Id"
+                                  Variant="Variant.Text"
+                                  Required="true"
+                                  Disabled="@IsEdit" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_model.FullName"
+                                  Label="Full Name"
+                                  Variant="Variant.Text"
+                                  Required="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="string"
+                               @bind-Value="_model.GenderId"
+                               Label="Gender"
+                               Variant="Variant.Text"
+                               Required="true" Clearable="true">
+                        @foreach (var gender in _genders)
+                        {
+                            <MudSelectItem Value="@gender.Value">@gender.Text</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_model.Email"
+                                  Label="Email"
+                                  Variant="Variant.Text"
+                                  InputType="InputType.Email"
+                                  Required="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_model.PhoneNumber"
+                                  Label="Phone Number"
+                                  Variant="Variant.Text" />
+                </MudItem>
+                @if (!IsEdit)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_model.Password"
+                                      Label="Password"
+                                      Variant="Variant.Text"
+                                      InputType="InputType.Password"
+                                      Required="true" />
+                    </MudItem>
+                }
+                <MudItem xs="12" Class="user-active-row">
+                    <MudSwitch T="bool" @bind-Value="_model.IsActive" Label="Is Active?" Color="Color.Primary" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Close</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))" Disabled="@_saving" OnClick="@(_ => SubmitAsync())">
+            @(_saving ? "Saving..." : "Save Changes")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public UserListItemDto? User { get; set; }
+
+    private MudForm? _form;
+    private UserEditDto _model = new();
+    private List<DropdownItemDto> _genders = new();
+    private bool _saving;
+
+    private bool IsEdit => !string.IsNullOrWhiteSpace(User?.UserId);
+    private string Title => IsEdit ? "Edit User" : "Add User";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _genders = await SettingApi.GetGendersAsync();
+
+        if (User != null)
+        {
+            _model = new UserEditDto
+            {
+                UserId = User.UserId,
+                FullName = User.FullName,
+                Email = User.Email,
+                PhoneNumber = User.PhoneNumber,
+                GenderId = User.GenderId,
+                IsActive = User.IsActive,
+            };
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_saving)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_model.UserId))
+        {
+            Snackbar.Add("User ID is required.", Severity.Warning);
+            return;
+        }
+
+        if (!IsEdit && string.IsNullOrWhiteSpace(_model.Password))
+        {
+            Snackbar.Add("Password is required for a new user.", Severity.Warning);
+            return;
+        }
+
+        _saving = true;
+        try
+        {
+            var result = IsEdit
+                ? await SettingApi.UpdateUserAsync(User!.UserId, _model)
+                : await SettingApi.CreateUserAsync(_model);
+
+            if (result.Success)
+            {
+                Snackbar.Add(result.Message ?? "Saved.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Save failed.", Severity.Error);
+            }
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

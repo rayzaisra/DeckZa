@@ -1,0 +1,57 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Shared\\wwwroot\\background.png",
+      "PackagePath": "staticwebassets\\background.png"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Shared\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Shared\\wwwroot\\fonts\\PlusJakartaSans-Italic-VariableFont_wght.ttf",
+      "PackagePath": "staticwebassets\\fonts\\PlusJakartaSans-Italic-VariableFont_wght.ttf"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Shared\\wwwroot\\fonts\\PlusJakartaSans-VariableFont_wght.ttf",
+      "PackagePath": "staticwebassets\\fonts\\PlusJakartaSans-VariableFont_wght.ttf"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Shared\\wwwroot\\js\\ryzcore-motion.js",
+      "PackagePath": "staticwebassets\\js\\ryzcore-motion.js"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Shared\\wwwroot\\lib\\animejs\\LICENSE.md",
+      "PackagePath": "staticwebassets\\lib\\animejs\\LICENSE.md"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Shared\\wwwroot\\lib\\animejs\\README.md",
+      "PackagePath": "staticwebassets\\lib\\animejs\\README.md"
+    },
+    {
+      "Id": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Shared\\wwwroot\\lib\\animejs\\anime.ryz.min.js",
+      "PackagePath": "staticwebassets\\lib\\animejs\\anime.ryz.min.js"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0\\staticwebassets\\msbuild.DeckZa.Shared.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0\\staticwebassets\\msbuild.DeckZa.Shared.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0\\staticwebassets\\msbuild.build.DeckZa.Shared.props",
+      "PackagePath": "build\\DeckZa.Shared.props"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0\\staticwebassets\\msbuild.buildMultiTargeting.DeckZa.Shared.props",
+      "PackagePath": "buildMultiTargeting\\DeckZa.Shared.props"
+    },
+    {
+      "Id": "obj\\Debug\\net10.0\\staticwebassets\\msbuild.buildTransitive.DeckZa.Shared.props",
+      "PackagePath": "buildTransitive\\DeckZa.Shared.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

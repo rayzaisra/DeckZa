@@ -1,0 +1,104 @@
+using System.Security.Claims;
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+using DeckZa.Api.Helpers;
+using DeckZa.Application.DTOs.General;
+using DeckZa.Application.DTOs.Menu;
+using DeckZa.Application.Interfaces;
+
+namespace DeckZa.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class MenuController : ControllerBase
+{
+    private readonly IMenuService _menuService;
+    private readonly IMenuManagementService _menuManagementService;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public MenuController(
+        IMenuService menuService,
+        IMenuManagementService menuManagementService,
+        IUnitOfWork unitOfWork)
+    {
+        _menuService = menuService;
+        _menuManagementService = menuManagementService;
+        _unitOfWork = unitOfWork;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetUserMenu()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var userGroup = await _unitOfWork.UmUserGroup.GetByIdAsync(userId);
+        if (userGroup == null || string.IsNullOrEmpty(userGroup.group_id))
+        {
+            return Ok(ApiResponseFactory.Success(new List<MenuItemDto>(), "Menus retrieved successfully"));
+        }
+
+        var menu = await _menuService.GetMenuTreeByGroupIdAsync(userGroup.group_id);
+        return Ok(ApiResponseFactory.Success(menu, "Menus retrieved successfully"));
+    }
+
+    [HttpPost("list")]
+    [Authorize(Roles = "00")]
+    public async Task<IActionResult> GetList([FromBody] DataTableRequestDto request)
+    {
+        var result = await _menuManagementService.GetListAsync(request);
+        return Ok(ApiResponseFactory.Page(result.Data, request, result.TotalCount, "Menus retrieved successfully"));
+    }
+
+    [HttpGet("detail/{id:long}")]
+    [Authorize(Roles = "00")]
+    public async Task<IActionResult> GetDetail(long id)
+    {
+        var menu = await _menuManagementService.GetByIdAsync(id);
+        return menu == null
+            ? NotFound(ApiResponseFactory.NotFound<MenuEditDto>("Menu not found."))
+            : Ok(ApiResponseFactory.Success(menu, "Menu retrieved successfully"));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "00")]
+    public async Task<IActionResult> Create([FromBody] MenuEditDto dto)
+        => ToActionResult(await _menuManagementService.CreateAsync(dto));
+
+    [HttpPut("{id:long}")]
+    [Authorize(Roles = "00")]
+    public async Task<IActionResult> Update(long id, [FromBody] MenuEditDto dto)
+        => ToActionResult(await _menuManagementService.UpdateAsync(id, dto));
+
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "00")]
+    public async Task<IActionResult> Delete(long id)
+        => ToActionResult(await _menuManagementService.DeleteAsync(id));
+
+    [HttpGet("tree")]
+    [Authorize(Roles = "00")]
+    public async Task<IActionResult> GetTree()
+        => Ok(ApiResponseFactory.Success(await _menuManagementService.GetTreeAsync(), "Menu tree retrieved successfully"));
+
+    [HttpGet("assigned/{groupId}")]
+    [Authorize(Roles = "00")]
+    public async Task<IActionResult> GetAssigned(string groupId)
+        => Ok(ApiResponseFactory.Success(await _menuManagementService.GetAssignedMenuIdsAsync(groupId), "Assigned menus retrieved successfully"));
+
+    [HttpPost("save-map")]
+    [Authorize(Roles = "00")]
+    public async Task<IActionResult> SaveMap([FromBody] MenuMapDto dto)
+        => ToActionResult(await _menuManagementService.SaveMenuMapAsync(dto));
+
+    private IActionResult ToActionResult(BaseGeneralResponse result)
+    {
+        var response = ApiResponseFactory.FromResult(result);
+        return result.Success ? Ok(response) : BadRequest(response);
+    }
+}

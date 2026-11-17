@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>DeckZa</title>
+    <base href="/" />
+    <script>
+        (function () {
+            var allowed = ["default", "fintech", "monochrome", "creative", "wellness"];
+            var palette = "monochrome";
+            try {
+                var saved = localStorage.getItem("enterprise-ui-palette");
+                if (saved) palette = saved;
+            } catch (e) { }
+            if (allowed.indexOf(palette) < 0) palette = "default";
+            document.documentElement.setAttribute("data-palette", palette);
+        })();
+    </script>
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
+    <link rel="stylesheet" href="_content/DeckZa.Shared/css/app.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="icon" href="data:,">
+</head>
+
+<body>
+
+    <div class="status-bar-safe-area"></div>
+
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script>
+        window.ryzMotionModule = (window.ryzMotionModule
+            || import("./_content/DeckZa.Shared/js/ryzcore-motion.js"))
+            .catch(function () { return null; });
+        window.ryzMotionInvoke = function (method) {
+            return window.ryzMotionModule.then(function (module) {
+                if (module && typeof module[method] === "function") {
+                    module[method]();
+                    return true;
+                }
+                return false;
+            });
+        };
+    </script>
+
+</body>
+
+</html>

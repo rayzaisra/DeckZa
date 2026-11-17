@@ -1,0 +1,11 @@
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\bin\Debug\net10.0\DeckZa.Domain.deps.json
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\bin\Debug\net10.0\DeckZa.Domain.dll
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\bin\Debug\net10.0\DeckZa.Domain.pdb
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\obj\Debug\net10.0\DeckZa.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\obj\Debug\net10.0\DeckZa.Domain.AssemblyInfoInputs.cache
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\obj\Debug\net10.0\DeckZa.Domain.AssemblyInfo.cs
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\obj\Debug\net10.0\DeckZa.Domain.csproj.CoreCompileInputs.cache
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\obj\Debug\net10.0\DeckZa.Domain.dll
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\obj\Debug\net10.0\refint\DeckZa.Domain.dll
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\obj\Debug\net10.0\DeckZa.Domain.pdb
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Domain\obj\Debug\net10.0\ref\DeckZa.Domain.dll

@@ -1,0 +1,223 @@
+is_global = true
+build_property.MudDebugAnalyzer = 
+build_property.MudAllowedAttributePattern = 
+build_property.MudAllowedAttributeList = 
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
+build_property._SupportedPlatformList = Linux,macOS,Windows,browser
+build_property.RootNamespace = DeckZa.Shared
+build_property.RootNamespace = DeckZa.Shared
+build_property.ProjectDir = D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Shared\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 10.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Shared
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/AddEditGroupDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBZGRFZGl0R3JvdXBEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/AddEditMenuDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBZGRFZGl0TWVudURpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/AddEditRoleDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBZGRFZGl0Um9sZURpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/AddEditUserDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBZGRFZGl0VXNlckRpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/ConfirmDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xDb25maXJtRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/DynamicChildDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xEeW5hbWljQ2hpbGREaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/EmailProviderDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbWFpbFByb3ZpZGVyRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/MaintenancePlaceholder.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xNYWludGVuYW5jZVBsYWNlaG9sZGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/MauiChangePasswordDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xNYXVpQ2hhbmdlUGFzc3dvcmREaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/MauiMenuTile.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xNYXVpTWVudVRpbGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/MauiWidgetCarousel.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xNYXVpV2lkZ2V0Q2Fyb3VzZWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/MenuMapTree.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xNZW51TWFwVHJlZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/ParameterEditDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYXJhbWV0ZXJFZGl0RGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/ProfileEditDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQcm9maWxlRWRpdERpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/RecursiveMenuItem.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSZWN1cnNpdmVNZW51SXRlbS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSZWRpcmVjdFRvTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/ResetPasswordDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSZXNldFBhc3N3b3JkRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Components/ScreenMenuEditorDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTY3JlZW5NZW51RWRpdG9yRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Layouts/AuthenticatedLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0c1xBdXRoZW50aWNhdGVkTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Layouts/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0c1xNYWluTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Layouts/MauiAuthenticatedLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0c1xNYXVpQXV0aGVudGljYXRlZExheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/ChangePassword.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2hhbmdlUGFzc3dvcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGFzaGJvYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Dynamic/DynamicReport.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRHluYW1pY1xEeW5hbWljUmVwb3J0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Dynamic/DynamicScreen.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRHluYW1pY1xEeW5hbWljU2NyZWVuLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Dynamic/DynamicUrlView.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRHluYW1pY1xEeW5hbWljVXJsVmlldy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/ErrorPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3JQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/EmailProvider.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcRW1haWxQcm92aWRlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/GroupApproval.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcR3JvdXBBcHByb3ZhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/GroupList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcR3JvdXBMaXN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/MenuApproval.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcTWVudUFwcHJvdmFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/MenuList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcTWVudUxpc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/MenuMap.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcTWVudU1hcC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/Parameter/ImportApproval.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcUGFyYW1ldGVyXEltcG9ydEFwcHJvdmFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/Parameter/ParameterSystem.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcUGFyYW1ldGVyXFBhcmFtZXRlclN5c3RlbS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/RoleApproval.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcUm9sZUFwcHJvdmFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/RoleList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcUm9sZUxpc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/ScreenMenuEditor.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcU2NyZWVuTWVudUVkaXRvci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/UserApproval.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcVXNlckFwcHJvdmFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/UserFlag.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcVXNlckZsYWcucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Maintenance/UserList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFpbnRlbmFuY2VcVXNlckxpc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Mobile/MauiDashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTW9iaWxlXE1hdWlEYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Mobile/MauiMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTW9iaWxlXE1hdWlNZW51LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Mobile/MauiNotifications.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTW9iaWxlXE1hdWlOb3RpZmljYXRpb25zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Mobile/MauiProfile.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTW9iaWxlXE1hdWlQcm9maWxlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Notifications.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTm90aWZpY2F0aW9ucy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/Pages/Profile.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZmlsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/--NITIP/Projects/DeckZa/DeckZaApp/DeckZa.Shared/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 

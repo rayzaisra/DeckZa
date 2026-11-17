@@ -1,0 +1,164 @@
+﻿<Project>
+  <ItemGroup>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\background.png'))">
+      <SourceType>Package</SourceType>
+      <SourceId>DeckZa.Shared</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/DeckZa.Shared</BasePath>
+      <RelativePath>background.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>x2rx4ajns0</Fingerprint>
+      <Integrity>WeOKCkI7IdJHs2kCqsKgLfiWX4/sNPbaRUspOLefkCY=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>378</FileLength>
+      <LastWriteTime>Tue, 17 Nov 2026 04:01:20 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\background.png'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\app.css'))">
+      <SourceType>Package</SourceType>
+      <SourceId>DeckZa.Shared</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/DeckZa.Shared</BasePath>
+      <RelativePath>css/app.css</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>kos74mpqi0</Fingerprint>
+      <Integrity>9DgzR+imkSJ9blIH6sFbEi3P8s6V0RXwgHht+83xhkU=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>46208</FileLength>
+      <LastWriteTime>Tue, 17 Nov 2026 04:01:19 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\app.css'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\fonts\PlusJakartaSans-Italic-VariableFont_wght.ttf'))">
+      <SourceType>Package</SourceType>
+      <SourceId>DeckZa.Shared</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/DeckZa.Shared</BasePath>
+      <RelativePath>fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>sm5oeejjvy</Fingerprint>
+      <Integrity>hOjwPuB87i9qXCSWPBXu+CEL3LNV5FkqtyVunL5F2Ok=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>178708</FileLength>
+      <LastWriteTime>Tue, 17 Nov 2026 04:01:20 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\fonts\PlusJakartaSans-Italic-VariableFont_wght.ttf'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\fonts\PlusJakartaSans-VariableFont_wght.ttf'))">
+      <SourceType>Package</SourceType>
+      <SourceId>DeckZa.Shared</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/DeckZa.Shared</BasePath>
+      <RelativePath>fonts/PlusJakartaSans-VariableFont_wght.ttf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>sydoq1p7ju</Fingerprint>
+      <Integrity>TFVS7MEjDm399uh1XSRDb8o5Wtn07LJSh6s+n/ep5o0=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>173760</FileLength>
+      <LastWriteTime>Tue, 17 Nov 2026 04:01:20 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\fonts\PlusJakartaSans-VariableFont_wght.ttf'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\ryzcore-motion.js'))">
+      <SourceType>Package</SourceType>
+      <SourceId>DeckZa.Shared</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/DeckZa.Shared</BasePath>
+      <RelativePath>js/ryzcore-motion.js</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>72ph4j0a0h</Fingerprint>
+      <Integrity>4TZQhBqOsY7VOHA7L6TFBlgD0j16zA0pB/pfNCjZQhg=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>8393</FileLength>
+      <LastWriteTime>Tue, 17 Nov 2026 04:01:19 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\ryzcore-motion.js'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\animejs\anime.ryz.min.js'))">
+      <SourceType>Package</SourceType>
+      <SourceId>DeckZa.Shared</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/DeckZa.Shared</BasePath>
+      <RelativePath>lib/animejs/anime.ryz.min.js</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>nl9jy5c8eo</Fingerprint>
+      <Integrity>Ww3Pmd4pFYxcJ6TmYEp+HP7Sct31G4tAUljv2cc1e5U=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>40124</FileLength>
+      <LastWriteTime>Tue, 17 Nov 2026 04:01:19 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\animejs\anime.ryz.min.js'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\animejs\LICENSE.md'))">
+      <SourceType>Package</SourceType>
+      <SourceId>DeckZa.Shared</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/DeckZa.Shared</BasePath>
+      <RelativePath>lib/animejs/LICENSE.md</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>5rznx77sfn</Fingerprint>
+      <Integrity>Pz6DWplSz8KmyoNvuVsyV8mB8k+j71EkkFWssJkxiXs=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>1075</FileLength>
+      <LastWriteTime>Tue, 17 Nov 2026 04:01:19 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\animejs\LICENSE.md'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\animejs\README.md'))">
+      <SourceType>Package</SourceType>
+      <SourceId>DeckZa.Shared</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/DeckZa.Shared</BasePath>
+      <RelativePath>lib/animejs/README.md</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>871m4aqldf</Fingerprint>
+      <Integrity>lHucbvEhbX5mb7IcNR+j5XmCAa5NkDx2ZOK3ZANSDBo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>893</FileLength>
+      <LastWriteTime>Tue, 17 Nov 2026 04:01:19 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\animejs\README.md'))</OriginalItemSpec>
+    </StaticWebAsset>
+  </ItemGroup>
+</Project>

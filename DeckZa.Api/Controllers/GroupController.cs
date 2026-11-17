@@ -1,0 +1,53 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+using DeckZa.Api.Helpers;
+using DeckZa.Application.DTOs.General;
+using DeckZa.Application.DTOs.Group;
+using DeckZa.Application.Interfaces;
+
+namespace DeckZa.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize(Roles = "00")]
+public class GroupController : ControllerBase
+{
+    private readonly IGroupManagementService _groupService;
+
+    public GroupController(IGroupManagementService groupService) => _groupService = groupService;
+
+    [HttpPost("list")]
+    public async Task<IActionResult> GetList([FromBody] DataTableRequestDto request)
+    {
+        var result = await _groupService.GetListAsync(request);
+        return Ok(ApiResponseFactory.Page(result.Data, request, result.TotalCount, "Groups retrieved successfully"));
+    }
+
+    [HttpGet("{groupId}")]
+    public async Task<IActionResult> Get(string groupId)
+    {
+        var group = await _groupService.GetByIdAsync(groupId);
+        return group == null
+            ? NotFound(ApiResponseFactory.NotFound<GroupEditDto>("Group not found."))
+            : Ok(ApiResponseFactory.Success(group, "Group retrieved successfully"));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] GroupEditDto dto)
+        => ToActionResult(await _groupService.CreateAsync(dto));
+
+    [HttpPut("{groupId}")]
+    public async Task<IActionResult> Update(string groupId, [FromBody] GroupEditDto dto)
+        => ToActionResult(await _groupService.UpdateAsync(groupId, dto));
+
+    [HttpDelete("{groupId}")]
+    public async Task<IActionResult> Delete(string groupId)
+        => ToActionResult(await _groupService.DeleteAsync(groupId));
+
+    private IActionResult ToActionResult(BaseGeneralResponse result)
+    {
+        var response = ApiResponseFactory.FromResult(result);
+        return result.Success ? Ok(response) : BadRequest(response);
+    }
+}

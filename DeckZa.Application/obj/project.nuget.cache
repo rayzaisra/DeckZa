@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "Ju+Y8oeg4dE=",
+  "success": true,
+  "projectFilePath": "D:\\--NITIP\\Projects\\DeckZa\\DeckZaApp\\DeckZa.Application\\DeckZa.Application.csproj",
+  "expectedPackageFiles": [
+    "D:\\Program\\Microsoft Visual Studio\\Nuget\\packages\\fluentvalidation\\12.2.0\\fluentvalidation.12.2.0.nupkg.sha512",
+    "D:\\Program\\Microsoft Visual Studio\\Nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\12.2.0\\fluentvalidation.dependencyinjectionextensions.12.2.0.nupkg.sha512",
+    "D:\\Program\\Microsoft Visual Studio\\Nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.14\\microsoft.extensions.configuration.abstractions.10.0.14.nupkg.sha512",
+    "D:\\Program\\Microsoft Visual Studio\\Nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\2.1.0\\microsoft.extensions.dependencyinjection.abstractions.2.1.0.nupkg.sha512",
+    "D:\\Program\\Microsoft Visual Studio\\Nuget\\packages\\microsoft.extensions.primitives\\10.0.14\\microsoft.extensions.primitives.10.0.14.nupkg.sha512"
+  ],
+  "logs": []
+}

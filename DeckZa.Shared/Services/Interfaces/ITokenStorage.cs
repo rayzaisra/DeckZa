@@ -1,0 +1,17 @@
+namespace DeckZa.Shared.Services.Interfaces;
+
+public interface ITokenStorage
+{
+    Task<string?> GetAccessTokenAsync();
+    Task SetAccessTokenAsync(string token);
+    Task<string?> GetRefreshTokenAsync();
+    Task SetRefreshTokenAsync(string token);
+    Task SetRememberMeAsync(bool remember);
+    Task RemoveTokensAsync();
+}
+
+public interface INotifyAuthenticationState
+{
+    void NotifyUserLogin(string userId);
+    void NotifyUserLogout();
+}

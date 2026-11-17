@@ -1,0 +1,15 @@
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\bin\Debug\net10.0\DeckZa.Application.deps.json
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\bin\Debug\net10.0\DeckZa.Application.dll
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\bin\Debug\net10.0\DeckZa.Application.pdb
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\bin\Debug\net10.0\DeckZa.Domain.dll
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\bin\Debug\net10.0\DeckZa.Domain.pdb
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\DeckZa.Application.csproj.AssemblyReference.cache
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\DeckZa.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\DeckZa.Application.AssemblyInfoInputs.cache
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\DeckZa.Application.AssemblyInfo.cs
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\DeckZa.Application.csproj.CoreCompileInputs.cache
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\DeckZa.A.178EE7C9.Up2Date
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\DeckZa.Application.dll
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\refint\DeckZa.Application.dll
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\DeckZa.Application.pdb
+D:\--NITIP\Projects\DeckZa\DeckZaApp\DeckZa.Application\obj\Debug\net10.0\ref\DeckZa.Application.dll

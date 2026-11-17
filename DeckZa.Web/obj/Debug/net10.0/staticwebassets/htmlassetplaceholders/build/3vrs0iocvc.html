@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DeckZa</title>
+    <base href="/" />
+    <script>
+        (function () {
+            var allowed = ["default", "fintech", "monochrome", "creative", "wellness"];
+            var palette = "monochrome";
+            try {
+                var saved = localStorage.getItem("enterprise-ui-palette");
+                if (saved) palette = saved;
+            } catch (e) { }
+            if (allowed.indexOf(palette) < 0) palette = "default";
+            document.documentElement.setAttribute("data-palette", palette);
+        })();
+    </script>
+    <link href="_framework/dotnet.no9w9cjxx6.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-B8KaaVsyXvBFc9N/dBhWTaiFtDA9u57OZabUVDlACo4=" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
+    <link rel="stylesheet" href="_content/DeckZa.Shared/css/app.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <script type="importmap">{
+  "imports": {
+    "./_content/DeckZa.Shared/js/ryzcore-motion.js": "./_content/DeckZa.Shared/js/ryzcore-motion.72ph4j0a0h.js",
+    "./_content/DeckZa.Shared/lib/animejs/anime.ryz.min.js": "./_content/DeckZa.Shared/lib/animejs/anime.ryz.min.nl9jy5c8eo.js",
+    "./_content/MudBlazor/MudBlazor.min.js": "./_content/MudBlazor/MudBlazor.min.l3r8y5kzi5.js",
+    "./_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js": "./_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.99zm1jdh75.lib.module.js",
+    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.w3qd1tpl0e.js",
+    "./_framework/dotnet.native.js": "./_framework/dotnet.native.puryxhmhq9.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.no9w9cjxx6.js",
+    "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.web2r9gqbh.js",
+    "./lib/bootstrap/dist/js/bootstrap.js": "./lib/bootstrap/dist/js/bootstrap.b19z0xddf3.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "./lib/bootstrap/dist/js/bootstrap.bundle.f9hf6oyiq5.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "./lib/bootstrap/dist/js/bootstrap.esm.0k2bo0ba8u.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js"
+  },
+  "scopes": {},
+  "integrity": {
+    "./_content/DeckZa.Shared/js/ryzcore-motion.72ph4j0a0h.js": "sha256-4TZQhBqOsY7VOHA7L6TFBlgD0j16zA0pB/pfNCjZQhg=",
+    "./_content/DeckZa.Shared/js/ryzcore-motion.js": "sha256-4TZQhBqOsY7VOHA7L6TFBlgD0j16zA0pB/pfNCjZQhg=",
+    "./_content/DeckZa.Shared/lib/animejs/anime.ryz.min.js": "sha256-Ww3Pmd4pFYxcJ6TmYEp+HP7Sct31G4tAUljv2cc1e5U=",
+    "./_content/DeckZa.Shared/lib/animejs/anime.ryz.min.nl9jy5c8eo.js": "sha256-Ww3Pmd4pFYxcJ6TmYEp+HP7Sct31G4tAUljv2cc1e5U=",
+    "./_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js": "sha256-itxgC9CUXgA0s57EK2bjpHhRABlrtO8ndt+ThYI7Lus=",
+    "./_content/MudBlazor/MudBlazor.min.js": "sha256-MdGoP3qrZ8UopW79bUDKgQbLV8ZNFJ58gGGUasEobjM=",
+    "./_content/MudBlazor/MudBlazor.min.l3r8y5kzi5.js": "sha256-MdGoP3qrZ8UopW79bUDKgQbLV8ZNFJ58gGGUasEobjM=",
+    "./_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.99zm1jdh75.lib.module.js": "sha256-A8e6zZwhOqf7lDQqbbCYcAUv4wGE9aQxOo4WyYxR//0=",
+    "./_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js": "sha256-A8e6zZwhOqf7lDQqbbCYcAUv4wGE9aQxOo4WyYxR//0=",
+    "./_framework/blazor.webassembly.js": "sha256-lDXsDYFgm62F+YUvxES7IOTCXYpiHpU3uR45YdC6mq4=",
+    "./_framework/blazor.webassembly.w3qd1tpl0e.js": "sha256-lDXsDYFgm62F+YUvxES7IOTCXYpiHpU3uR45YdC6mq4=",
+    "./_framework/dotnet.js": "sha256-B8KaaVsyXvBFc9N/dBhWTaiFtDA9u57OZabUVDlACo4=",
+    "./_framework/dotnet.native.js": "sha256-gQbHHzCnWx8iDOC65EKbql7bEltJkfao7lmkAbIRajw=",
+    "./_framework/dotnet.native.puryxhmhq9.js": "sha256-gQbHHzCnWx8iDOC65EKbql7bEltJkfao7lmkAbIRajw=",
+    "./_framework/dotnet.no9w9cjxx6.js": "sha256-B8KaaVsyXvBFc9N/dBhWTaiFtDA9u57OZabUVDlACo4=",
+    "./_framework/dotnet.runtime.js": "sha256-SOUHEQ3FhDAibBSR2u90NWZpoBjPuWRmH0BAATUlhJU=",
+    "./_framework/dotnet.runtime.web2r9gqbh.js": "sha256-SOUHEQ3FhDAibBSR2u90NWZpoBjPuWRmH0BAATUlhJU=",
+    "./lib/bootstrap/dist/js/bootstrap.b19z0xddf3.js": "sha256-gbPfQvzsH5OD4VPevxQhzts2VE1WjjlZO921ULTJMOg=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.f9hf6oyiq5.js": "sha256-3TQNTSmz05HZ2gYBUHKm9txRi+Bh+9bQEdGy9EkNeAk=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "sha256-3TQNTSmz05HZ2gYBUHKm9txRi+Bh+9bQEdGy9EkNeAk=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.0k2bo0ba8u.js": "sha256-sCnz3VdReIMrmY/nxIY9JNUV2R2cvfvseK4PJ+Qcgbs=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "sha256-sCnz3VdReIMrmY/nxIY9JNUV2R2cvfvseK4PJ+Qcgbs=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+    "./lib/bootstrap/dist/js/bootstrap.js": "sha256-gbPfQvzsH5OD4VPevxQhzts2VE1WjjlZO921ULTJMOg=",
+    "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ=",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ="
+  }
+}</script>
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_framework/blazor.webassembly.w3qd1tpl0e.js"></script>
+    <script>
+        window.ryzMotionModule = (window.ryzMotionModule
+            || import("./_content/DeckZa.Shared/js/ryzcore-motion.js"))
+            .catch(function () { return null; });
+        window.ryzMotionInvoke = function (method) {
+            return window.ryzMotionModule.then(function (module) {
+                if (module && typeof module[method] === "function") {
+                    module[method]();
+                    return true;
+                }
+                return false;
+            });
+        };
+    </script>
+</body>
+
+</html>

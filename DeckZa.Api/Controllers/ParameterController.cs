@@ -1,0 +1,162 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+using DeckZa.Api.Helpers;
+using DeckZa.Application.DTOs.General;
+using DeckZa.Application.DTOs.Parameter;
+using DeckZa.Application.Interfaces;
+using DeckZa.Domain.Enums;
+
+namespace DeckZa.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize(Roles = "00")]
+public class ParameterController : ControllerBase
+{
+    private readonly IParameterEngineService _parameterService;
+    private readonly IErrorLogService _errorLog;
+
+    public ParameterController(IParameterEngineService parameterService, IErrorLogService errorLog)
+    {
+        _parameterService = parameterService;
+        _errorLog = errorLog;
+    }
+
+    [HttpGet("systems")]
+    [HttpGet("cards")]
+    public async Task<IActionResult> GetSystems()
+    {
+        var cards = await _parameterService.GetCardsAsync();
+        return Ok(ApiResponseFactory.Success(cards, "Parameter systems retrieved successfully"));
+    }
+
+    [HttpGet("{tableName}/fields")]
+    [HttpGet("fields/{tableName}")]
+    public async Task<IActionResult> GetFields(string tableName)
+    {
+        try
+        {
+            var fields = await _parameterService.GetFieldsAsync(tableName);
+            return Ok(ApiResponseFactory.Success(fields, "Parameter fields retrieved successfully"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            await _errorLog.LogAsync("Parameter", "ERROR", ex);
+            return BadRequest(ApiResponseFactory.Error<List<ParameterFieldDto>>(ex.Message));
+        }
+    }
+
+    [HttpGet("{tableName}/options")]
+    public async Task<IActionResult> GetOptions(string tableName)
+    {
+        try
+        {
+            var options = await _parameterService.GetOptionsAsync(tableName);
+            return Ok(ApiResponseFactory.Success(options, "Parameter options retrieved successfully"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            await _errorLog.LogAsync("Parameter", "ERROR", ex);
+            return BadRequest(ApiResponseFactory.Error<Dictionary<string, List<DropdownItemDto>>>(ex.Message));
+        }
+    }
+
+    [HttpPost("approval-list/{tableName}")]
+    public async Task<IActionResult> GetApprovalRows(string tableName, [FromBody] DataTableRequestDto request)
+    {
+        try
+        {
+            var result = await _parameterService.GetApprovalRowsAsync(tableName, request);
+            return Ok(ApiResponseFactory.Page(result.Data, request, result.TotalCount, "Parameter approvals retrieved successfully"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            await _errorLog.LogAsync("Parameter", "ERROR", ex);
+            return BadRequest(ApiResponseFactory.Error<PaginatedResponse<ParameterApprovalRowDto>>(ex.Message));
+        }
+    }
+
+    [HttpPost("{tableName}/list")]
+    public async Task<IActionResult> GetList(string tableName, [FromBody] DataTableRequestDto request)
+    {
+        try
+        {
+            var result = await _parameterService.GetListAsync(tableName, request);
+            return Ok(new ParameterListResponseDto
+            {
+                Success = true,
+                Message = "Parameters retrieved successfully",
+                Code = Const.SUCCESS_CODE,
+                Data = result.Rows,
+                Fields = result.Fields,
+                KeyField = result.KeyField,
+                Pagination = new PaginationInfo
+                {
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalCount = result.TotalCount,
+                },
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            await _errorLog.LogAsync("Parameter", "ERROR", ex);
+            return BadRequest(ApiResponseFactory.Error<ParameterListResponseDto>(ex.Message));
+        }
+    }
+
+    [HttpGet("{tableName}/detail")]
+    public async Task<IActionResult> GetDetail(string tableName, [FromQuery] string? key)
+    {
+        try
+        {
+            var row = await _parameterService.GetAsync(tableName, key);
+            return row == null
+                ? NotFound(ApiResponseFactory.NotFound<Dictionary<string, string>>("Parameter not found."))
+                : Ok(ApiResponseFactory.Success(row, "Parameter retrieved successfully"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            await _errorLog.LogAsync("Parameter", "ERROR", ex);
+            return BadRequest(ApiResponseFactory.Error<Dictionary<string, string>>(ex.Message));
+        }
+    }
+
+    [HttpPost("save")]
+    public async Task<IActionResult> Save([FromBody] ParameterSaveRequestDto request)
+        => ToActionResult(await _parameterService.SaveAsync(request));
+
+    [HttpDelete("{tableName}")]
+    public async Task<IActionResult> Delete(string tableName, [FromQuery] string? key)
+        => ToActionResult(await _parameterService.DeleteAsync(tableName, key));
+
+    [HttpPost("pending/list")]
+    public async Task<IActionResult> GetPending([FromBody] ParameterPendingRequestDto request)
+    {
+        var result = await _parameterService.GetPendingAsync(request);
+        var pageRequest = new DataTableRequestDto
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            SearchTerm = request.SearchTerm,
+            SortColumn = request.SortColumn,
+            SortDirection = request.SortDirection,
+        };
+        return Ok(ApiResponseFactory.Page(result.Data, pageRequest, result.TotalCount, "Pending parameters retrieved successfully"));
+    }
+
+    [HttpPost("pending/{id:guid}/approve")]
+    public async Task<IActionResult> Approve(Guid id)
+        => ToActionResult(await _parameterService.ApproveAsync(id));
+
+    [HttpPost("pending/{id:guid}/reject")]
+    public async Task<IActionResult> Reject(Guid id)
+        => ToActionResult(await _parameterService.RejectAsync(id));
+
+    private IActionResult ToActionResult(BaseGeneralResponse result)
+    {
+        var response = ApiResponseFactory.FromResult(result);
+        return result.Success ? Ok(response) : BadRequest(response);
+    }
+}
