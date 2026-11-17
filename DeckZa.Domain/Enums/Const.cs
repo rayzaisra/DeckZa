@@ -8,6 +8,7 @@ public static class Const
     public const string SESSION_EXPIRED_CODE = "95";
 
     public const string DEFAULT_GROUP_ID_ADMINISTRATOR_CODE = "00";
+    public const string DEFAULT_GROUP_ID_MEMBER_CODE = "01";
 
     public static class StatusApproval
     {

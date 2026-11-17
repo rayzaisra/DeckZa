@@ -23,6 +23,9 @@ public interface IUnitOfWork
     IRfNotificationTypeRepository NotificationTypes { get; }
     IEmailProviderRepository EmailProviders { get; }
     IRfDefaultValueRepository DefaultValues { get; }
+    ITaskRepository Tasks { get; }
+    ITaskHistoryRepository TaskHistory { get; }
+    ITaskImportRepository TaskImports { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);

@@ -106,7 +106,7 @@ public class EmailOutboxProcessor
 
         using var mail = new MailMessage
         {
-            From = new MailAddress(fromEmail, provider.from_name ?? "Enterprise Portal"),
+            From = new MailAddress(fromEmail, provider.from_name ?? "Personal Task and Report Management"),
             Subject = message.subject,
             Body = message.body_html ?? message.body_text ?? string.Empty,
             IsBodyHtml = !string.IsNullOrWhiteSpace(message.body_html),

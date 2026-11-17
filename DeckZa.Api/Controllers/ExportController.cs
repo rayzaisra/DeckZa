@@ -11,6 +11,7 @@ using DeckZa.Api.Services;
 using DeckZa.Application.DTOs.Dynamic;
 using DeckZa.Application.DTOs.Export;
 using DeckZa.Application.DTOs.General;
+using DeckZa.Application.DTOs.Reports;
 
 namespace DeckZa.Api.Controllers;
 
@@ -112,6 +113,24 @@ public class ExportController : ControllerBase
         var fileName = $"parameters_{jobId}.xlsx";
         _jobs.Enqueue<ManagementExportJob>(job =>
             job.ExportParametersAsync(tableName, request.SearchTerm, userId, jobId, fileName));
+        return Queued(jobId, fileName);
+    }
+
+    [HttpPost("report-performance")]
+    [Authorize(Roles = "01")]
+    public IActionResult QueueReportPerformance([FromBody] ReportFilterDto filter)
+    {
+        var userId = CurrentUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var jobId = DateTime.Now.ToString("yyyyMMddHHmmss");
+        var fileName = $"report_performance_{jobId}.xlsx";
+        _jobs.Enqueue<ReportExportJob>(job =>
+            job.ExportAsync(filter, userId, jobId, fileName));
+
         return Queued(jobId, fileName);
     }
 

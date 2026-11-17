@@ -125,12 +125,12 @@
             }
             @if (_screen.HasButtonGenerateTxt == true)
             {
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.TextSnippet" OnClick="@(_ => ExportTxtAsync())">Export TXT</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.TextSnippet" Class="@("ryz-busy-button" + (_exporting ? " is-busy" : string.Empty))" Disabled="@_exporting" OnClick="@(_ => ExportTxtAsync())">Export TXT</MudButton>
             }
             @if (_screen.HasButtonExportExcel == true)
             {
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" OnClick="@(_ => QueueExportAsync())">Export Excel</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="@(_ => QueuePdfExportAsync())">Export PDF</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" Class="@("ryz-busy-button" + (_exporting ? " is-busy" : string.Empty))" Disabled="@_exporting" OnClick="@(_ => QueueExportAsync())">Export Excel</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PictureAsPdf" Class="@("ryz-busy-button" + (_exporting ? " is-busy" : string.Empty))" Disabled="@_exporting" OnClick="@(_ => QueuePdfExportAsync())">Export PDF</MudButton>
             }
             @if (_screen.HasButtonAdd == true && _screen.Child?.Type == "modal")
             {
@@ -149,10 +149,22 @@
                 }
                 else
                 {
-                    <label class="import-excel-button">
-                        <InputFile OnChange="ImportExcelAsync" accept=".xlsx" />
-                        <span>@(_importing ? "Importing..." : "Import Excel")</span>
-                    </label>
+                    <MudFileUpload T="IBrowserFile"
+                                   Accept=".xlsx"
+                                   Disabled="@_importing"
+                                   Class="import-excel-upload"
+                                   OnFilesChanged="ImportExcelAsync">
+                        <CustomContent Context="upload">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.UploadFile"
+                                       Class="@("ryz-busy-button" + (_importing ? " is-busy" : string.Empty))"
+                                       Disabled="@_importing"
+                                       OnClick="@(_ => upload.OpenFilePickerAsync())">
+                                @(_importing ? "Importing..." : "Import Excel")
+                            </MudButton>
+                        </CustomContent>
+                    </MudFileUpload>
                 }
             }
             @if (_screen.HasButtonDelete == true)
@@ -231,6 +243,7 @@
     private string _sortDirection = "asc";
     private string? _error;
     private bool _importing;
+    private bool _exporting;
     private bool _filterOpen = true;
     private HashSet<Dictionary<string, object>> _selectedRows = new();
 
@@ -366,36 +379,62 @@
 
     private async Task QueueExportAsync()
     {
-        var result = await ExportApi.QueueScreenAsync(ScreenId!, new DynamicLoadRequestDto
+        if (_exporting)
         {
-            PageNumber = 1,
-            PageSize = 200,
-            SearchTerm = _search,
-            SortColumn = _sortColumn,
-            SortDirection = _sortDirection,
-            Filters = new Dictionary<string, string?>(_filters, StringComparer.OrdinalIgnoreCase),
-        });
+            return;
+        }
 
-        Snackbar.Add(
-            result == null ? "Unable to queue export." : $"Export queued: {result.FileName}",
-            result == null ? Severity.Error : Severity.Success);
+        _exporting = true;
+        try
+        {
+            var result = await ExportApi.QueueScreenAsync(ScreenId!, new DynamicLoadRequestDto
+            {
+                PageNumber = 1,
+                PageSize = 200,
+                SearchTerm = _search,
+                SortColumn = _sortColumn,
+                SortDirection = _sortDirection,
+                Filters = new Dictionary<string, string?>(_filters, StringComparer.OrdinalIgnoreCase),
+            });
+
+            Snackbar.Add(
+                result == null ? "Unable to queue export." : $"Export queued: {result.FileName}",
+                result == null ? Severity.Error : Severity.Success);
+        }
+        finally
+        {
+            _exporting = false;
+        }
     }
 
     private async Task QueuePdfExportAsync()
     {
-        var result = await ExportApi.QueuePdfScreenAsync(ScreenId!, new DynamicLoadRequestDto
+        if (_exporting)
         {
-            PageNumber = 1,
-            PageSize = 200,
-            SearchTerm = _search,
-            SortColumn = _sortColumn,
-            SortDirection = _sortDirection,
-            Filters = new Dictionary<string, string?>(_filters, StringComparer.OrdinalIgnoreCase),
-        });
+            return;
+        }
 
-        Snackbar.Add(
-            result == null ? "Unable to queue PDF export." : $"PDF export queued: {result.FileName}",
-            result == null ? Severity.Error : Severity.Success);
+        _exporting = true;
+        try
+        {
+            var result = await ExportApi.QueuePdfScreenAsync(ScreenId!, new DynamicLoadRequestDto
+            {
+                PageNumber = 1,
+                PageSize = 200,
+                SearchTerm = _search,
+                SortColumn = _sortColumn,
+                SortDirection = _sortDirection,
+                Filters = new Dictionary<string, string?>(_filters, StringComparer.OrdinalIgnoreCase),
+            });
+
+            Snackbar.Add(
+                result == null ? "Unable to queue PDF export." : $"PDF export queued: {result.FileName}",
+                result == null ? Severity.Error : Severity.Success);
+        }
+        finally
+        {
+            _exporting = false;
+        }
     }
 
     private async Task OpenAddChildAsync()
@@ -681,22 +720,36 @@
 
     private async Task ExportTxtAsync()
     {
+        if (_exporting)
+        {
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(DynamicApi.ApiBaseAddress) || string.IsNullOrWhiteSpace(ScreenId))
         {
             return;
         }
 
-        var token = await TokenStorage.GetAccessTokenAsync();
-        var query = new List<string>
+        _exporting = true;
+        try
         {
-            $"access_token={Uri.EscapeDataString(token ?? string.Empty)}",
-            $"searchTerm={Uri.EscapeDataString(_search ?? string.Empty)}",
-            $"sortColumn={Uri.EscapeDataString(_sortColumn ?? string.Empty)}",
-            $"sortDirection={Uri.EscapeDataString(_sortDirection)}",
-        };
-        Navigation.NavigateTo(
-            $"{DynamicApi.ApiBaseAddress}/api/dynamic/screen/{Uri.EscapeDataString(ScreenId)}/export-txt?{string.Join("&", query)}",
-            forceLoad: true);
+            var token = await TokenStorage.GetAccessTokenAsync();
+            var query = new List<string>
+            {
+                $"access_token={Uri.EscapeDataString(token ?? string.Empty)}",
+                $"searchTerm={Uri.EscapeDataString(_search ?? string.Empty)}",
+                $"sortColumn={Uri.EscapeDataString(_sortColumn ?? string.Empty)}",
+                $"sortDirection={Uri.EscapeDataString(_sortDirection)}",
+            };
+
+            Navigation.NavigateTo(
+                $"{DynamicApi.ApiBaseAddress}/api/dynamic/screen/{Uri.EscapeDataString(ScreenId)}/export-txt?{string.Join("&", query)}",
+                forceLoad: true);
+        }
+        finally
+        {
+            _exporting = false;
+        }
     }
 
     private static string? GetRowValue(Dictionary<string, object> row, string field)

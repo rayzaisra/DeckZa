@@ -51,4 +51,36 @@ public class DropDownQueryService : IDropDownService
                 Text = e.parent_level_name ?? e.parent_level_code,
             })
             .ToListAsync();
+
+    public Task<List<DropdownItemDto>> GetTaskApplicationsAsync()
+        => _context.rf_application
+            .Where(e => e.isActive == true && e.isDeleted == false)
+            .OrderBy(e => e.order_seq)
+            .ThenBy(e => e.description)
+            .Select(e => new DropdownItemDto { Value = e.application_id, Text = e.description })
+            .ToListAsync();
+
+    public Task<List<DropdownItemDto>> GetTaskTypesAsync()
+        => _context.rf_task_type
+            .Where(e => e.isActive == true && e.isDeleted == false)
+            .OrderBy(e => e.order_seq)
+            .ThenBy(e => e.description)
+            .Select(e => new DropdownItemDto { Value = e.task_type_id, Text = e.description })
+            .ToListAsync();
+
+    public Task<List<DropdownItemDto>> GetTaskPrioritiesAsync()
+        => _context.rf_task_priority
+            .Where(e => e.isActive == true && e.isDeleted == false)
+            .OrderBy(e => e.order_seq)
+            .ThenBy(e => e.description)
+            .Select(e => new DropdownItemDto { Value = e.task_priority_id, Text = e.description })
+            .ToListAsync();
+
+    public Task<List<DropdownItemDto>> GetTaskStatusesAsync()
+        => _context.rf_status
+            .Where(e => e.isActive == true && e.isDeleted == false)
+            .OrderBy(e => e.order_seq)
+            .ThenBy(e => e.description)
+            .Select(e => new DropdownItemDto { Value = e.status_id, Text = e.description })
+            .ToListAsync();
 }

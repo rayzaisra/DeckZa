@@ -1,6 +1,7 @@
 using DeckZa.Application.DTOs.Dynamic;
 using DeckZa.Application.DTOs.Export;
 using DeckZa.Application.DTOs.General;
+using DeckZa.Application.DTOs.Reports;
 using DeckZa.Shared.Services.Interfaces;
 
 namespace DeckZa.Shared.Services;
@@ -48,7 +49,27 @@ public class ExportApiService
             url,
             new DataTableRequestDto { SearchTerm = search });
 
+        return await WaitForExportAsync(queued);
+    }
+
+    public async Task<string?> ExportReportPerformanceAsync(ReportFilterDto filter)
+    {
+        var queued = await _api.PostFromJsonAsync<ReportFilterDto, ExportQueueResultDto>(
+            "api/export/report-performance",
+            filter);
+
+        return await WaitForExportAsync(queued);
+    }
+
+    private async Task<string?> WaitForExportAsync(ExportQueueResultDto? queued)
+    {
         if (queued == null || string.IsNullOrWhiteSpace(queued.JobId))
+        {
+            return null;
+        }
+
+        var baseAddress = _api.ApiBaseAddress;
+        if (string.IsNullOrWhiteSpace(baseAddress))
         {
             return null;
         }

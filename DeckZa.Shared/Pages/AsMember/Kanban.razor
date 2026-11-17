@@ -1,0 +1,687 @@
+@page "/dashboard/task-management"
+@layout AuthenticatedLayout
+@attribute [Authorize]
+@attribute [Authorize(Roles = "01")]
+@inject TaskApiService TaskApi
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject MotionService Motion
+
+<MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
+
+<div class="page-heading">
+    <div>
+        <div class="dashboard-kicker">Workspace</div>
+        <h1>Task Board</h1>
+        <p>Plan, move, and finish your work across statuses.</p>
+    </div>
+    <div class="d-flex gap-2 align-center">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Download"
+                   OnClick="@(_ => DownloadTemplateAsync())">
+            Import Template
+        </MudButton>
+        <MudFileUpload T="IBrowserFile"
+                       Accept=".xlsx"
+                       Disabled="@_importing"
+                       Class="import-excel-upload"
+                       OnFilesChanged="ImportExcelAsync">
+            <CustomContent Context="upload">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.UploadFile"
+                           Class="@("ryz-busy-button" + (_importing ? " is-busy" : string.Empty))"
+                           Disabled="@_importing"
+                           OnClick="@(_ => upload.OpenFilePickerAsync())">
+                    @(_importing ? "Importing..." : "Upload Excel")
+                </MudButton>
+            </CustomContent>
+        </MudFileUpload>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(_ => OpenCreateAsync(null))">
+            New Task
+        </MudButton>
+    </div>
+</div>
+
+<MudPaper Elevation="0" Class="dashboard-card kanban-toolbar">
+    <div class="kanban-toolbar-row">
+        <MudSelect T="string"
+                   @bind-Value="_filterApplicationId"
+                   @bind-Value:after="ReloadBoardAsync"
+                   Label="Application"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="kanban-filter">
+            <MudSelectItem Value="@string.Empty">All applications</MudSelectItem>
+            @foreach (var item in _applications)
+            {
+                <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect T="string"
+                   @bind-Value="_filterTaskTypeId"
+                   @bind-Value:after="ReloadBoardAsync"
+                   Label="Task Type"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="kanban-filter">
+            <MudSelectItem Value="@string.Empty">All types</MudSelectItem>
+            @foreach (var item in _taskTypes)
+            {
+                <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect T="string"
+                   @bind-Value="_filterTaskPriorityId"
+                   @bind-Value:after="ReloadBoardAsync"
+                   Label="Priority"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="kanban-filter">
+            <MudSelectItem Value="@string.Empty">All priorities</MudSelectItem>
+            @foreach (var item in _taskPriorities)
+            {
+                <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSpacer />
+
+        <MudTextField @bind-Value="_searchTerm"
+                      @bind-Value:after="ReloadBoardAsync"
+                      Label="Search"
+                      Placeholder="Title or requester"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Class="kanban-search" />
+    </div>
+</MudPaper>
+
+@if (_boardLoading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="my-4" />
+}
+
+@if (_loadError != null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4">@_loadError</MudAlert>
+}
+
+@if (_columns.Count == 0 && !_boardLoading)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+        No status is configured yet. Ask the administrator to set up the status master.
+    </MudAlert>
+}
+else
+{
+    <div class="kanban-board">
+        @foreach (var column in _columns)
+        {
+            <section class="kanban-column @column.ToneClass @(_dragOverStatusId == column.StatusId ? "is-dragover" : string.Empty) @(_dropFlashStatusId == column.StatusId ? "is-drop-flash" : string.Empty)"
+                     @ondragover:preventDefault
+                     @ondragenter="@(_ => OnDragEnter(column))"
+                     @ondragleave="@(_ => OnDragLeave(column))"
+                     @ondrop:preventDefault
+                     @ondrop="@(_ => OnDropAsync(column))">
+                <header class="kanban-column-header">
+                    <span class="kanban-dot" aria-hidden="true"></span>
+                    <span class="kanban-column-name">@column.Name</span>
+                    <span class="kanban-count">@column.Tasks.Count</span>
+                </header>
+
+                <div class="kanban-column-body">
+                    @foreach (var task in column.Tasks)
+                    {
+                        <article class="kanban-card @(_draggingTaskId == task.Id ? "is-dragging" : string.Empty) @(_lastMovedTaskId == task.Id ? "is-just-moved" : string.Empty)"
+                                 draggable="true"
+                                 @ondragstart="@(_ => OnDragStart(task))"
+                                 @ondragend="@(_ => OnDragEnd())">
+                            <div class="kanban-card-head">
+                                <span class="kanban-card-title">@task.Title</span>
+                                <span class="kanban-card-actions">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(_ => OpenEditAsync(task))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(_ => DeleteAsync(task))" />
+                                </span>
+                            </div>
+
+                            <div class="kanban-card-meta">
+                                @if (!string.IsNullOrWhiteSpace(task.ApplicationName))
+                                {
+                                    <span class="kanban-chip">@task.ApplicationName</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(task.TaskTypeName))
+                                {
+                                    <span class="kanban-chip">@task.TaskTypeName</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(task.TaskPriorityName))
+                                {
+                                    <span class="kanban-priority @GetPriorityClass(task.TaskPriorityName)">@task.TaskPriorityName</span>
+                                }
+                                @if (task.DueDate.HasValue)
+                                {
+                                    <span class="kanban-due @(task.IsOverdue ? "is-overdue" : string.Empty)">
+                                        @task.DueDate.Value.ToString("dd MMM")
+                                    </span>
+                                }
+                            </div>
+                        </article>
+                    }
+
+                    <button type="button" class="kanban-add" @onclick="@(_ => OpenCreateAsync(column.StatusId))">
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
+                        <span>New task</span>
+                    </button>
+                </div>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    private readonly List<BreadcrumbItem> _breadcrumbs = new()
+    {
+        new BreadcrumbItem("Dashboard", "/dashboard"),
+        new BreadcrumbItem("Task Board", null, disabled: true),
+    };
+
+    private List<KanbanColumn> _columns = new();
+    private List<TaskListItemDto> _boardTasks = new();
+    private List<DropdownItemDto> _applications = new();
+    private List<DropdownItemDto> _taskTypes = new();
+    private List<DropdownItemDto> _taskPriorities = new();
+    private List<DropdownItemDto> _taskStatuses = new();
+
+    private string _filterApplicationId = string.Empty;
+    private string _filterTaskTypeId = string.Empty;
+    private string _filterTaskPriorityId = string.Empty;
+    private string _searchTerm = string.Empty;
+
+    private TaskListItemDto? _draggedTask;
+    private Guid? _draggingTaskId;
+    private Guid? _lastMovedTaskId;
+    private string? _dragOverStatusId;
+    private string? _dropFlashStatusId;
+    private bool _boardLoading;
+    private readonly HashSet<Guid> _pendingMoves = new();
+    private bool _importing;
+    private bool _uploadAnimationPending;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReferenceDataAsync();
+        await ReloadBoardAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_uploadAnimationPending)
+        {
+            _uploadAnimationPending = false;
+            await Motion.StartUploadIndicatorAsync();
+        }
+    }
+
+    private async Task LoadReferenceDataAsync()
+    {
+        try
+        {
+            _applications = await TaskApi.GetApplicationsAsync();
+            _taskTypes = await TaskApi.GetTaskTypesAsync();
+            _taskPriorities = await TaskApi.GetTaskPrioritiesAsync();
+            _taskStatuses = await TaskApi.GetTaskStatusesAsync();
+        }
+        catch (Exception exception)
+        {
+            _loadError = "Failed to load master data. Please try again.";
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+    }
+
+    private async Task ReloadBoardAsync()
+    {
+        _boardLoading = true;
+        try
+        {
+            var request = new TaskBoardRequestDto
+            {
+                ApplicationId = string.IsNullOrWhiteSpace(_filterApplicationId) ? null : _filterApplicationId,
+                TaskTypeId = string.IsNullOrWhiteSpace(_filterTaskTypeId) ? null : _filterTaskTypeId,
+                TaskPriorityId = string.IsNullOrWhiteSpace(_filterTaskPriorityId) ? null : _filterTaskPriorityId,
+                SearchTerm = string.IsNullOrWhiteSpace(_searchTerm) ? null : _searchTerm.Trim(),
+            };
+
+            _boardTasks = await TaskApi.GetBoardAsync(request);
+            BuildColumns();
+            _loadError = null;
+        }
+        catch (Exception exception)
+        {
+            _loadError = "Failed to load the task board. Please try again.";
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+        finally
+        {
+            _boardLoading = false;
+        }
+    }
+
+    private void BuildColumns()
+    {
+        var columns = new Dictionary<string, KanbanColumn>(StringComparer.Ordinal);
+
+        for (var index = 0; index < _taskStatuses.Count; index++)
+        {
+            var status = _taskStatuses[index];
+            columns[status.Value] = new KanbanColumn
+            {
+                StatusId = status.Value,
+                Name = status.Text,
+                Order = index + 1,
+            };
+        }
+
+        foreach (var task in _boardTasks)
+        {
+            if (!columns.TryGetValue(task.StatusId, out var column))
+            {
+                column = new KanbanColumn
+                {
+                    StatusId = task.StatusId,
+                    Name = task.StatusName ?? task.StatusId,
+                    Order = task.StatusOrderSeq ?? 999,
+                };
+                columns[task.StatusId] = column;
+            }
+
+            column.Tasks.Add(task);
+        }
+
+        _columns = columns.Values
+            .OrderBy(column => column.Order)
+            .ThenBy(column => column.Name)
+            .ToList();
+    }
+
+    private void OnDragStart(TaskListItemDto task)
+    {
+        _draggedTask = task;
+        _draggingTaskId = task.Id;
+    }
+
+    private void OnDragEnd()
+    {
+        _draggedTask = null;
+        _draggingTaskId = null;
+        _dragOverStatusId = null;
+    }
+
+    private void OnDragEnter(KanbanColumn column)
+    {
+        if (_dragOverStatusId == column.StatusId)
+        {
+            return;
+        }
+
+        _dragOverStatusId = column.StatusId;
+    }
+
+    private void OnDragLeave(KanbanColumn column)
+    {
+        if (_dragOverStatusId == column.StatusId)
+        {
+            _dragOverStatusId = null;
+        }
+    }
+
+    private async Task OnDropAsync(KanbanColumn column)
+    {
+        _dragOverStatusId = null;
+
+        if (_draggedTask == null)
+        {
+            return;
+        }
+
+        var task = _draggedTask;
+        _draggedTask = null;
+        _draggingTaskId = null;
+
+        if (task.StatusId == column.StatusId)
+        {
+            return;
+        }
+
+        var sourceColumn = _columns.FirstOrDefault(item => item.Tasks.Contains(task));
+        if (sourceColumn == null || !_pendingMoves.Add(task.Id))
+        {
+            return;
+        }
+
+        var previousStatusId = task.StatusId;
+        var previousStatusName = task.StatusName;
+        var previousStatusOrder = task.StatusOrderSeq;
+
+        sourceColumn.Tasks.Remove(task);
+        task.StatusId = column.StatusId;
+        task.StatusName = column.Name;
+        task.StatusOrderSeq = column.Order;
+        task.IsOverdue = column.StatusId != "STS005"
+                         && task.DueDate.HasValue
+                         && task.DueDate.Value < DateTime.Now;
+        column.Tasks.Add(task);
+
+        _lastMovedTaskId = task.Id;
+        _dropFlashStatusId = column.StatusId;
+        StateHasChanged();
+
+        try
+        {
+            var result = await TaskApi.MoveAsync(task.Id, column.StatusId);
+            if (result.Success)
+            {
+                Snackbar.Add(result.Message ?? "Task moved.", Severity.Success);
+            }
+            else
+            {
+                column.Tasks.Remove(task);
+                sourceColumn.Tasks.Add(task);
+                task.StatusId = previousStatusId;
+                task.StatusName = previousStatusName;
+                task.StatusOrderSeq = previousStatusOrder;
+                Snackbar.Add(result.Message ?? "Failed to move the task.", Severity.Error);
+            }
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+            await ReloadBoardAsync();
+        }
+        finally
+        {
+            _pendingMoves.Remove(task.Id);
+            _ = ClearMoveHighlightAsync();
+        }
+    }
+
+    private async Task ClearMoveHighlightAsync()
+    {
+        await Task.Delay(450);
+        _lastMovedTaskId = null;
+        _dropFlashStatusId = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task DownloadTemplateAsync()
+    {
+        try
+        {
+            var url = await TaskApi.GetImportTemplateUrlAsync();
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                Snackbar.Add("Failed to prepare the import template.", Severity.Error);
+                return;
+            }
+
+            Navigation.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+    }
+
+    private async Task ImportExcelAsync(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        if (file == null)
+        {
+            return;
+        }
+
+        if (!file.Name.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+        {
+            Snackbar.Add("Only .xlsx files are supported.", Severity.Warning);
+            return;
+        }
+
+        if (file.Size <= 0 || file.Size > 1024 * 1024)
+        {
+            Snackbar.Add("The file must be between 1 byte and 1 MB.", Severity.Warning);
+            return;
+        }
+
+        var confirmDialog = await DialogService.ShowAsync<ConfirmDialog>(
+            "Import Task",
+            new DialogParameters
+            {
+                ["Title"] = "Import Task",
+                ["Message"] = "All imported tasks belong to your account and can be edited, moved, or deleted "
+                              + "like normal tasks. Import cannot be rolled back automatically. Continue?",
+                ["ConfirmText"] = "Import",
+                ["CancelText"] = "Cancel",
+            });
+
+        var confirmResult = await confirmDialog.Result;
+        if (confirmResult is not { Canceled: false })
+        {
+            return;
+        }
+
+        _importing = true;
+        _uploadAnimationPending = true;
+        StateHasChanged();
+
+        try
+        {
+            using var stream = file.OpenReadStream(1024 * 1024);
+            var response = await TaskApi.ImportAsync(stream, file.Name);
+            if (response == null)
+            {
+                Snackbar.Add("Import failed. Please try again.", Severity.Error);
+                return;
+            }
+
+            if (!response.Success || response.Data == null)
+            {
+                Snackbar.Add(response.Message ?? "Import failed.", Severity.Error);
+                return;
+            }
+
+            var result = response.Data;
+
+            await Motion.CompleteUploadIndicatorAsync();
+            await Task.Delay(900);
+            _importing = false;
+            StateHasChanged();
+
+            Snackbar.Add(
+                $"Import completed. {result.SuccessCount} succeeded, {result.RejectedCount} rejected.",
+                result.RejectedCount > 0 ? Severity.Warning : Severity.Success);
+
+            if (result.RejectedCount > 0)
+            {
+                var details = string.Join(
+                    Environment.NewLine,
+                    result.Rejections.Take(10).Select(item => $"Row {item.RowNumber}: {item.Message}"));
+
+                var resultDialog = await DialogService.ShowAsync<ConfirmDialog>(
+                    "Import Result",
+                    new DialogParameters
+                    {
+                        ["Title"] = "Import Result",
+                        ["Message"] = details,
+                        ["ConfirmText"] = "OK",
+                        ["CancelText"] = "Close",
+                    });
+
+                await resultDialog.Result;
+            }
+
+            await ReloadBoardAsync();
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+        finally
+        {
+            await Motion.StopUploadIndicatorAsync();
+            _uploadAnimationPending = false;
+            _importing = false;
+        }
+    }
+
+    private async Task OpenCreateAsync(string? statusId)
+    {
+        var parameters = new DialogParameters
+        {
+            ["IsEdit"] = false,
+            ["DefaultStatusId"] = statusId ?? string.Empty,
+            ["Applications"] = _applications,
+            ["TaskTypes"] = _taskTypes,
+            ["TaskPriorities"] = _taskPriorities,
+            ["TaskStatuses"] = _taskStatuses,
+        };
+
+        var dialog = await DialogService.ShowAsync<TaskEditDialog>(
+            "New Task",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: TaskEditDto dto })
+        {
+            var response = await TaskApi.CreateAsync(dto);
+            if (response.Success)
+            {
+                Snackbar.Add(response.Message ?? "Task created.", Severity.Success);
+                await ReloadBoardAsync();
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Failed to create the task.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenEditAsync(TaskListItemDto task)
+    {
+        var detail = await TaskApi.GetAsync(task.Id);
+        if (detail == null)
+        {
+            Snackbar.Add("Task not found.", Severity.Error);
+            await ReloadBoardAsync();
+            return;
+        }
+
+        var model = new TaskEditDto
+        {
+            Title = detail.Title,
+            Description = detail.Description,
+            ApplicationId = detail.ApplicationId,
+            RequestBy = detail.RequestBy,
+            RequestDate = detail.RequestDate,
+            DueDate = detail.DueDate,
+            StatusId = detail.StatusId,
+            TaskTypeId = detail.TaskTypeId,
+            TaskPriorityId = detail.TaskPriorityId,
+        };
+
+        var parameters = new DialogParameters
+        {
+            ["IsEdit"] = true,
+            ["Model"] = model,
+            ["Applications"] = _applications,
+            ["TaskTypes"] = _taskTypes,
+            ["TaskPriorities"] = _taskPriorities,
+            ["TaskStatuses"] = _taskStatuses,
+        };
+
+        var dialog = await DialogService.ShowAsync<TaskEditDialog>(
+            "Edit Task",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: TaskEditDto dto })
+        {
+            var response = await TaskApi.UpdateAsync(task.Id, dto);
+            if (response.Success)
+            {
+                Snackbar.Add(response.Message ?? "Task updated.", Severity.Success);
+                await ReloadBoardAsync();
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Failed to update the task.", Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteAsync(TaskListItemDto task)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Title"] = "Delete Task",
+            ["Message"] = $"Delete \"{task.Title}\"? This action removes the task from all modules.",
+            ["ConfirmText"] = "Delete",
+            ["CancelText"] = "Cancel",
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Task", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            var response = await TaskApi.DeleteAsync(task.Id);
+            if (response.Success)
+            {
+                Snackbar.Add(response.Message ?? "Task deleted.", Severity.Success);
+                await ReloadBoardAsync();
+            }
+            else
+            {
+                Snackbar.Add(response.Message ?? "Failed to delete the task.", Severity.Error);
+            }
+        }
+    }
+
+    private static string GetPriorityClass(string? priorityName)
+    {
+        var value = (priorityName ?? string.Empty).Trim().ToLowerInvariant();
+        return value switch
+        {
+            "low" => "is-low",
+            "normal" => "is-normal",
+            "high" => "is-high",
+            "vip" => "is-vip",
+            _ => "is-normal",
+        };
+    }
+
+    private sealed class KanbanColumn
+    {
+        public string StatusId { get; init; } = string.Empty;
+        public string Name { get; init; } = string.Empty;
+        public int Order { get; init; }
+        public List<TaskListItemDto> Tasks { get; } = new();
+        public string ToneClass => $"kanban-tone-{(Math.Max(Order, 1) - 1) % 5 + 1}";
+    }
+}

@@ -25,6 +25,7 @@ using DeckZa.Infrastructure.Identity;
 using DeckZa.Infrastructure.Options;
 using DeckZa.Infrastructure.Queries;
 using DeckZa.Infrastructure.Repositories.Auth;
+using DeckZa.Infrastructure.Repositories.Management;
 using DeckZa.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -79,6 +80,15 @@ builder.Services.AddScoped<IScreenMenuQueryService, ScreenMenuQueryService>();
 builder.Services.AddScoped<IApprovalQueryService, ApprovalQueryService>();
 builder.Services.AddScoped<INotificationQueryService, NotificationQueryService>();
 builder.Services.AddScoped<IEmailProviderQueryService, EmailProviderQueryService>();
+builder.Services.AddScoped<IRfDefaultValueRepository, RfDefaultValueRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ITaskHistoryRepository, TaskHistoryRepository>();
+builder.Services.AddScoped<ITaskQueryService, TaskQueryService>();
+builder.Services.AddScoped<ITaskReferenceQueryService, TaskReferenceQueryService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITaskImportService, TaskImportService>();
+builder.Services.AddScoped<IReportQueryService, ReportQueryService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IParameterStagingService, ParameterStagingService>();
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IParameterEngineService, ParameterEngineService>();
@@ -101,6 +111,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ExcelExportJob>();
 builder.Services.AddScoped<PdfExportJob>();
 builder.Services.AddScoped<ManagementExportJob>();
+builder.Services.AddScoped<ReportExportJob>();
 builder.Services.AddScoped<IDropDownService, DropDownQueryService>();
 builder.Services.AddScoped<IJWTService, JwtTokenService>();
 builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
@@ -195,6 +206,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+EnsureWritableTempPath(app.Environment);
+
 if (app.Environment.IsDevelopment() || seedOnly)
 {
     using var scope = app.Services.CreateScope();
@@ -257,6 +270,26 @@ recurringJobs.AddOrUpdate<EmailOutboxProcessor>(
     job => job.ProcessPendingAsync(),
     "*/1 * * * *");
 app.Run();
+
+static void EnsureWritableTempPath(IWebHostEnvironment environment)
+{
+    try
+    {
+        var probe = Path.GetTempFileName();
+        File.Delete(probe);
+        return;
+    }
+    catch
+    {
+        // The default system temp is not writable (restricted environment).
+        // OpenXML (used by ClosedXML) requires a writable temp directory.
+        var fallback = Path.Combine(environment.ContentRootPath, "tmp");
+        Directory.CreateDirectory(fallback);
+        Environment.SetEnvironmentVariable("TMP", fallback);
+        Environment.SetEnvironmentVariable("TEMP", fallback);
+        Environment.SetEnvironmentVariable("TMPDIR", fallback);
+    }
+}
 
 public partial class Program
 {

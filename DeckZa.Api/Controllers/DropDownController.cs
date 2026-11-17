@@ -38,4 +38,24 @@ public class DropDownController : ControllerBase
     [Authorize(Roles = "00")]
     public async Task<IActionResult> GetMenuParentLevels()
         => Ok(ApiResponseFactory.Success(await _dropDownService.GetMenuParentLevelsAsync(), "Menu parent levels retrieved successfully"));
+
+    [HttpGet("task-applications")]
+    [Authorize(Roles = "01")]
+    public async Task<IActionResult> GetTaskApplications()
+        => Ok(ApiResponseFactory.Success(await _dropDownService.GetTaskApplicationsAsync(), "Applications retrieved successfully"));
+
+    [HttpGet("task-types")]
+    [Authorize(Roles = "01")]
+    public async Task<IActionResult> GetTaskTypes()
+        => Ok(ApiResponseFactory.Success(await _dropDownService.GetTaskTypesAsync(), "Task types retrieved successfully"));
+
+    [HttpGet("task-priorities")]
+    [Authorize(Roles = "01")]
+    public async Task<IActionResult> GetTaskPriorities()
+        => Ok(ApiResponseFactory.Success(await _dropDownService.GetTaskPrioritiesAsync(), "Task priorities retrieved successfully"));
+
+    [HttpGet("task-statuses")]
+    [Authorize(Roles = "01")]
+    public async Task<IActionResult> GetTaskStatuses()
+        => Ok(ApiResponseFactory.Success(await _dropDownService.GetTaskStatusesAsync(), "Task statuses retrieved successfully"));
 }

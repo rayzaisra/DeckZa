@@ -13,7 +13,9 @@ BEGIN
 
     IF @tableName NOT IN (N'rf_default_value', N'rf_email_provider', N'rf_email_template',
                           N'rf_files_upload_type', N'rf_group_access_report_set',
-                          N'rf_message', N'tb_parameter_system', N'tb_parameter_system_detail',
+                          N'rf_message', N'rf_notification_type',
+                          N'rf_application', N'rf_status', N'rf_task_type', N'rf_task_priority',
+                          N'tb_parameter_system', N'tb_parameter_system_detail',
                           N'tb_report_set', N'tb_screen_menu')
         THROW 51000, N'Table is not registered as a parameter.', 1;
 

@@ -63,6 +63,13 @@ public class DeckZaDbContext : DbContext
     public DbSet<rf_message> rf_message => Set<rf_message>();
 
     public DbSet<proc_seq> proc_seq => Set<proc_seq>();
+    public DbSet<rf_application> rf_application => Set<rf_application>();
+    public DbSet<rf_status> rf_status => Set<rf_status>();
+    public DbSet<rf_task_type> rf_task_type => Set<rf_task_type>();
+    public DbSet<rf_task_priority> rf_task_priority => Set<rf_task_priority>();
+    public DbSet<tb_task> tb_task => Set<tb_task>();
+    public DbSet<tb_import_batch> tb_import_batch => Set<tb_import_batch>();
+    public DbSet<tb_task_history> tb_task_history => Set<tb_task_history>();
     public DbSet<rf_email_provider> rf_email_provider => Set<rf_email_provider>();
     public DbSet<rf_email_template> rf_email_template => Set<rf_email_template>();
     public DbSet<tb_email_outbox> tb_email_outbox => Set<tb_email_outbox>();
@@ -233,6 +240,7 @@ public class DeckZaDbContext : DbContext
         ConfigureNotifications(modelBuilder);
         ConfigureReferences(modelBuilder);
         ConfigureEmailAndReset(modelBuilder);
+        ConfigureDeckZaTasks(modelBuilder);
 
         modelBuilder.Entity<proc_seq>().HasKey(e => e.id);
     }
@@ -372,6 +380,134 @@ public class DeckZaDbContext : DbContext
         modelBuilder.Entity<rf_files_upload_type>().HasKey(e => e.files_upload_type_code);
         modelBuilder.Entity<rf_group_access_report_set>().HasKey(e => e.id);
         modelBuilder.Entity<rf_message>().HasKey(e => e.message_code);
+    }
+
+    private static void ConfigureDeckZaTasks(ModelBuilder modelBuilder)
+    {
+        ConfigureDeckZaAuditColumns<rf_application>(modelBuilder);
+        ConfigureDeckZaAuditColumns<rf_status>(modelBuilder);
+        ConfigureDeckZaAuditColumns<rf_task_type>(modelBuilder);
+        ConfigureDeckZaAuditColumns<rf_task_priority>(modelBuilder);
+        ConfigureDeckZaAuditColumns<tb_import_batch>(modelBuilder);
+        ConfigureDeckZaAuditColumns<tb_task>(modelBuilder);
+        ConfigureDeckZaAuditColumns<tb_task_history>(modelBuilder);
+
+        modelBuilder.Entity<rf_application>().HasKey(e => e.application_id);
+        modelBuilder.Entity<rf_application>().HasIndex(e => e.description).IsUnique();
+        modelBuilder.Entity<rf_application>().Property(e => e.application_id).ValueGeneratedNever();
+        modelBuilder.Entity<rf_application>().Property(e => e.order_seq).HasDefaultValue(0);
+
+        modelBuilder.Entity<rf_status>().HasKey(e => e.status_id);
+        modelBuilder.Entity<rf_status>().HasIndex(e => e.description).IsUnique();
+        modelBuilder.Entity<rf_status>().Property(e => e.status_id).ValueGeneratedNever();
+        modelBuilder.Entity<rf_status>().Property(e => e.order_seq).HasDefaultValue(0);
+
+        modelBuilder.Entity<rf_task_type>().HasKey(e => e.task_type_id);
+        modelBuilder.Entity<rf_task_type>().HasIndex(e => e.description).IsUnique();
+        modelBuilder.Entity<rf_task_type>().Property(e => e.task_type_id).ValueGeneratedNever();
+        modelBuilder.Entity<rf_task_type>().Property(e => e.order_seq).HasDefaultValue(0);
+
+        modelBuilder.Entity<rf_task_priority>().HasKey(e => e.task_priority_id);
+        modelBuilder.Entity<rf_task_priority>().HasIndex(e => e.description).IsUnique();
+        modelBuilder.Entity<rf_task_priority>().Property(e => e.task_priority_id).ValueGeneratedNever();
+        modelBuilder.Entity<rf_task_priority>().Property(e => e.order_seq).HasDefaultValue(0);
+
+        modelBuilder.Entity<tb_import_batch>().HasKey(e => e.import_batch_id);
+        modelBuilder.Entity<tb_import_batch>()
+            .HasIndex(e => new { e.file_hash, e.import_by })
+            .IsUnique();
+        modelBuilder.Entity<tb_import_batch>().HasIndex(e => e.import_by);
+
+        modelBuilder.Entity<tb_task>().HasKey(e => e.id);
+
+        modelBuilder.Entity<tb_task>()
+            .HasOne<rf_application>()
+            .WithMany()
+            .HasForeignKey(e => e.application_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task>()
+            .HasOne<rf_status>()
+            .WithMany()
+            .HasForeignKey(e => e.status_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task>()
+            .HasOne<rf_task_type>()
+            .WithMany()
+            .HasForeignKey(e => e.task_type_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task>()
+            .HasOne<rf_task_priority>()
+            .WithMany()
+            .HasForeignKey(e => e.task_priority_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task>()
+            .HasOne<tb_import_batch>()
+            .WithMany()
+            .HasForeignKey(e => e.import_batch_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task>().HasIndex(e => new { e.createdBy, e.isActive, e.isDeleted });
+        modelBuilder.Entity<tb_task>().HasIndex(e => e.request_date);
+        modelBuilder.Entity<tb_task>().HasIndex(e => e.status_id);
+        modelBuilder.Entity<tb_task>().HasIndex(e => e.application_id);
+        modelBuilder.Entity<tb_task>().HasIndex(e => e.task_type_id);
+        modelBuilder.Entity<tb_task>().HasIndex(e => e.task_priority_id);
+        modelBuilder.Entity<tb_task>().HasIndex(e => e.import_batch_id);
+
+        modelBuilder.Entity<tb_task_history>().HasKey(e => e.id);
+        modelBuilder.Entity<tb_task_history>()
+            .HasOne<tb_task>()
+            .WithMany()
+            .HasForeignKey(e => e.task_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task_history>()
+            .HasOne<rf_status>()
+            .WithMany()
+            .HasForeignKey(e => e.from_status_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task_history>()
+            .HasOne<rf_status>()
+            .WithMany()
+            .HasForeignKey(e => e.to_status_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task_history>()
+            .HasOne<rf_task_priority>()
+            .WithMany()
+            .HasForeignKey(e => e.from_priority_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task_history>()
+            .HasOne<rf_task_priority>()
+            .WithMany()
+            .HasForeignKey(e => e.to_priority_id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<tb_task_history>().HasIndex(e => new { e.task_id, e.createdDate });
+        modelBuilder.Entity<tb_task_history>().Property(e => e.order_seq).HasDefaultValue(0);
+    }
+
+    private static void ConfigureDeckZaAuditColumns<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : BaseEntity
+    {
+        var entity = modelBuilder.Entity<TEntity>();
+
+        entity.Property(e => e.createdBy).HasColumnName("created_by").HasColumnType("varchar(50)").HasMaxLength(50);
+        entity.Property(e => e.modifiedBy).HasColumnName("modified_by").HasColumnType("varchar(50)").HasMaxLength(50);
+        entity.Property(e => e.deletedBy).HasColumnName("deleted_by").HasColumnType("varchar(50)").HasMaxLength(50);
+        entity.Property(e => e.approvedBy).HasColumnName("approved_by").HasColumnType("varchar(50)").HasMaxLength(50);
+        entity.Property(e => e.approvalTypeId).HasColumnName("approval_type_id").HasColumnType("varchar(2)").HasMaxLength(2);
+
+        entity.Property(e => e.createdDate).HasColumnType("datetime");
+        entity.Property(e => e.modifiedDate).HasColumnType("datetime");
+        entity.Property(e => e.deletedDate).HasColumnType("datetime");
+        entity.Property(e => e.approvedDate).HasColumnType("datetime");
     }
 
     private sealed record AuditRecord(tb_audit_trail Header, List<tb_audit_trail_detail> Details);

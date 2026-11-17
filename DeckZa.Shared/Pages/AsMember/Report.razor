@@ -1,0 +1,271 @@
+@page "/dashboard/report"
+@layout AuthenticatedLayout
+@attribute [Authorize]
+@attribute [Authorize(Roles = "01")]
+@inject ReportApiService ReportApi
+@inject TaskApiService TaskApi
+@inject ExportApiService ExportApi
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
+
+<div class="page-heading">
+    <div>
+        <div class="dashboard-kicker">Workspace</div>
+        <h1>Report</h1>
+        <p>Preview your performance and export it as a five-sheet Excel report.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Download"
+                   Class="@("ryz-busy-button" + (_exporting ? " is-busy" : string.Empty))"
+                   Disabled="@_exporting"
+                   OnClick="@(_ => ExportAsync())">
+            @(_exporting ? "Exporting..." : "Export Excel")
+        </MudButton>
+    </div>
+</div>
+
+<MudPaper Elevation="0" Class="dashboard-card kanban-toolbar">
+    <div class="kanban-toolbar-row">
+        <MudDatePicker @bind-Date="_dateFrom"
+                       Label="Date From"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Class="kanban-filter" />
+        <MudDatePicker @bind-Date="_dateTo"
+                       Label="Date To"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Class="kanban-filter" />
+        <MudSelect T="string"
+                   @bind-Value="_taskTypeId"
+                   Label="Task Type"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="kanban-filter">
+            <MudSelectItem Value="@string.Empty">All types</MudSelectItem>
+            @foreach (var item in _taskTypes)
+            {
+                <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="string"
+                   @bind-Value="_statusId"
+                   Label="Status"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="kanban-filter">
+            <MudSelectItem Value="@string.Empty">All statuses</MudSelectItem>
+            @foreach (var item in _statuses)
+            {
+                <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
+            }
+        </MudSelect>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Refresh"
+                   Class="@("ryz-busy-button" + (_loading ? " is-busy" : string.Empty))"
+                   Disabled="@_loading"
+                   OnClick="@(_ => PreviewAsync())">
+            Preview
+        </MudButton>
+    </div>
+</MudPaper>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="my-4" />
+}
+
+@if (_report == null && !_loading)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+        Choose a period and press Preview to load the report.
+    </MudAlert>
+}
+else if (_report != null)
+{
+    <MudGrid Spacing="3" Class="mb-2">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="dashboard-card pa-4">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">Task in period</MudText>
+                <MudText Typo="Typo.h4">@_report.Summary.TotalTasks</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="dashboard-card pa-4">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">Task Done</MudText>
+                <MudText Typo="Typo.h4">@_report.Summary.DoneCount</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="dashboard-card pa-4">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">Completion (% Done)</MudText>
+                <MudText Typo="Typo.h4">@FormatPercent(_report.Summary.PercentDone)</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="dashboard-card pa-4">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">Task still In Progress</MudText>
+                <MudText Typo="Typo.h4">@_report.Summary.InProgressCount</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Elevation="0" Class="dashboard-card pa-4 mb-4">
+        <MudText Typo="Typo.subtitle1" Class="mb-2">Temuan utama</MudText>
+        @foreach (var insight in _report.Insights)
+        {
+            <MudText Typo="Typo.body2" Class="mb-2">@insight.Text</MudText>
+        }
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="dashboard-card pa-4 mb-4">
+        <MudText Typo="Typo.subtitle1" Class="mb-2">Kecepatan</MudText>
+        <MudText Typo="Typo.body2">
+            Median: @FormatHours(_report.Speed.MedianMinutes) ·
+            Rata-rata: @FormatHours(_report.Speed.AverageMinutes) ·
+            Selesai ≤ 1 jam: @FormatPercent(_report.Speed.PercentWithinOneHour)
+        </MudText>
+        <MudText Typo="Typo.body2" Class="mt-2">
+            @_report.Speed.ValidTaskCount dari @_report.Speed.DoneCount task Done memiliki durasi valid.
+        </MudText>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="dashboard-card">
+        <MudSimpleTable Dense="true" Hover="true">
+            <thead>
+                <tr>
+                    <th>Task Type</th>
+                    <th class="text-right">Total</th>
+                    <th class="text-right">Done</th>
+                    <th class="text-right">In Progress</th>
+                    <th class="text-right">% Done</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var taskType in _report.TaskTypes)
+                {
+                    <tr>
+                        <td>@taskType.TaskTypeName</td>
+                        <td class="text-right">@taskType.TotalTasks</td>
+                        <td class="text-right">@taskType.DoneCount</td>
+                        <td class="text-right">@taskType.InProgressCount</td>
+                        <td class="text-right">@FormatPercent(taskType.PercentDone)</td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+}
+
+@code {
+    private readonly List<BreadcrumbItem> _breadcrumbs = new()
+    {
+        new BreadcrumbItem("Dashboard", "/dashboard"),
+        new BreadcrumbItem("Report", null, disabled: true),
+    };
+
+    private ReportResultDto? _report;
+    private List<DropdownItemDto> _taskTypes = new();
+    private List<DropdownItemDto> _statuses = new();
+    private DateTime? _dateFrom;
+    private DateTime? _dateTo;
+    private string _taskTypeId = string.Empty;
+    private string _statusId = string.Empty;
+    private bool _loading;
+    private bool _exporting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var today = DateTime.Today;
+        _dateFrom = new DateTime(today.Year, today.Month, 1);
+        _dateTo = new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1);
+
+        await LoadReferenceDataAsync();
+        await PreviewAsync();
+    }
+
+    private async Task LoadReferenceDataAsync()
+    {
+        try
+        {
+            _taskTypes = await TaskApi.GetTaskTypesAsync();
+            _statuses = await TaskApi.GetTaskStatusesAsync();
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+    }
+
+    private ReportFilterDto BuildFilter() => new()
+    {
+        DateFrom = _dateFrom,
+        DateTo = _dateTo,
+        TaskTypeId = string.IsNullOrWhiteSpace(_taskTypeId) ? null : _taskTypeId,
+        StatusId = string.IsNullOrWhiteSpace(_statusId) ? null : _statusId,
+    };
+
+    private async Task PreviewAsync()
+    {
+        if (_loading)
+        {
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            _report = await ReportApi.PreviewAsync(BuildFilter());
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ExportAsync()
+    {
+        if (_exporting)
+        {
+            return;
+        }
+
+        _exporting = true;
+        try
+        {
+            var url = await ExportApi.ExportReportPerformanceAsync(BuildFilter());
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                Snackbar.Add("Export failed. Please try again.", Severity.Error);
+                return;
+            }
+
+            Navigation.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+        finally
+        {
+            _exporting = false;
+        }
+    }
+
+    private static string FormatPercent(decimal value)
+        => value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
+
+    private static string FormatHours(decimal? minutes)
+        => minutes.HasValue
+            ? (minutes.Value / 60m).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " jam"
+            : "–";
+}

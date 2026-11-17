@@ -23,6 +23,7 @@ public static class DbInitializer
             await MenuSeeder.SeedAsync(context, cancellationToken);
             await ParameterSeeder.SeedAsync(context, cancellationToken);
             await NotificationSeeder.SeedAsync(context, cancellationToken);
+            await DeckZaSeeder.SeedAsync(context, cancellationToken);
             return;
         }
 
@@ -96,5 +97,6 @@ public static class DbInitializer
         await MenuSeeder.SeedAsync(context, cancellationToken);
         await ParameterSeeder.SeedAsync(context, cancellationToken);
         await NotificationSeeder.SeedAsync(context, cancellationToken);
+        await DeckZaSeeder.SeedAsync(context, cancellationToken);
     }
 }

@@ -16,6 +16,10 @@ public static class ParameterSeeder
         ("rf_group_access_report_set", "Akses Group untuk Report", "GroupWork"),
         ("rf_message", "Pesan", "Comment"),
         ("rf_notification_type", "Notification Type", "Notifications"),
+        ("rf_application", "Aplikasi", "Apps"),
+        ("rf_status", "Status", "LinearScale"),
+        ("rf_task_type", "Task Type", "Category"),
+        ("rf_task_priority", "Priority", "Flag"),
         ("tb_parameter_system", "Parameter System", "SystemUpdateAlt"),
         ("tb_parameter_system_detail", "Parameter System Detail", "SettingsSystemDaydream"),
         ("tb_report_set", "Report Set", "Report"),
@@ -131,6 +135,38 @@ public static class ParameterSeeder
             Field("is_send_mail", "Send Mail", "bit", order: 5),
             Field("is_send_web", "Send Web", "bit", order: 6),
             Field("is_active", "Active", "bit", order: 7),
+        });
+
+        await AddFieldsAsync(context, "rf_application", cancellationToken, new[]
+        {
+            Field("application_id", "Application ID", "text", key: true, mandatory: true, order: 1),
+            Field("description", "Description", "text", mandatory: true, order: 2),
+            Field("order_seq", "Order", "number", mandatory: true, order: 3),
+            Field("is_active", "Active", "bit", order: 4),
+        });
+
+        await AddFieldsAsync(context, "rf_status", cancellationToken, new[]
+        {
+            Field("status_id", "Status ID", "text", key: true, mandatory: true, order: 1),
+            Field("description", "Description", "text", mandatory: true, order: 2),
+            Field("order_seq", "Order", "number", mandatory: true, order: 3),
+            Field("is_active", "Active", "bit", order: 4),
+        });
+
+        await AddFieldsAsync(context, "rf_task_type", cancellationToken, new[]
+        {
+            Field("task_type_id", "Task Type ID", "text", key: true, mandatory: true, order: 1),
+            Field("description", "Description", "text", mandatory: true, order: 2),
+            Field("order_seq", "Order", "number", mandatory: true, order: 3),
+            Field("is_active", "Active", "bit", order: 4),
+        });
+
+        await AddFieldsAsync(context, "rf_task_priority", cancellationToken, new[]
+        {
+            Field("task_priority_id", "Priority ID", "text", key: true, mandatory: true, order: 1),
+            Field("description", "Description", "text", mandatory: true, order: 2),
+            Field("order_seq", "Order", "number", mandatory: true, order: 3),
+            Field("is_active", "Active", "bit", order: 4),
         });
 
         await AddFieldsAsync(context, "tb_parameter_system", cancellationToken, new[]

@@ -22,4 +22,8 @@ public interface IDropDownService
     Task<List<DropdownItemDto>> GetUsersAsync();
     Task<List<DropdownItemDto>> GetMenuIconsAsync();
     Task<List<DropdownItemDto>> GetMenuParentLevelsAsync();
+    Task<List<DropdownItemDto>> GetTaskApplicationsAsync();
+    Task<List<DropdownItemDto>> GetTaskTypesAsync();
+    Task<List<DropdownItemDto>> GetTaskPrioritiesAsync();
+    Task<List<DropdownItemDto>> GetTaskStatusesAsync();
 }

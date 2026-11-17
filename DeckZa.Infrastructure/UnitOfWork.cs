@@ -31,6 +31,9 @@ public class UnitOfWork : IUnitOfWork
     private IRfNotificationTypeRepository? _notificationTypes;
     private IEmailProviderRepository? _emailProviders;
     private IRfDefaultValueRepository? _defaultValues;
+    private ITaskRepository? _tasks;
+    private ITaskHistoryRepository? _taskHistory;
+    private ITaskImportRepository? _taskImports;
 
     public UnitOfWork(DeckZaDbContext context) => _context = context;
 
@@ -53,6 +56,9 @@ public class UnitOfWork : IUnitOfWork
     public IRfNotificationTypeRepository NotificationTypes => _notificationTypes ??= new RfNotificationTypeRepository(_context);
     public IEmailProviderRepository EmailProviders => _emailProviders ??= new EmailProviderRepository(_context);
     public IRfDefaultValueRepository DefaultValues => _defaultValues ??= new RfDefaultValueRepository(_context);
+    public ITaskRepository Tasks => _tasks ??= new TaskRepository(_context);
+    public ITaskHistoryRepository TaskHistory => _taskHistory ??= new TaskHistoryRepository(_context);
+    public ITaskImportRepository TaskImports => _taskImports ??= new TaskImportRepository(_context);
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => _context.SaveChangesAsync(cancellationToken);
