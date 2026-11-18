@@ -25,6 +25,10 @@ public class TaskApiService
         => await _api.PostFromJsonAsync<TaskBoardRequestDto, List<TaskListItemDto>>("api/task/board", request)
            ?? new List<TaskListItemDto>();
 
+    public async Task<List<TaskListItemDto>> GetCalendarAsync(TaskCalendarRequestDto request)
+        => await _api.PostFromJsonAsync<TaskCalendarRequestDto, List<TaskListItemDto>>("api/task/calendar", request)
+           ?? new List<TaskListItemDto>();
+
     public Task<TaskDetailDto?> GetAsync(Guid taskId)
         => _api.GetFromJsonAsync<TaskDetailDto>($"api/task/{taskId}", unwrap: true);
 

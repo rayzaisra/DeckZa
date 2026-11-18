@@ -63,6 +63,15 @@ public class TaskBoardRequestDto
     public string? SearchTerm { get; set; }
 }
 
+public class TaskCalendarRequestDto
+{
+    public DateTime? DateFrom { get; set; }
+    public DateTime? DateTo { get; set; }
+    public string? ApplicationId { get; set; }
+    public string? TaskTypeId { get; set; }
+    public string? StatusId { get; set; }
+}
+
 public class TaskHistoryItemDto
 {
     public int Id { get; set; }

@@ -74,9 +74,32 @@ public class TaskQueryService : ITaskQueryService
                 || x.RequestBy.Contains(search));
         }
 
+        // Within each column the sort key is a single fallback chain, newest first:
+        // completed_date, else due_date, else request_date (COALESCE in SQL).
         return query
             .OrderBy(x => x.StatusOrderSeq)
-            .ThenBy(x => x.DueDate)
+            .ThenByDescending(x => x.CompletedDate ?? x.DueDate ?? x.RequestDate)
+            .ThenBy(x => x.Title)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<List<TaskListItemDto>> GetCalendarAsync(
+        string userId,
+        TaskCalendarRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var from = request.DateFrom?.Date ?? DateTime.Today;
+        var to = request.DateTo?.Date ?? from;
+
+        var query = BuildQuery(userId)
+            .Where(x => x.DueDate != null && x.DueDate.Value.Date >= from && x.DueDate.Value.Date <= to)
+            .Where(x => request.ApplicationId == null || x.ApplicationId == request.ApplicationId)
+            .Where(x => request.TaskTypeId == null || x.TaskTypeId == request.TaskTypeId)
+            .Where(x => request.StatusId == null || x.StatusId == request.StatusId);
+
+        return query
+            .OrderBy(x => x.DueDate)
+            .ThenBy(x => x.StatusOrderSeq)
             .ThenBy(x => x.Title)
             .ToListAsync(cancellationToken);
     }

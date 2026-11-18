@@ -307,6 +307,7 @@ let processProgressAnimation = null;
 let processLoopAnimations = [];
 let processHideTimer = null;
 let processShowTimer = null;
+let processCompleteTimer = null;
 let processCompleting = false;
 let busyObserver = null;
 let busyCheckTimer = null;
@@ -339,6 +340,8 @@ function showProcess(mode, title, stage, duration, steps) {
 
     clearTimeout(processHideTimer);
     clearTimeout(processShowTimer);
+    clearTimeout(processCompleteTimer);
+    processCompleteTimer = null;
 
     if (processProgressAnimation) {
         processProgressAnimation.pause();
@@ -415,6 +418,8 @@ function completeProcess(mode) {
 
     processCompleting = true;
     clearTimeout(processShowTimer);
+    clearTimeout(processCompleteTimer);
+    processCompleteTimer = setTimeout(hideProcess, 1600);
 
     if (processProgressAnimation) {
         processProgressAnimation.pause();
@@ -453,6 +458,9 @@ function completeProcess(mode) {
 }
 
 function hideProcess() {
+    clearTimeout(processCompleteTimer);
+    processCompleteTimer = null;
+
     const elements = processElements();
     if (elements.overlay) {
         elements.overlay.classList.remove("is-active");
@@ -472,6 +480,7 @@ function stopProcess(mode) {
 
     clearTimeout(processHideTimer);
     clearTimeout(processShowTimer);
+    clearTimeout(processCompleteTimer);
 
     if (processProgressAnimation) {
         processProgressAnimation.pause();
@@ -552,6 +561,14 @@ function checkBusyButtons() {
     const button = activeBusyButton();
 
     if (button) {
+        const overlay = document.querySelector(".ryz-process-overlay");
+        const overlayActive = overlay?.classList.contains("is-active") ?? false;
+
+        if (processCompleting && !overlayActive) {
+            processCompleting = false;
+            processMode = null;
+        }
+
         if (processCompleting) {
             return;
         }
@@ -571,7 +588,7 @@ function checkBusyButtons() {
 
             const action = describeBusyAction((stillBusy.textContent || "").trim().toLowerCase());
             showProcess("busy", action.title, action.stage, action.duration, action.steps);
-        }, 120);
+        }, 40);
 
         return;
     }
@@ -630,6 +647,54 @@ export function completeUploadIndicator() {
 
 export function stopUploadIndicator() {
     stopProcess("upload");
+}
+
+export function playCalendarSlide(directionNext) {
+    if (!motionAllowed()) {
+        return;
+    }
+
+    const pages = Array.from(document.querySelectorAll(".calendar-flip"));
+    const target = pages[pages.length - 1];
+    if (!target) {
+        return;
+    }
+
+    const offset = directionNext ? 54 : -54;
+    const rotate = directionNext ? 1.4 : -1.4;
+
+    animate(target, {
+        opacity: [0, 1],
+        x: [offset, 0],
+        rotateY: [rotate, 0],
+        scale: [0.985, 1],
+        duration: 420,
+        ease: "out(3)",
+        onComplete: finish
+    });
+
+    const cells = Array.from(target.querySelectorAll(".calendar-cell"));
+    if (cells.length > 0) {
+        animate(cells, {
+            opacity: [0, 1],
+            y: [10, 0],
+            duration: 320,
+            delay: stagger(7),
+            ease: "out(3)",
+            onComplete: finish
+        });
+    }
+
+    const badges = Array.from(target.querySelectorAll(".calendar-badge"));
+    if (badges.length > 0) {
+        animate(badges, {
+            scale: [0.5, 1.15, 1],
+            duration: 460,
+            delay: stagger(30),
+            ease: "out(3)",
+            onComplete: finish
+        });
+    }
 }
 
 export function cleanup() {

@@ -59,6 +59,19 @@ public class TaskService : ITaskService
         return await _queryService.GetBoardAsync(userId, request, cancellationToken);
     }
 
+    public async Task<List<TaskListItemDto>> GetCalendarAsync(
+        TaskCalendarRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = _currentUser.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return new List<TaskListItemDto>();
+        }
+
+        return await _queryService.GetCalendarAsync(userId, request, cancellationToken);
+    }
+
     public async Task<TaskDetailDto?> GetByIdAsync(Guid taskId, CancellationToken cancellationToken = default)
     {
         var userId = _currentUser.UserId;

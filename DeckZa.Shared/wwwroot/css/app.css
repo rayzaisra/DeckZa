@@ -2932,3 +2932,827 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
         animation: none;
     }
 }
+
+/* Calendar (member) — all colors come from the active theme palette. */
+.calendar-shell {
+    padding: 18px 20px 22px;
+    background: var(--app-surface);
+    border: 1px solid color-mix(in srgb, var(--app-accent) 16%, transparent);
+    border-radius: 14px;
+}
+
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.calendar-period {
+    text-align: center;
+}
+
+.calendar-period-main {
+    color: var(--app-text-strong);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+}
+
+.calendar-period-sub {
+    color: var(--app-muted);
+    font-size: .78rem;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.calendar-weekday {
+    padding: 4px 0 8px;
+    color: var(--app-muted);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.calendar-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    min-height: 74px;
+    padding: 8px 10px;
+    color: var(--app-text);
+    background: color-mix(in srgb, var(--app-soft) 42%, var(--app-surface));
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font: inherit;
+    cursor: pointer;
+    transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.calendar-cell:hover {
+    border-color: color-mix(in srgb, var(--app-accent) 45%, transparent);
+    transform: translateY(-1px);
+}
+
+.calendar-cell.is-outside {
+    color: var(--app-muted);
+    background: transparent;
+    opacity: .55;
+}
+
+.calendar-cell.is-today {
+    border-color: var(--app-accent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--app-accent) 45%, transparent);
+}
+
+.calendar-cell.is-selected {
+    border-color: var(--app-accent);
+    background: color-mix(in srgb, var(--app-accent) 14%, var(--app-surface));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-accent) 28%, transparent);
+}
+
+.calendar-cell.has-task {
+    background: color-mix(in srgb, var(--app-accent) 12%, var(--app-surface));
+}
+
+.calendar-day {
+    color: var(--app-text-strong);
+    font-size: .92rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.calendar-cell.is-outside .calendar-day {
+    color: var(--app-muted);
+}
+
+.calendar-badge {
+    min-width: 22px;
+    padding: 1px 6px;
+    color: var(--app-accent-ink);
+    background: var(--app-accent);
+    border-radius: 999px;
+    font-size: .68rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.calendar-dots {
+    display: flex;
+    gap: 3px;
+    margin-top: 6px;
+}
+
+.calendar-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--app-accent) 70%, var(--app-warning));
+}
+
+.calendar-year {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.calendar-flip {
+    transform-style: preserve-3d;
+    perspective: 1200px;
+    will-change: transform, opacity;
+}
+
+.calendar-mini {
+    padding: 12px;
+    text-align: left;
+    background: color-mix(in srgb, var(--app-soft) 34%, var(--app-surface));
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 140ms ease, transform 140ms ease;
+}
+
+.calendar-mini:hover {
+    border-color: color-mix(in srgb, var(--app-accent) 45%, transparent);
+    transform: translateY(-1px);
+}
+
+.calendar-mini.is-current {
+    border-color: var(--app-accent);
+}
+
+.calendar-mini.has-task {
+    background: color-mix(in srgb, var(--app-accent) 10%, var(--app-surface));
+}
+
+.calendar-mini-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.calendar-mini-name {
+    color: var(--app-text-strong);
+    font-size: .9rem;
+    font-weight: 700;
+}
+
+.calendar-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+}
+
+.calendar-mini-day {
+    padding: 2px 0;
+    color: var(--app-muted);
+    border-radius: 3px;
+    font-size: .62rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.calendar-mini-day.has-task {
+    color: var(--app-accent-ink);
+    background: var(--app-accent);
+    font-weight: 700;
+}
+
+.calendar-day-panel {
+    margin-top: 16px;
+}
+
+.calendar-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: color-mix(in srgb, var(--app-secondary) 38%, transparent);
+    backdrop-filter: blur(3px);
+    animation: ryz-process-overlay-in 180ms ease-out;
+}
+
+.calendar-day-modal {
+    width: min(720px, 100%);
+    max-height: min(78vh, 720px);
+    overflow-y: auto;
+    animation: calendar-modal-in 220ms cubic-bezier(.2, .8, .2, 1);
+}
+
+@keyframes calendar-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.calendar-day-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.calendar-day-head h3 {
+    margin: 2px 0 0;
+    color: var(--app-text-strong);
+    font-size: 1.02rem;
+}
+
+.calendar-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calendar-task {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--app-soft) 34%, var(--app-surface));
+    border: 1px solid color-mix(in srgb, var(--app-accent) 14%, transparent);
+    border-left: 4px solid var(--app-accent);
+    border-radius: 8px;
+}
+
+.calendar-task-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.calendar-task.is-overdue {
+    border-left-color: var(--app-danger);
+}
+
+.calendar-task-title {
+    color: var(--app-text-strong);
+    font-size: .94rem;
+    font-weight: 600;
+}
+
+.calendar-task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    color: var(--app-muted);
+    font-size: .76rem;
+}
+
+.calendar-task-due {
+    flex: 0 0 auto;
+    color: var(--app-muted);
+    font-size: .74rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.calendar-task-actions {
+    display: flex;
+    gap: 2px;
+}
+
+.neo-brutalism .calendar-shell,
+.neo-brutalism .calendar-day-panel,
+.neo-brutalism .calendar-day-modal {
+    border: 3px solid var(--neo-ink);
+    border-radius: 6px;
+    box-shadow: var(--neo-shadow);
+}
+
+.neo-brutalism .calendar-cell,
+.neo-brutalism .calendar-mini,
+.neo-brutalism .calendar-task {
+    border: 2px solid var(--neo-ink);
+    border-radius: 4px;
+}
+
+.neo-brutalism .calendar-cell.is-selected {
+    box-shadow: 3px 3px 0 var(--neo-ink);
+}
+
+@media (max-width: 900px) {
+    .calendar-cell {
+        min-height: 62px;
+        padding: 6px 8px;
+    }
+
+    .calendar-badge {
+        font-size: .62rem;
+    }
+
+    .calendar-year {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .calendar-grid {
+        gap: 4px;
+    }
+
+    .calendar-cell {
+        min-height: 54px;
+    }
+
+    .calendar-dots {
+        display: none;
+    }
+
+    .calendar-year {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .calendar-modal-backdrop {
+        padding: 10px;
+        align-items: flex-start;
+    }
+
+    .calendar-day-modal {
+        max-height: 88vh;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .calendar-cell,
+    .calendar-mini {
+        transition: none;
+    }
+
+    .calendar-modal-backdrop,
+    .calendar-day-modal {
+        animation: none;
+    }
+}
+
+/* Member dashboard — bento grid, driven by the active theme palette. */
+.bento-dashboard {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas:
+        "greet greet greet greet greet greet calendar calendar calendar calendar calendar calendar"
+        "total total total total status status status status speed speed speed speed"
+        "tasks tasks tasks tasks tasks tasks tasks tasks tasks tasks tasks tasks";
+    gap: 16px;
+    align-items: stretch;
+}
+
+.bento-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 18px 20px;
+    background: var(--app-surface);
+    border: 1px solid color-mix(in srgb, var(--app-accent) 16%, transparent);
+    border-radius: 14px;
+}
+
+.bento-greeting {
+    grid-area: greet;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--app-soft) 60%, var(--app-surface)),
+        var(--app-surface));
+}
+
+.bento-greeting-copy h1 {
+    margin: 6px 0 4px;
+    color: var(--app-text-strong);
+    font-size: 1.4rem;
+    line-height: 1.2;
+}
+
+.bento-greeting-copy p {
+    margin: 0;
+    color: var(--app-muted);
+    font-size: .84rem;
+}
+
+.bento-greeting-icon {
+    color: var(--app-accent);
+    font-size: 2.5rem !important;
+}
+
+.bento-calendar {
+    grid-area: calendar;
+}
+
+.bento-total {
+    grid-area: total;
+}
+
+.bento-status {
+    grid-area: status;
+}
+
+.bento-speed {
+    grid-area: speed;
+}
+
+.bento-tasks {
+    grid-area: tasks;
+}
+
+.bento-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.bento-head h3 {
+    margin: 2px 0 0;
+    color: var(--app-text-strong);
+    font-size: .98rem;
+}
+
+.bento-hint {
+    color: var(--app-muted);
+    font-size: .72rem;
+    white-space: nowrap;
+}
+
+.bento-calendar {
+    justify-content: space-between;
+}
+
+.bento-calendar .bento-head {
+    margin-bottom: 14px;
+}
+
+.bento-calendar-weekdays,
+.bento-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.bento-calendar-weekdays span {
+    padding-bottom: 2px;
+    color: var(--app-muted);
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.bento-calendar-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    color: var(--app-text);
+    background: color-mix(in srgb, var(--app-soft) 32%, var(--app-surface));
+    border-radius: 8px;
+    font-size: .76rem;
+    font-variant-numeric: tabular-nums;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.bento-calendar-cell:not(.is-outside):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px color-mix(in srgb, var(--app-accent) 18%, transparent);
+}
+
+.bento-calendar-cell.is-outside {
+    color: var(--app-muted);
+    background: transparent;
+    opacity: .45;
+}
+
+.bento-calendar-cell.is-today {
+    box-shadow: inset 0 0 0 2px var(--app-accent);
+    font-weight: 700;
+}
+
+.bento-calendar-cell.has-task {
+    color: var(--app-accent-ink);
+    background: var(--app-accent);
+    font-weight: 700;
+}
+
+.bento-calendar-dot {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--app-accent-ink) 85%, transparent);
+}
+
+.bento-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 110px;
+    color: var(--app-muted);
+    font-size: .82rem;
+    text-align: center;
+}
+
+.bento-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+.bento-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--app-muted);
+    font-size: .72rem;
+}
+
+.bento-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--app-accent);
+}
+
+.bento-speed-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.bento-speed-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed color-mix(in srgb, var(--app-accent) 20%, transparent);
+}
+
+.bento-speed-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.bento-speed-value {
+    color: var(--app-text-strong);
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.bento-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bento-task {
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--app-soft) 30%, var(--app-surface));
+    border: 1px solid color-mix(in srgb, var(--app-accent) 14%, transparent);
+    border-left: 4px solid var(--app-accent);
+    border-radius: 8px;
+}
+
+.bento-task-title {
+    color: var(--app-text-strong);
+    font-size: .9rem;
+    font-weight: 600;
+}
+
+.bento-task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+}
+
+.bento-task-due {
+    margin-left: auto;
+    color: var(--app-muted);
+    font-size: .72rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.bento-task-due.is-overdue {
+    color: var(--app-danger);
+    font-weight: 700;
+}
+
+.neo-brutalism .bento-card {
+    border: 3px solid var(--neo-ink);
+    border-radius: 6px;
+    box-shadow: var(--neo-shadow);
+}
+
+.neo-brutalism .bento-greeting {
+    background: color-mix(in srgb, var(--app-soft) 55%, var(--app-surface));
+}
+
+.neo-brutalism .bento-calendar-cell,
+.neo-brutalism .bento-task {
+    border: 2px solid var(--neo-ink);
+    border-radius: 4px;
+}
+
+.neo-brutalism .bento-calendar-cell.is-outside {
+    border-color: color-mix(in srgb, var(--neo-ink) 35%, transparent);
+}
+
+@media (max-width: 1100px) {
+    .bento-dashboard {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-areas:
+            "greet greet greet calendar calendar calendar"
+            "total total total status status status"
+            "speed speed speed tasks tasks tasks";
+    }
+}
+
+@media (max-width: 860px) {
+    .bento-dashboard {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "greet"
+            "calendar"
+            "total"
+            "status"
+            "speed"
+            "tasks";
+    }
+}
+
+@media (max-width: 640px) {
+    .bento-dashboard {
+        gap: 12px;
+    }
+
+    .bento-card {
+        padding: 14px 16px;
+    }
+
+    .bento-greeting-copy h1 {
+        font-size: 1.2rem;
+    }
+
+    .bento-calendar-cell {
+        min-height: 24px;
+        font-size: .66rem;
+    }
+}
+
+/* Native pie chart — crisp SVG wedges, no legend. */
+.bento-pie {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 170px;
+    padding: 4px 0 2px;
+}
+
+.bento-pie-svg {
+    width: min(190px, 100%);
+    height: auto;
+    overflow: visible;
+    filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--app-secondary) 12%, transparent));
+    transition: transform 220ms ease;
+}
+
+.bento-pie:hover .bento-pie-svg {
+    transform: scale(1.03);
+}
+
+.bento-pie-track {
+    fill: color-mix(in srgb, var(--app-soft) 55%, var(--app-surface));
+}
+
+.bento-pie-slice {
+    stroke: var(--app-surface);
+    stroke-width: 1;
+    stroke-linejoin: round;
+    transition: opacity 160ms ease;
+}
+
+.bento-pie-slice:hover {
+    opacity: .82;
+}
+
+
+/* Native bar chart for the bento dashboard — thick bars, no legend, crisp at any zoom. */
+.bento-bars {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 150px;
+    margin-top: 4px;
+}
+
+.bento-bars-plot {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+    gap: 2px;
+    height: 132px;
+    padding-top: 6px;
+    border-bottom: 1px solid color-mix(in srgb, var(--app-accent) 24%, transparent);
+}
+
+.bento-bar-slot {
+    display: flex;
+    flex: 1 1 0;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 0;
+    height: 100%;
+}
+
+.bento-bar {
+    width: 100%;
+    min-height: 0;
+    background: color-mix(in srgb, var(--app-accent) 12%, transparent);
+    border-radius: 3px 3px 0 0;
+    transition: height 220ms ease;
+}
+
+.bento-bar.has-value {
+    background: var(--app-accent);
+}
+
+.bento-bars-axis {
+    display: flex;
+    gap: 2px;
+    padding-top: 4px;
+}
+
+.bento-bar-label {
+    flex: 1 1 0;
+    min-width: 0;
+    color: var(--app-muted);
+    font-size: .6rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.bento-bar-label.is-hidden {
+    opacity: 0;
+}
+
+.neo-brutalism .bento-bars-plot {
+    border-bottom: 2px solid var(--neo-ink);
+}
+
+.neo-brutalism .bento-bar {
+    border-radius: 0;
+}
+
+@media (max-width: 640px) {
+    .bento-bar-label {
+        font-size: .55rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bento-bar {
+        transition: none;
+    }
+}

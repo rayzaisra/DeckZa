@@ -3,7 +3,7 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">@(IsEdit ? "Edit Task" : "New Task")</MudText>
+        <MudText Typo="Typo.h6">@(IsReadOnly ? "Task Detail" : IsEdit ? "Edit Task" : "New Task")</MudText>
     </TitleContent>
     <DialogContent>
         <MudForm @ref="_form">
@@ -12,14 +12,16 @@
                     <MudTextField @bind-Value="_model.Title"
                                   Label="Title"
                                   Variant="Variant.Outlined"
-                                  Required="true" />
+                                  Required="true"
+                                  Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSelect T="string"
                                @bind-Value="_model.ApplicationId"
                                Label="Application"
                                Variant="Variant.Outlined"
-                               Required="true">
+                               Required="true"
+                               Disabled="@IsReadOnly">
                         @foreach (var item in Applications)
                         {
                             <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -30,25 +32,29 @@
                     <MudTextField @bind-Value="_model.RequestBy"
                                   Label="Request By"
                                   Variant="Variant.Outlined"
-                                  Required="true" />
+                                  Required="true"
+                                  Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudDatePicker @bind-Date="_requestDate"
                                    Label="Request Date"
                                    Variant="Variant.Outlined"
-                                   Required="true" />
+                                   Required="true"
+                                   Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTimePicker @bind-Time="_requestTime"
                                    Label="Request Time"
-                                   Variant="Variant.Outlined" />
+                                   Variant="Variant.Outlined"
+                                   Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSelect T="string"
                                @bind-Value="_model.TaskTypeId"
                                Label="Task Type"
                                Variant="Variant.Outlined"
-                               Required="true">
+                               Required="true"
+                               Disabled="@IsReadOnly">
                         @foreach (var item in TaskTypes)
                         {
                             <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -60,7 +66,8 @@
                                @bind-Value="_model.TaskPriorityId"
                                Label="Priority"
                                Variant="Variant.Outlined"
-                               Required="true">
+                               Required="true"
+                               Disabled="@IsReadOnly">
                         @foreach (var item in TaskPriorities)
                         {
                             <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -72,7 +79,8 @@
                                @bind-Value="_model.StatusId"
                                Label="Status"
                                Variant="Variant.Outlined"
-                               Required="true">
+                               Required="true"
+                               Disabled="@IsReadOnly">
                         @foreach (var item in TaskStatuses)
                         {
                             <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -82,27 +90,37 @@
                 <MudItem xs="12" sm="6">
                     <MudDatePicker @bind-Date="_dueDate"
                                    Label="Due Date"
-                                   Variant="Variant.Outlined" />
+                                   Variant="Variant.Outlined"
+                                   Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTimePicker @bind-Time="_dueTime"
                                    Label="Due Time"
-                                   Variant="Variant.Outlined" />
+                                   Variant="Variant.Outlined"
+                                   Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Description"
                                   Label="Description"
                                   Variant="Variant.Outlined"
-                                  Lines="3" />
+                                  Lines="3"
+                                  Disabled="@IsReadOnly" />
                 </MudItem>
             </MudGrid>
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))" Disabled="@_saving" OnClick="@(_ => SubmitAsync())">
-            @(_saving ? "Saving..." : "Save")
-        </MudButton>
+        @if (IsReadOnly)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(_ => MudDialog.Close())">Close</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))" Disabled="@_saving" OnClick="@(_ => SubmitAsync())">
+                @(_saving ? "Saving..." : "Save")
+            </MudButton>
+        }
     </DialogActions>
 </MudDialog>
 
@@ -115,6 +133,9 @@
 
     [Parameter]
     public bool IsEdit { get; set; }
+
+    [Parameter]
+    public bool IsReadOnly { get; set; }
 
     [Parameter]
     public string? DefaultStatusId { get; set; }

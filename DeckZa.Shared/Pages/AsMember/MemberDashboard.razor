@@ -1,0 +1,331 @@
+@using DeckZa.Application.DTOs.Tasks
+@inject ReportApiService ReportApi
+@inject TaskApiService TaskApi
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="bento-dashboard">
+    <section class="bento-card bento-greeting">
+        <div class="bento-greeting-copy">
+            <div class="dashboard-kicker">Personal Task and Report Management</div>
+            <h1>Hello, @_displayName</h1>
+            <p>Welcome back. Here is your workload for @CurrentMonthLabel.</p>
+        </div>
+        <MudIcon Icon="@Icons.Material.Filled.WavingHand" Class="bento-greeting-icon" />
+    </section>
+
+    <section class="bento-card bento-calendar">
+        <header class="bento-head">
+            <div>
+                <div class="dashboard-kicker">Calendar</div>
+                <h3>@CurrentMonthLabel</h3>
+            </div>
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       Size="Size.Small"
+                       EndIcon="@Icons.Material.Filled.ArrowForward"
+                       OnClick="@(_ => Navigation.NavigateTo("/dashboard/calendar"))">
+                Detail
+            </MudButton>
+        </header>
+
+        <div class="bento-calendar-weekdays">
+            @foreach (var day in WeekdayLabels)
+            {
+                <span>@day</span>
+            }
+        </div>
+        <div class="bento-calendar-grid">
+            @foreach (var cell in _monthCells)
+            {
+                <div class="bento-calendar-cell @(cell.IsCurrentMonth ? string.Empty : "is-outside") @(cell.IsToday ? "is-today" : string.Empty) @(cell.TaskCount > 0 ? "has-task" : string.Empty)">
+                    <span class="bento-calendar-day">@cell.Date.Day</span>
+                    @if (cell.TaskCount > 0)
+                    {
+                        <span class="bento-calendar-dot" aria-hidden="true"></span>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="bento-card bento-total">
+        <header class="bento-head">
+            <div>
+                <div class="dashboard-kicker">Total Task</div>
+                <h2>@_monthTaskCount</h2>
+            </div>
+            <span class="bento-hint">@CurrentMonthLabel</span>
+        </header>
+        <BentoBarChart Bars="_dailyBars" AriaLabel="@($"Task per day in {CurrentMonthLabel}")" />
+    </section>
+
+    <section class="bento-card bento-status">
+        <header class="bento-head">
+            <div>
+                <div class="dashboard-kicker">Status</div>
+            </div>
+            <span class="bento-hint">total @_monthTaskCount</span>
+        </header>
+        @if (_statusSlices.Count == 0)
+        {
+            <div class="bento-empty">No status data in this month.</div>
+        }
+        else
+        {
+            <BentoPieChart Slices="_statusSlices"
+                           Total="_monthTaskCount"
+                           AriaLabel="@($"Status breakdown for {CurrentMonthLabel}")"
+                           EmptyText="No status data in this month." />
+        }
+    </section>
+
+    <section class="bento-card bento-speed">
+        <header class="bento-head">
+            <div>
+                <div class="dashboard-kicker">Kecepatan</div>
+            </div>
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       Size="Size.Small"
+                       EndIcon="@Icons.Material.Filled.ArrowForward"
+                       OnClick="@(_ => Navigation.NavigateTo("/dashboard/report"))">
+                Analisis lanjutan
+            </MudButton>
+        </header>
+        <div class="bento-speed-list">
+            <div class="bento-speed-row">
+                <span class="dashboard-kicker">Median</span>
+                <span class="bento-speed-value">@FormatHours(_speed.MedianMinutes)</span>
+            </div>
+            <div class="bento-speed-row">
+                <span class="dashboard-kicker">Average</span>
+                <span class="bento-speed-value">@FormatHours(_speed.AverageMinutes)</span>
+            </div>
+            <div class="bento-speed-row">
+                <span class="dashboard-kicker">≤ 1 hour</span>
+                <span class="bento-speed-value">@FormatPercent(_speed.PercentWithinOneHour)</span>
+            </div>
+            <div class="bento-speed-row">
+                <span class="dashboard-kicker">Valid duration</span>
+                <span class="bento-speed-value">@_speed.ValidTaskCount / @_speed.DoneCount</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="bento-card bento-tasks">
+        <header class="bento-head">
+            <div>
+                <div class="dashboard-kicker">Task</div>
+                <h3>Next up</h3>
+            </div>
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       Size="Size.Small"
+                       EndIcon="@Icons.Material.Filled.ArrowForward"
+                       OnClick="@(_ => Navigation.NavigateTo("/dashboard/task-management"))">
+                Task management
+            </MudButton>
+        </header>
+
+        @if (_openTasks.Count == 0)
+        {
+            <div class="bento-empty">No open task right now.</div>
+        }
+        else
+        {
+            <div class="bento-task-list">
+                @foreach (var task in _openTasks)
+                {
+                    <article class="bento-task">
+                        <div class="bento-task-title">@task.Title</div>
+                        <div class="bento-task-meta">
+                            @if (!string.IsNullOrWhiteSpace(task.ApplicationName))
+                            {
+                                <span class="kanban-chip">@task.ApplicationName</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(task.TaskTypeName))
+                            {
+                                <span class="kanban-chip">@task.TaskTypeName</span>
+                            }
+                            <span class="kanban-chip">@task.StatusName</span>
+                            @if (!string.IsNullOrWhiteSpace(task.TaskPriorityName))
+                            {
+                                <span class="kanban-priority">@task.TaskPriorityName</span>
+                            }
+                            @if (task.DueDate.HasValue)
+                            {
+                                <span class="bento-task-due @(task.IsOverdue ? "is-overdue" : string.Empty)">Due @task.DueDate.Value.ToString("dd MMM HH:mm")</span>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private static readonly string[] WeekdayLabels = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+
+    private readonly List<BentoMonthCell> _monthCells = new();
+    private readonly List<TaskListItemDto> _openTasks = new();
+    private readonly List<BentoBar> _dailyBars = new();
+    private readonly List<BentoPieSlice> _statusSlices = new();
+    private ReportSpeedDto _speed = new();
+
+    private string _displayName = "Member";
+    private int _monthTaskCount;
+
+    private DateTime Today => DateTime.Today;
+
+    private DateTime MonthStart => new(Today.Year, Today.Month, 1);
+
+    private DateTime MonthEndExclusive => MonthStart.AddMonths(1);
+
+    private string CurrentMonthLabel => MonthStart.ToString("MMMM yyyy");
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var name = authState.User.Identity?.Name;
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            _displayName = name;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            var report = await ReportApi.PreviewAsync(new ReportFilterDto
+            {
+                DateFrom = MonthStart,
+                DateTo = MonthEndExclusive.AddDays(-1),
+            });
+
+            if (report != null)
+            {
+                _speed = report.Speed;
+                BuildStatusSlices(report.StatusBreakdown);
+            }
+
+            var board = await TaskApi.GetBoardAsync(new TaskBoardRequestDto());
+
+            var monthTasks = board
+                .Where(task => task.RequestDate >= MonthStart && task.RequestDate < MonthEndExclusive)
+                .ToList();
+
+            _monthTaskCount = monthTasks.Count;
+            BuildDailyVolume(monthTasks);
+            BuildMonthCells(board);
+
+            _openTasks.Clear();
+            _openTasks.AddRange(board
+                .Where(task => task.StatusId != "STS005")
+                .OrderBy(task => task.DueDate ?? DateTime.MaxValue)
+                .ThenBy(task => task.RequestDate)
+                .Take(5));
+
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+    }
+
+    private void BuildStatusSlices(List<ReportStatusBreakdownDto> breakdown)
+    {
+        _statusSlices.Clear();
+
+        var items = breakdown
+            .OrderBy(item => item.OrderSeq)
+            .Select(item => (
+                Label: item.StatusName,
+                item.Count,
+                Color: $"var(--kanban-tone-{((item.OrderSeq - 1) % 5) + 1})"))
+            .ToList();
+
+        _statusSlices.AddRange(BentoPieSlice.Build(items));
+    }
+
+    private void BuildDailyVolume(List<TaskListItemDto> monthTasks)
+    {
+        var daysInMonth = DateTime.DaysInMonth(MonthStart.Year, MonthStart.Month);
+        var counts = new int[daysInMonth];
+
+        foreach (var task in monthTasks)
+        {
+            var index = task.RequestDate.Day - 1;
+            if (index >= 0 && index < counts.Length)
+            {
+                counts[index]++;
+            }
+        }
+
+        var peak = counts.Length == 0 ? 0 : counts.Max();
+        const double plotHeight = 120d;
+        _dailyBars.Clear();
+
+        for (var day = 1; day <= daysInMonth; day++)
+        {
+            var count = counts[day - 1];
+            _dailyBars.Add(new BentoBar
+            {
+                Label = day.ToString(),
+                Count = count,
+                HeightPixels = peak == 0
+                    ? 0
+                    : Math.Max(count * plotHeight / peak, count > 0 ? 8d : 0d),
+                ShowLabel = day == 1 || day == daysInMonth || day % 5 == 0,
+            });
+        }
+    }
+
+    private void BuildMonthCells(List<TaskListItemDto> board)
+    {
+        _monthCells.Clear();
+
+        var taskDays = board
+            .Where(task => task.DueDate.HasValue
+                           && task.DueDate.Value >= MonthStart
+                           && task.DueDate.Value < MonthEndExclusive)
+            .GroupBy(task => task.DueDate!.Value.Date)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        var offset = ((int)MonthStart.DayOfWeek + 6) % 7;
+        var start = MonthStart.AddDays(-offset);
+
+        for (var index = 0; index < 42; index++)
+        {
+            var date = start.AddDays(index);
+            _monthCells.Add(new BentoMonthCell
+            {
+                Date = date,
+                IsCurrentMonth = date.Month == MonthStart.Month && date.Year == MonthStart.Year,
+                IsToday = date.Date == Today,
+                TaskCount = taskDays.TryGetValue(date.Date, out var count) ? count : 0,
+            });
+        }
+    }
+
+    private static string FormatPercent(decimal value)
+        => value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
+
+    private static string FormatHours(decimal? minutes)
+        => minutes.HasValue
+            ? (minutes.Value / 60m).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " jam"
+            : "–";
+
+    private sealed class BentoMonthCell
+    {
+        public DateTime Date { get; init; }
+        public bool IsCurrentMonth { get; init; }
+        public bool IsToday { get; init; }
+        public int TaskCount { get; init; }
+    }
+}

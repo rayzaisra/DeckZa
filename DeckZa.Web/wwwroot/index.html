@@ -48,10 +48,10 @@
         window.ryzMotionModule = (window.ryzMotionModule
             || import("./_content/DeckZa.Shared/js/ryzcore-motion.js"))
             .catch(function () { return null; });
-        window.ryzMotionInvoke = function (method) {
+        window.ryzMotionInvoke = function (method, args) {
             return window.ryzMotionModule.then(function (module) {
                 if (module && typeof module[method] === "function") {
-                    module[method]();
+                    module[method].apply(null, args || []);
                     return true;
                 }
                 return false;

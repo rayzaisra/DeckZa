@@ -43,236 +43,23 @@ public class ReportExportJob
         {
             var report = await _reportQueryService.BuildAsync(userId, filter);
 
+            var charts = new List<ExcelChartWriter.ChartSpec>();
+
             using var workbook = new XLWorkbook();
-            BuildDashboardSheet(workbook, report);
-            BuildApplicationsSheet(workbook, report);
-            BuildSpeedSheet(workbook, report);
+            ReportNarrativeSheets.BuildDashboard(workbook, report, charts);
+            ReportNarrativeSheets.BuildApplicationsAndUsers(workbook, report, charts);
+            ReportNarrativeSheets.BuildSpeed(workbook, report, charts);
             BuildRecapSheet(workbook, report);
             BuildDetailsSheet(workbook, report);
 
-            SaveWorkbook(workbook, fileName);
+            var path = SaveWorkbook(workbook, fileName);
+            ExcelChartWriter.Apply(path, charts);
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Report export failed for job {JobId}", jobId);
             await _errorLog.LogAsync("ReportExport", "ERROR", exception, userId);
         }
-    }
-
-    private static void BuildDashboardSheet(XLWorkbook workbook, ReportResultDto report)
-    {
-        var sheet = workbook.Worksheets.Add("Dashboard");
-        sheet.Column(1).Width = 34;
-        sheet.Column(2).Width = 80;
-
-        sheet.Cell(1, 1).Value = $"Performa Task {report.MemberName}";
-        sheet.Cell(1, 1).Style.Font.Bold = true;
-        sheet.Cell(1, 1).Style.Font.FontSize = 14;
-
-        sheet.Cell(2, 1).Value = BuildSubtitle(report);
-        sheet.Cell(2, 1).Style.Font.Italic = true;
-
-        var row = 4;
-        WriteLabelValue(sheet, row++, "Task dalam periode", report.Summary.TotalTasks);
-        WriteLabelValue(sheet, row++, "Task berstatus Done", report.Summary.DoneCount);
-        WriteLabelValue(sheet, row++, "Tingkat penyelesaian (% Done)", FormatPercent(report.Summary.PercentDone));
-        WriteLabelValue(sheet, row++, "Task masih In Progress", report.Summary.InProgressCount);
-
-        row++;
-        sheet.Cell(row, 1).Value = "Temuan utama";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        row++;
-
-        foreach (var insight in report.Insights)
-        {
-            sheet.Cell(row, 1).Value = insight.Text;
-            sheet.Range(row, 1, row, 2).Merge();
-            row++;
-        }
-
-        row++;
-        sheet.Cell(row, 1).Value = "Analisis lanjutan";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        row++;
-        sheet.Cell(row, 1).Value = "Lihat sheet Aplikasi dan User serta Kecepatan untuk rincian.";
-        sheet.Range(row, 1, row, 2).Merge();
-        row += 2;
-        sheet.Cell(row, 1).Value = "Sumber data: semua angka dari sheet Rekap.";
-        sheet.Range(row, 1, row, 2).Merge();
-    }
-
-    private static void BuildApplicationsSheet(XLWorkbook workbook, ReportResultDto report)
-    {
-        var sheet = workbook.Worksheets.Add("Aplikasi dan User");
-        var row = 1;
-
-        sheet.Cell(row, 1).Value = "Rincian Aplikasi";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        row++;
-
-        var headers = new[]
-        {
-            "Aplikasi", "Total task", "Done", "In Progress", "% Done", "Durasi valid", "% ≤ 1 jam",
-        };
-
-        row = WriteTableHeader(sheet, row, headers);
-
-        var totalTasks = 0;
-        var totalDone = 0;
-        var totalInProgress = 0;
-        var totalValid = 0;
-        var totalWithinHour = 0;
-
-        foreach (var application in report.Applications)
-        {
-            var label = application.ApplicationName;
-            if (application.IsDeleted)
-            {
-                label += " (dihapus)";
-            }
-            else if (application.IsInactive)
-            {
-                label += " (nonaktif)";
-            }
-
-            WriteTableRow(sheet, row++, new object?[]
-            {
-                label,
-                application.TotalTasks,
-                application.DoneCount,
-                application.InProgressCount,
-                FormatPercent(application.PercentDone),
-                application.ValidDurationCount,
-                FormatPercent(application.PercentWithinOneHour),
-            });
-
-            totalTasks += application.TotalTasks;
-            totalDone += application.DoneCount;
-            totalInProgress += application.InProgressCount;
-            totalValid += application.ValidDurationCount;
-            totalWithinHour += (int)Math.Round(
-                application.ValidDurationCount * application.PercentWithinOneHour / 100m,
-                MidpointRounding.AwayFromZero);
-        }
-
-        WriteTotalRow(sheet, row++, new object?[]
-        {
-            "Total periode",
-            totalTasks,
-            totalDone,
-            totalInProgress,
-            FormatPercent(Percent(totalDone, totalTasks)),
-            totalValid,
-            FormatPercent(Percent(totalWithinHour, totalValid)),
-        });
-
-        row++;
-        sheet.Cell(row, 1).Value = "Rincian User Peminta";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        row++;
-        row = WriteTableHeader(sheet, row, headers);
-
-        totalTasks = 0;
-        totalDone = 0;
-        totalInProgress = 0;
-        totalValid = 0;
-        totalWithinHour = 0;
-
-        foreach (var requester in report.RequestedBy)
-        {
-            WriteTableRow(sheet, row++, new object?[]
-            {
-                requester.RequestedBy,
-                requester.TotalTasks,
-                requester.DoneCount,
-                requester.InProgressCount,
-                FormatPercent(requester.PercentDone),
-                requester.ValidDurationCount,
-                FormatPercent(requester.PercentWithinOneHour),
-            });
-
-            totalTasks += requester.TotalTasks;
-            totalDone += requester.DoneCount;
-            totalInProgress += requester.InProgressCount;
-            totalValid += requester.ValidDurationCount;
-            totalWithinHour += (int)Math.Round(
-                requester.ValidDurationCount * requester.PercentWithinOneHour / 100m,
-                MidpointRounding.AwayFromZero);
-        }
-
-        WriteTotalRow(sheet, row, new object?[]
-        {
-            "Total periode",
-            totalTasks,
-            totalDone,
-            totalInProgress,
-            FormatPercent(Percent(totalDone, totalTasks)),
-            totalValid,
-            FormatPercent(Percent(totalWithinHour, totalValid)),
-        });
-
-        ClampColumnWidths(sheet);
-    }
-
-    private static void BuildSpeedSheet(XLWorkbook workbook, ReportResultDto report)
-    {
-        var sheet = workbook.Worksheets.Add("Kecepatan");
-        var row = 1;
-
-        sheet.Cell(row, 1).Value = "Ringkasan";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        row++;
-        WriteLabelValue(sheet, row++, "Median durasi", FormatHours(report.Speed.MedianMinutes));
-        WriteLabelValue(sheet, row++, "Rata-rata durasi", FormatHours(report.Speed.AverageMinutes));
-        WriteLabelValue(sheet, row++, "Selesai dalam ≤ 1 jam", FormatPercent(report.Speed.PercentWithinOneHour));
-
-        row++;
-        sheet.Cell(row, 1).Value = "Kecepatan menurut bulan permintaan";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        row++;
-        row = WriteTableHeader(sheet, row, new[]
-        {
-            "Bulan", "Durasi valid", "Rata-rata (jam)", "% ≤ 1 jam",
-        });
-
-        foreach (var month in report.Speed.ByMonth)
-        {
-            WriteTableRow(sheet, row++, new object?[]
-            {
-                month.MonthName,
-                month.ValidTaskCount,
-                FormatHours(month.AverageMinutes).Replace(" jam", string.Empty),
-                FormatPercent(month.PercentWithinOneHour),
-            });
-        }
-
-        row++;
-        sheet.Cell(row, 1).Value = "Cakupan pengukuran";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        row++;
-        sheet.Cell(row, 1).Value =
-            $"{report.Speed.ValidTaskCount} dari {report.Speed.DoneCount} task Done memiliki durasi valid. "
-            + $"{report.Speed.FinishedBeforeRequestCount} task Done mencatat waktu selesai sebelum waktu permintaan.";
-        sheet.Range(row, 1, row, 4).Merge();
-        row += 2;
-
-        sheet.Cell(row, 1).Value = "Jumlah task menurut durasi";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        row++;
-        row = WriteTableHeader(sheet, row, new[] { "Durasi", "Jumlah" });
-
-        foreach (var bucket in report.Speed.Buckets)
-        {
-            WriteTableRow(sheet, row++, new object?[] { bucket.Label, bucket.Count });
-        }
-
-        row++;
-        sheet.Cell(row, 1).Value =
-            "Untuk task Done, waktu selesai aktual berasal dari completed_date jika terisi, atau due_date. "
-            + "Durasi dihitung dalam menit kalender.";
-        sheet.Range(row, 1, row, 4).Merge();
-
-        ClampColumnWidths(sheet);
     }
 
     private static void BuildRecapSheet(XLWorkbook workbook, ReportResultDto report)
@@ -432,7 +219,7 @@ public class ReportExportJob
         ClampColumnWidths(sheet);
     }
 
-    private void SaveWorkbook(XLWorkbook workbook, string fileName)
+    private string SaveWorkbook(XLWorkbook workbook, string fileName)
     {
         var exportsPath = Path.Combine(_environment.ContentRootPath, "exports");
         Directory.CreateDirectory(exportsPath);
@@ -440,6 +227,7 @@ public class ReportExportJob
         var temporaryPath = finalPath + ".tmp.xlsx";
         workbook.SaveAs(temporaryPath);
         System.IO.File.Move(temporaryPath, finalPath, overwrite: true);
+        return finalPath;
     }
 
     private static int WriteTableHeader(IXLWorksheet sheet, int row, IReadOnlyList<string> headers)

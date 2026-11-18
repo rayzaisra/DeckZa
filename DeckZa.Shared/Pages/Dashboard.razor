@@ -4,16 +4,23 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject MotionService Motion
 
-<MudContainer MaxWidth="MaxWidth.False" Class="pa-0">
-    <MudPaper Elevation="0" Class="dashboard-hero">
-        <div>
-            <div class="dashboard-kicker">Personal Task and Report Management</div>
-            <h1>Hello, @_displayName</h1>
-            <p>Welcome back. Use the sidebar to open a module, or start building your business flow.</p>
-        </div>
-        <MudIcon Icon="@Icons.Material.Filled.WavingHand" Class="dashboard-hero-icon" />
-    </MudPaper>
-</MudContainer>
+<AuthorizeView Roles="01">
+    <Authorized>
+        <MemberDashboard />
+    </Authorized>
+    <NotAuthorized>
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-0">
+            <MudPaper Elevation="0" Class="dashboard-hero">
+                <div>
+                    <div class="dashboard-kicker">Personal Task and Report Management</div>
+                    <h1>Hello, @_displayName</h1>
+                    <p>Welcome back. Use the sidebar to open a module, or start building your business flow.</p>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.WavingHand" Class="dashboard-hero-icon" />
+            </MudPaper>
+        </MudContainer>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private string _displayName = "Administrator";

@@ -7,6 +7,7 @@ public interface ITaskService
 {
     Task<GeneralListResponseDto<TaskListItemDto>> GetListAsync(TaskListRequestDto request, CancellationToken cancellationToken = default);
     Task<List<TaskListItemDto>> GetBoardAsync(TaskBoardRequestDto request, CancellationToken cancellationToken = default);
+    Task<List<TaskListItemDto>> GetCalendarAsync(TaskCalendarRequestDto request, CancellationToken cancellationToken = default);
     Task<TaskDetailDto?> GetByIdAsync(Guid taskId, CancellationToken cancellationToken = default);
     Task<List<TaskHistoryItemDto>> GetHistoryAsync(Guid taskId, CancellationToken cancellationToken = default);
     Task<BaseGeneralResponse> CreateAsync(TaskEditDto dto, CancellationToken cancellationToken = default);

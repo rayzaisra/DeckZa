@@ -4,7 +4,9 @@ public class ReportFilterDto
 {
     public DateTime? DateFrom { get; set; }
     public DateTime? DateTo { get; set; }
+    public string? ApplicationId { get; set; }
     public string? TaskTypeId { get; set; }
+    public string? TaskPriorityId { get; set; }
     public string? StatusId { get; set; }
 }
 

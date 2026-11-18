@@ -42,7 +42,6 @@ public static class DeckZaSeeder
     private static readonly (string Unique, string Name, string? Url, string Level, string Parent, string Icon, int Order, string? Component)[] Menus =
     {
         ("TSK", "Task Workspace", null, "A", "", "fa fa-tasks", 2, null),
-        ("TSK-DASH", "Dashboard", "/dashboard/member", "D", "TSK", "fa fa-dashboard", 1, "DeckZa.Shared.Pages.AsMember.MemberDashboard, DeckZa.Shared"),
         ("TSK-KANBAN", "Task Management", "/dashboard/task-management", "D", "TSK", "fa fa-th-list", 2, "DeckZa.Shared.Pages.AsMember.Kanban, DeckZa.Shared"),
         ("TSK-CAL", "Calendar", "/dashboard/calendar", "D", "TSK", "fa fa-calendar", 3, "DeckZa.Shared.Pages.AsMember.Calendar, DeckZa.Shared"),
         ("TSK-RPT", "Report", "/dashboard/report", "D", "TSK", "fa fa-bar-chart", 4, "DeckZa.Shared.Pages.AsMember.Report, DeckZa.Shared"),
@@ -55,6 +54,7 @@ public static class DeckZaSeeder
         "MNT-DECKZA-STA",
         "MNT-DECKZA-TYP",
         "MNT-DECKZA-PRI",
+        "TSK-DASH",
     };
 
     public static async Task SeedAsync(DeckZaDbContext context, CancellationToken cancellationToken = default)

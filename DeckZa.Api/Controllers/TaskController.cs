@@ -36,6 +36,10 @@ public class TaskController : ControllerBase
     public async Task<IActionResult> GetBoard([FromBody] TaskBoardRequestDto request)
         => Ok(ApiResponseFactory.Success(await _taskService.GetBoardAsync(request), "Task board retrieved successfully"));
 
+    [HttpPost("calendar")]
+    public async Task<IActionResult> GetCalendar([FromBody] TaskCalendarRequestDto request)
+        => Ok(ApiResponseFactory.Success(await _taskService.GetCalendarAsync(request), "Task calendar retrieved successfully"));
+
     [HttpGet("{taskId:guid}")]
     public async Task<IActionResult> Get(Guid taskId)
     {

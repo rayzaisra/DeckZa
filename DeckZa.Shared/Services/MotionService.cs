@@ -35,6 +35,8 @@ public sealed class MotionService : IAsyncDisposable
 
     public Task InitBusyIndicatorsAsync() => InvokeAsync("initBusyIndicators");
 
+    public Task PlayCalendarSlideAsync(bool directionNext) => InvokeAsync("playCalendarSlide", directionNext);
+
     public async ValueTask DisposeAsync()
     {
         try
@@ -50,7 +52,7 @@ public sealed class MotionService : IAsyncDisposable
         }
     }
 
-    private async Task InvokeAsync(string method)
+    private async Task InvokeAsync(string method, params object?[] args)
     {
         if (_unavailable)
         {
@@ -59,7 +61,7 @@ public sealed class MotionService : IAsyncDisposable
 
         try
         {
-            await _js.InvokeVoidAsync("ryzMotionInvoke", method);
+            await _js.InvokeVoidAsync("ryzMotionInvoke", method, args);
         }
         catch (JSDisconnectedException)
         {

@@ -63,6 +63,18 @@ public class ReportQueryService : IReportQueryService
             query = query.Where(row => row.TaskTypeId == taskTypeId);
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.ApplicationId))
+        {
+            var applicationId = filter.ApplicationId.Trim();
+            query = query.Where(row => row.ApplicationId == applicationId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.TaskPriorityId))
+        {
+            var taskPriorityId = filter.TaskPriorityId.Trim();
+            query = query.Where(row => row.TaskPriorityId == taskPriorityId);
+        }
+
         if (!string.IsNullOrWhiteSpace(filter.StatusId))
         {
             var statusId = filter.StatusId.Trim();
@@ -174,6 +186,7 @@ public class ReportQueryService : IReportQueryService
                TaskTypeOrder = taskType != null ? taskType.order_seq : 0,
                TaskTypeIsActive = taskType != null && taskType.isActive == true,
                TaskTypeIsDeleted = taskType != null && taskType.isDeleted == true,
+               TaskPriorityId = task.task_priority_id,
            };
 
     private static (DateTime Start, DateTime EndExclusive) ResolvePeriod(ReportFilterDto filter)
@@ -617,6 +630,7 @@ public class ReportQueryService : IReportQueryService
         public int TaskTypeOrder { get; init; }
         public bool TaskTypeIsActive { get; init; }
         public bool TaskTypeIsDeleted { get; init; }
+        public string TaskPriorityId { get; init; } = string.Empty;
     }
 
     private sealed class EnrichedRow

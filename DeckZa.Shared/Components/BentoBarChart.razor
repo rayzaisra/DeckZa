@@ -1,0 +1,26 @@
+@* Native bar chart: bars stretch to the available width and stay sharp at any zoom. *@
+<div class="bento-bars" role="img" aria-label="@AriaLabel">
+    <div class="bento-bars-plot">
+        @foreach (var bar in Bars)
+        {
+            <div class="bento-bar-slot" title="@bar.Tooltip">
+                <div class="bento-bar @(bar.Count > 0 ? "has-value" : string.Empty)"
+                     style="height:@(bar.HeightPixels.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))px"></div>
+            </div>
+        }
+    </div>
+    <div class="bento-bars-axis">
+        @foreach (var bar in Bars)
+        {
+            <span class="bento-bar-label @(bar.ShowLabel ? string.Empty : "is-hidden")">@bar.Label</span>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<BentoBar> Bars { get; set; } = new();
+
+    [Parameter]
+    public string AriaLabel { get; set; } = "Bar chart";
+}

@@ -1,0 +1,36 @@
+@* Native pie chart: crisp SVG wedges, no legend, theme driven. *@
+<div class="bento-pie" role="img" aria-label="@AriaLabel">
+    @if (Slices.Count == 0 || Total == 0)
+    {
+        <div class="bento-empty">@EmptyText</div>
+    }
+    else
+    {
+        <svg class="bento-pie-svg" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="56" class="bento-pie-track" />
+            @foreach (var slice in Slices)
+            {
+                <path class="bento-pie-slice"
+                      d="@slice.Path"
+                      style="fill:@slice.Color"
+                      transform="translate(60 60)">
+                    <title>@slice.Tooltip</title>
+                </path>
+            }
+        </svg>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<BentoPieSlice> Slices { get; set; } = new();
+
+    [Parameter]
+    public string AriaLabel { get; set; } = "Pie chart";
+
+    [Parameter]
+    public string EmptyText { get; set; } = "No data in this period.";
+
+    [Parameter]
+    public int Total { get; set; }
+}

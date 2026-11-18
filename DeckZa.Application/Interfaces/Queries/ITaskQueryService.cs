@@ -15,6 +15,11 @@ public interface ITaskQueryService
         TaskBoardRequestDto request,
         CancellationToken cancellationToken = default);
 
+    Task<List<TaskListItemDto>> GetCalendarAsync(
+        string userId,
+        TaskCalendarRequestDto request,
+        CancellationToken cancellationToken = default);
+
     Task<TaskDetailDto?> GetDetailAsync(
         string userId,
         Guid taskId,
