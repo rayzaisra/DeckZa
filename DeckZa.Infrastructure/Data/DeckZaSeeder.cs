@@ -41,10 +41,10 @@ public static class DeckZaSeeder
 
     private static readonly (string Unique, string Name, string? Url, string Level, string Parent, string Icon, int Order, string? Component)[] Menus =
     {
-        ("TSK", "Task Workspace", null, "A", "", "fa fa-tasks", 2, null),
-        ("TSK-KANBAN", "Task Management", "/dashboard/task-management", "D", "TSK", "fa fa-th-list", 2, "DeckZa.Shared.Pages.AsMember.Kanban, DeckZa.Shared"),
-        ("TSK-CAL", "Calendar", "/dashboard/calendar", "D", "TSK", "fa fa-calendar", 3, "DeckZa.Shared.Pages.AsMember.Calendar, DeckZa.Shared"),
-        ("TSK-RPT", "Report", "/dashboard/report", "D", "TSK", "fa fa-bar-chart", 4, "DeckZa.Shared.Pages.AsMember.Report, DeckZa.Shared"),
+        ("TSK", "Task Workspace", null, "A", "", "Work", 2, null),
+        ("TSK-KANBAN", "Task Management", "/dashboard/task-management", "D", "TSK", "Checklist", 2, "DeckZa.Shared.Pages.AsMember.Kanban, DeckZa.Shared"),
+        ("TSK-CAL", "Calendar", "/dashboard/calendar", "D", "TSK", "CalendarToday", 3, "DeckZa.Shared.Pages.AsMember.Calendar, DeckZa.Shared"),
+        ("TSK-RPT", "Report", "/dashboard/report", "D", "TSK", "BarChart", 4, "DeckZa.Shared.Pages.AsMember.Report, DeckZa.Shared"),
     };
 
     private static readonly string[] ObsoleteMenuCodes =

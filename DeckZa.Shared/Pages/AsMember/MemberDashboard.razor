@@ -1,7 +1,7 @@
-@using DeckZa.Application.DTOs.Tasks
+﻿@using DeckZa.Application.DTOs.Tasks
 @inject ReportApiService ReportApi
 @inject TaskApiService TaskApi
-@inject NavigationManager Navigation
+@inject TabStateService TabService
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -25,7 +25,7 @@
                        Color="Color.Primary"
                        Size="Size.Small"
                        EndIcon="@Icons.Material.Filled.ArrowForward"
-                       OnClick="@(_ => Navigation.NavigateTo("/dashboard/calendar"))">
+                       OnClick="@(_ => OpenTab("Calendar", CalendarComponent, "/dashboard/calendar", "CalendarToday"))">
                 Detail
             </MudButton>
         </header>
@@ -90,7 +90,7 @@
                        Color="Color.Primary"
                        Size="Size.Small"
                        EndIcon="@Icons.Material.Filled.ArrowForward"
-                       OnClick="@(_ => Navigation.NavigateTo("/dashboard/report"))">
+                       OnClick="@(_ => OpenTab("Report", ReportComponent, "/dashboard/report", "BarChart"))">
                 Analisis lanjutan
             </MudButton>
         </header>
@@ -104,7 +104,7 @@
                 <span class="bento-speed-value">@FormatHours(_speed.AverageMinutes)</span>
             </div>
             <div class="bento-speed-row">
-                <span class="dashboard-kicker">≤ 1 hour</span>
+                <span class="dashboard-kicker">â‰¤ 1 hour</span>
                 <span class="bento-speed-value">@FormatPercent(_speed.PercentWithinOneHour)</span>
             </div>
             <div class="bento-speed-row">
@@ -124,7 +124,7 @@
                        Color="Color.Primary"
                        Size="Size.Small"
                        EndIcon="@Icons.Material.Filled.ArrowForward"
-                       OnClick="@(_ => Navigation.NavigateTo("/dashboard/task-management"))">
+                       OnClick="@(_ => OpenTab("Task Management", KanbanComponent, "/dashboard/task-management", "Checklist"))">
                 Task management
             </MudButton>
         </header>
@@ -169,6 +169,10 @@
 @code {
     private static readonly string[] WeekdayLabels = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 
+    private const string KanbanComponent = "DeckZa.Shared.Pages.AsMember.Kanban, DeckZa.Shared";
+    private const string CalendarComponent = "DeckZa.Shared.Pages.AsMember.Calendar, DeckZa.Shared";
+    private const string ReportComponent = "DeckZa.Shared.Pages.AsMember.Report, DeckZa.Shared";
+
     private readonly List<BentoMonthCell> _monthCells = new();
     private readonly List<TaskListItemDto> _openTasks = new();
     private readonly List<BentoBar> _dailyBars = new();
@@ -197,6 +201,9 @@
 
         await LoadAsync();
     }
+
+    private void OpenTab(string title, string componentType, string url, string icon)
+        => TabService.OpenTab(title, componentType, url, icon: icon);
 
     private async Task LoadAsync()
     {
@@ -319,7 +326,7 @@
     private static string FormatHours(decimal? minutes)
         => minutes.HasValue
             ? (minutes.Value / 60m).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " jam"
-            : "–";
+            : "â€“";
 
     private sealed class BentoMonthCell
     {

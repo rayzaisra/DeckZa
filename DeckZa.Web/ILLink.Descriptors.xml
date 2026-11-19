@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Blazor WebAssembly runs ILLink on publish. Without this descriptor the
+  Icons.Material.Filled fields are removed because they are only reached
+  through reflection from MenuIconResolver.GetIcon, which makes every menu
+  icon fall back to Circle in Release builds.
+-->
+<linker>
+  <assembly fullname="MudBlazor">
+    <type fullname="MudBlazor.Icons" preserve="all" />
+    <type fullname="MudBlazor.Icons/Material" preserve="all" />
+    <type fullname="MudBlazor.Icons/Material/Filled" preserve="all" />
+  </assembly>
+</linker>
