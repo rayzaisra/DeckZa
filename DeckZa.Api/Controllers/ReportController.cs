@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using DeckZa.Api.Authorization;
 using DeckZa.Api.Helpers;
+using DeckZa.Application.Common;
 using DeckZa.Application.DTOs.Reports;
 using DeckZa.Application.Interfaces;
 
@@ -9,7 +11,8 @@ namespace DeckZa.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "01")]
+[Authorize]
+[RequireMenuAccess(PermissionAction.Load, "TSK-RPT")]
 public class ReportController : ControllerBase
 {
     private readonly IReportService _reportService;

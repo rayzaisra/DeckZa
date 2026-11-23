@@ -1,7 +1,6 @@
 @page "/dashboard/calendar"
 @layout AuthenticatedLayout
 @attribute [Authorize]
-@attribute [Authorize(Roles = "01")]
 @inject TaskApiService TaskApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -217,16 +216,20 @@
                             </div>
                             <span class="calendar-task-due">Due @task.DueDate?.ToString("HH:mm")</span>
                             <div class="calendar-task-actions">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                               Size="Size.Small"
-                                               Color="Color.Primary"
-                                               aria-label="Task detail"
-                                               OnClick="@(_ => ShowDetailAsync(task))" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                               Size="Size.Small"
-                                               Color="Color.Primary"
-                                               aria-label="Edit task"
-                                               OnClick="@(_ => OpenEditAsync(task))" />
+                                <PermissionGate Action="PermissionAction.ViewDetail">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   aria-label="Task detail"
+                                                   OnClick="@(_ => ShowDetailAsync(task))" />
+                                </PermissionGate>
+                                <PermissionGate Action="PermissionAction.Edit">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   aria-label="Edit task"
+                                                   OnClick="@(_ => OpenEditAsync(task))" />
+                                </PermissionGate>
                             </div>
                         </article>
                     }

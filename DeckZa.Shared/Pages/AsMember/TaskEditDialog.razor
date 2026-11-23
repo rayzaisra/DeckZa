@@ -117,9 +117,11 @@
         else
         {
             <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))" Disabled="@_saving" OnClick="@(_ => SubmitAsync())">
-                @(_saving ? "Saving..." : "Save")
-            </MudButton>
+            <PermissionGate Action="PermissionAction.AddEdit">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))" Disabled="@_saving" OnClick="@(_ => SubmitAsync())">
+                    @(_saving ? "Saving..." : "Save")
+                </MudButton>
+            </PermissionGate>
         }
     </DialogActions>
 </MudDialog>

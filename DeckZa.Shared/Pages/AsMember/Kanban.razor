@@ -1,7 +1,7 @@
 @page "/dashboard/task-management"
 @layout AuthenticatedLayout
 @attribute [Authorize]
-@attribute [Authorize(Roles = "01")]
+@inject CurrentUserAccessService Access
 @inject TaskApiService TaskApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -16,36 +16,38 @@
         <h1>Task Board</h1>
         <p>Plan, move, and finish your work across statuses.</p>
     </div>
-    <div class="d-flex gap-2 align-center">
-        <MudButton Variant="Variant.Outlined"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Download"
-                   OnClick="@(_ => DownloadTemplateAsync())">
-            Import Template
-        </MudButton>
-        <MudFileUpload T="IBrowserFile"
-                       Accept=".xlsx"
-                       Disabled="@_importing"
-                       Class="import-excel-upload"
-                       OnFilesChanged="ImportExcelAsync">
-            <CustomContent Context="upload">
-                <MudButton Variant="Variant.Outlined"
-                           Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.UploadFile"
-                           Class="@("ryz-busy-button" + (_importing ? " is-busy" : string.Empty))"
+    <PermissionGate Action="PermissionAction.AddEdit">
+        <div class="d-flex gap-2 align-center">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Download"
+                       OnClick="@(_ => DownloadTemplateAsync())">
+                Import Template
+            </MudButton>
+            <MudFileUpload T="IBrowserFile"
+                           Accept=".xlsx"
                            Disabled="@_importing"
-                           OnClick="@(_ => upload.OpenFilePickerAsync())">
-                    @(_importing ? "Importing..." : "Upload Excel")
-                </MudButton>
-            </CustomContent>
-        </MudFileUpload>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="@(_ => OpenCreateAsync(null))">
-            New Task
-        </MudButton>
-    </div>
+                           Class="import-excel-upload"
+                           OnFilesChanged="ImportExcelAsync">
+                <CustomContent Context="upload">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.UploadFile"
+                               Class="@("ryz-busy-button" + (_importing ? " is-busy" : string.Empty))"
+                               Disabled="@_importing"
+                               OnClick="@(_ => upload.OpenFilePickerAsync())">
+                        @(_importing ? "Importing..." : "Upload Excel")
+                    </MudButton>
+                </CustomContent>
+            </MudFileUpload>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OpenCreateAsync(null))">
+                New Task
+            </MudButton>
+        </div>
+    </PermissionGate>
 </div>
 
 <MudPaper Elevation="0" Class="dashboard-card kanban-toolbar">
@@ -144,20 +146,24 @@ else
                     @foreach (var task in column.Tasks)
                     {
                         <article class="kanban-card @(_draggingTaskId == task.Id ? "is-dragging" : string.Empty) @(_lastMovedTaskId == task.Id ? "is-just-moved" : string.Empty)"
-                                 draggable="true"
+                                 draggable="@(Access.Can(PermissionAction.Edit) ? "true" : "false")"
                                  @ondragstart="@(_ => OnDragStart(task))"
                                  @ondragend="@(_ => OnDragEnd())">
                             <div class="kanban-card-head">
                                 <span class="kanban-card-title">@task.Title</span>
                                 <span class="kanban-card-actions">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                                   Size="Size.Small"
-                                                   Color="Color.Primary"
-                                                   OnClick="@(_ => OpenEditAsync(task))" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Size="Size.Small"
-                                                   Color="Color.Error"
-                                                   OnClick="@(_ => DeleteAsync(task))" />
+                                    <PermissionGate Action="PermissionAction.Edit">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Small"
+                                                       Color="Color.Primary"
+                                                       OnClick="@(_ => OpenEditAsync(task))" />
+                                    </PermissionGate>
+                                    <PermissionGate Action="PermissionAction.Delete">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(_ => DeleteAsync(task))" />
+                                    </PermissionGate>
                                 </span>
                             </div>
 
@@ -184,10 +190,12 @@ else
                         </article>
                     }
 
-                    <button type="button" class="kanban-add" @onclick="@(_ => OpenCreateAsync(column.StatusId))">
-                        <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
-                        <span>New task</span>
-                    </button>
+                    <PermissionGate Action="PermissionAction.Add">
+                        <button type="button" class="kanban-add" @onclick="@(_ => OpenCreateAsync(column.StatusId))">
+                            <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
+                            <span>New task</span>
+                        </button>
+                    </PermissionGate>
                 </div>
             </section>
         }
@@ -228,6 +236,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await Access.EnsureLoadedAsync();
         await LoadReferenceDataAsync();
         await ReloadBoardAsync();
     }

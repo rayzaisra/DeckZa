@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using DeckZa.Api.Authorization;
 using DeckZa.Api.Helpers;
+using DeckZa.Application.Common;
 using DeckZa.Application.DTOs.General;
 using DeckZa.Application.DTOs.Group;
 using DeckZa.Application.Interfaces;
@@ -10,7 +12,8 @@ namespace DeckZa.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "00")]
+[Authorize]
+[RequireMenuAccess(PermissionAction.Load, "MNT-GRP-LST")]
 public class GroupController : ControllerBase
 {
     private readonly IGroupManagementService _groupService;
@@ -34,14 +37,17 @@ public class GroupController : ControllerBase
     }
 
     [HttpPost]
+    [RequireMenuAccess(PermissionAction.AddEdit, "MNT-GRP-LST")]
     public async Task<IActionResult> Create([FromBody] GroupEditDto dto)
         => ToActionResult(await _groupService.CreateAsync(dto));
 
     [HttpPut("{groupId}")]
+    [RequireMenuAccess(PermissionAction.AddEdit, "MNT-GRP-LST")]
     public async Task<IActionResult> Update(string groupId, [FromBody] GroupEditDto dto)
         => ToActionResult(await _groupService.UpdateAsync(groupId, dto));
 
     [HttpDelete("{groupId}")]
+    [RequireMenuAccess(PermissionAction.Delete, "MNT-GRP-LST")]
     public async Task<IActionResult> Delete(string groupId)
         => ToActionResult(await _groupService.DeleteAsync(groupId));
 

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using DeckZa.Api.Authorization;
 using DeckZa.Api.Helpers;
+using DeckZa.Application.Common;
 using DeckZa.Application.DTOs.General;
 using DeckZa.Application.DTOs.Screen;
 using DeckZa.Application.Interfaces;
@@ -10,7 +12,8 @@ namespace DeckZa.Api.Controllers;
 
 [ApiController]
 [Route("api/screen-menu-editor")]
-[Authorize(Roles = "00")]
+[Authorize]
+[RequireMenuAccess(PermissionAction.Load, "MNT-PARAM-MKR")]
 public class ScreenMenuEditorController : ControllerBase
 {
     private readonly IScreenMenuEditorService _screenMenuService;
@@ -35,6 +38,7 @@ public class ScreenMenuEditorController : ControllerBase
     }
 
     [HttpPost]
+    [RequireMenuAccess(PermissionAction.AddEdit, "MNT-PARAM-MKR")]
     public async Task<IActionResult> Stage([FromBody] ScreenMenuEditDto dto)
     {
         var result = await _screenMenuService.StageAsync(dto);

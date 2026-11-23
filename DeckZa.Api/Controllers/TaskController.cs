@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using DeckZa.Api.Authorization;
 using DeckZa.Api.Helpers;
+using DeckZa.Application.Common;
 using DeckZa.Application.DTOs.General;
 using DeckZa.Application.DTOs.Tasks;
 using DeckZa.Application.Interfaces;
@@ -10,7 +12,8 @@ namespace DeckZa.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "01")]
+[Authorize]
+[RequireMenuAccess(PermissionAction.Load, "TSK-KANBAN", "TSK-CAL")]
 public class TaskController : ControllerBase
 {
     private const string ExcelContentType =
@@ -54,22 +57,27 @@ public class TaskController : ControllerBase
         => Ok(ApiResponseFactory.Success(await _taskService.GetHistoryAsync(taskId), "Task history retrieved successfully"));
 
     [HttpPost]
+    [RequireMenuAccess(PermissionAction.AddEdit, "TSK-KANBAN", "TSK-CAL")]
     public async Task<IActionResult> Create([FromBody] TaskEditDto dto)
         => ToActionResult(await _taskService.CreateAsync(dto));
 
     [HttpPut("{taskId:guid}")]
+    [RequireMenuAccess(PermissionAction.AddEdit, "TSK-KANBAN", "TSK-CAL")]
     public async Task<IActionResult> Update(Guid taskId, [FromBody] TaskEditDto dto)
         => ToActionResult(await _taskService.UpdateAsync(taskId, dto));
 
     [HttpPost("{taskId:guid}/move")]
+    [RequireMenuAccess(PermissionAction.AddEdit, "TSK-KANBAN", "TSK-CAL")]
     public async Task<IActionResult> Move(Guid taskId, [FromBody] TaskStatusMoveDto dto)
         => ToActionResult(await _taskService.MoveAsync(taskId, dto));
 
     [HttpDelete("{taskId:guid}")]
+    [RequireMenuAccess(PermissionAction.Delete, "TSK-KANBAN", "TSK-CAL")]
     public async Task<IActionResult> Delete(Guid taskId)
         => ToActionResult(await _taskService.DeleteAsync(taskId));
 
     [HttpGet("import-template")]
+    [RequireMenuAccess(PermissionAction.Export, "TSK-KANBAN", "TSK-CAL")]
     public async Task<IActionResult> GetImportTemplate(CancellationToken cancellationToken)
     {
         var template = await _taskImportService.BuildTemplateAsync(cancellationToken);
@@ -78,6 +86,7 @@ public class TaskController : ControllerBase
 
     [HttpPost("import")]
     [RequestSizeLimit(1048576)]
+    [RequireMenuAccess(PermissionAction.Import, "TSK-KANBAN", "TSK-CAL")]
     public async Task<IActionResult> Import([FromForm] IFormFile? file, CancellationToken cancellationToken)
     {
         if (file == null)
