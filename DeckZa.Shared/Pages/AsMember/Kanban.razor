@@ -263,15 +263,13 @@ else
     private bool _importing;
     private bool _uploadAnimationPending;
     private bool _planResolved;
-    private bool _planFailed;
     private bool _revealPending;
     private bool _revealDone;
     private string? _loadError;
 
     private string RevealClass => _revealPending && !_revealDone ? "ryz-enter-pending" : string.Empty;
 
-    private bool AllowsImport
-        => _planFailed || _plan?.AllowsExcelImport == true;
+    private bool AllowsImport => _plan?.AllowsExcelImport == true;
 
     private bool IsTaskLimitReached
         => _plan?.MaxActiveTasks is int maxTasks
@@ -314,7 +312,6 @@ else
         }
         catch (Exception exception)
         {
-            _planFailed = true;
             Snackbar.Add(exception.Message, Severity.Error);
         }
         finally
