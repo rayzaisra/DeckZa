@@ -38,9 +38,32 @@ public static class NotificationSeeder
             now,
             cancellationToken);
 
+        await EnsureTypeAsync(
+            context,
+            NotificationTypeIds.UserRegistration,
+            "User Registration",
+            "There is a user registration update. Reference: @[tboId]",
+            isSendMail: false,
+            now,
+            cancellationToken);
+
+        await EnsureTypeAsync(
+            context,
+            NotificationTypeIds.PaymentRequest,
+            "Payment Request",
+            "There is a payment request update. Reference: @[tboId]",
+            isSendMail: false,
+            now,
+            cancellationToken);
+
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Upsert tipe notifikasi. Selain insert, teks tipe yang sudah ada diselaraskan
+    /// ke versi terbaru. Teks notifikasi disimpan di level tipe, bukan per-instance —
+    /// teks spesifik per kejadian hanya dikirim lewat push SignalR dan email.
+    /// </summary>
     private static async Task EnsureTypeAsync(
         DeckZaDbContext context,
         string id,
@@ -50,8 +73,15 @@ public static class NotificationSeeder
         DateTime now,
         CancellationToken cancellationToken)
     {
-        if (await context.rf_notification_type.AnyAsync(e => e.id == id, cancellationToken))
+        var existing = await context.rf_notification_type
+            .FirstOrDefaultAsync(e => e.id == id, cancellationToken);
+
+        if (existing != null)
         {
+            existing.short_text = shortText;
+            existing.long_text = longText;
+            existing.modifiedDate = now;
+            existing.modifiedBy = "system";
             return;
         }
 

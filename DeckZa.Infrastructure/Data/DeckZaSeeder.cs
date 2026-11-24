@@ -57,12 +57,33 @@ public static class DeckZaSeeder
         "TSK-DASH",
     };
 
+    /// <summary>
+    /// Menu milik grup Guest. Calendar (TSK-CAL) sengaja tidak termasuk.
+    /// Framework Flows (DOC-FLOW) juga tidak termasuk — dokumentasi framework
+    /// hanya untuk Administrator; Guest memakai DeckZa Flows (DOC-DECKZA).
+    /// </summary>
+    private static readonly string[] GuestMenuCodes =
+    {
+        "TSK",
+        "TSK-KANBAN",
+        "TSK-RPT",
+        "DOC",
+        "DOC-DECKZA",
+    };
+
+    /// <summary>
+    /// Awalan <c>menu_unique</c> untuk menu Administrator (Setting / Maintenance).
+    /// Grup selain Administrator tidak boleh memetakan menu dengan awalan ini.
+    /// </summary>
+    private const string AdminMenuPrefix = "MNT";
+
     public static async Task SeedAsync(DeckZaDbContext context, CancellationToken cancellationToken = default)
     {
         await SeedMasterDataAsync(context, cancellationToken);
         await SeedMemberGroupAsync(context, cancellationToken);
         await RemoveObsoleteMenusAsync(context, cancellationToken);
         await SeedMenusAsync(context, cancellationToken);
+        await SeedGuestGroupAsync(context, cancellationToken);
     }
 
     private static async Task RemoveObsoleteMenusAsync(DeckZaDbContext context, CancellationToken cancellationToken)
@@ -278,5 +299,114 @@ public static class DeckZaSeeder
                 await context.SaveChangesAsync(cancellationToken);
             }
         }
+    }
+
+    private static async Task SeedGuestGroupAsync(DeckZaDbContext context, CancellationToken cancellationToken)
+    {
+        var now = DateTime.Now;
+
+        if (!await context.um_group_app.AnyAsync(e => e.group_id == Const.DEFAULT_GROUP_ID_GUEST_CODE, cancellationToken))
+        {
+            await context.um_group_app.AddAsync(new um_group_app
+            {
+                group_id = Const.DEFAULT_GROUP_ID_GUEST_CODE,
+                group_name = "Guest",
+                statusApproval = Const.StatusApproval.APPROVED,
+                isActive = true,
+                isDeleted = false,
+                isLocked = false,
+                isDefault = false,
+                createdBy = "system",
+                createdDate = now,
+            }, cancellationToken);
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        // Menu milik Administrator (MNT*) tidak boleh dipetakan ke Guest —
+        // sama seperti grup Member yang memang tidak memetakan Setting.
+        await RemoveAdminMenuMappingsAsync(context, cancellationToken);
+
+        var menus = await context.um_menu
+            .Where(e => GuestMenuCodes.Contains(e.menu_unique)
+                        || (e.parent_level_id == Const.ParentLevel.FIRST_PARENT
+                            && (e.menu_unique_parent == null || e.menu_unique_parent == string.Empty)))
+            .Where(e => e.menu_unique == null || !e.menu_unique.StartsWith(AdminMenuPrefix))
+            .ToListAsync(cancellationToken);
+
+        if (menus.Count == 0)
+        {
+            return;
+        }
+
+        var menuIds = menus.Select(e => e.id).ToList();
+        var mapped = await context.um_group_menu
+            .Where(e => e.group_id == Const.DEFAULT_GROUP_ID_GUEST_CODE
+                        && e.menu_id.HasValue
+                        && menuIds.Contains(e.menu_id.Value))
+            .Select(e => e.menu_id!.Value)
+            .ToListAsync(cancellationToken);
+
+        var mappedIds = mapped.ToHashSet();
+        var changed = false;
+
+        foreach (var menu in menus)
+        {
+            if (mappedIds.Contains(menu.id))
+            {
+                continue;
+            }
+
+            await context.um_group_menu.AddAsync(new um_group_menu
+            {
+                group_id = Const.DEFAULT_GROUP_ID_GUEST_CODE,
+                menu_id = menu.id,
+                statusApproval = Const.StatusApproval.APPROVED,
+                isActive = true,
+                isDeleted = false,
+                isLocked = false,
+                isDefault = false,
+                createdBy = "system",
+                createdDate = now,
+            }, cancellationToken);
+
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Melepas pemetaan menu Administrator (MNT*) dari grup Guest.
+    /// Menu "Setting" tidak boleh muncul di sidebar Guest — sama seperti grup Member.
+    /// </summary>
+    private static async Task RemoveAdminMenuMappingsAsync(DeckZaDbContext context, CancellationToken cancellationToken)
+    {
+        var adminMenuIds = await context.um_menu
+            .Where(e => e.menu_unique != null && e.menu_unique.StartsWith(AdminMenuPrefix))
+            .Select(e => e.id)
+            .ToListAsync(cancellationToken);
+
+        if (adminMenuIds.Count == 0)
+        {
+            return;
+        }
+
+        var mappings = await context.um_group_menu
+            .Where(e => e.group_id == Const.DEFAULT_GROUP_ID_GUEST_CODE
+                        && e.menu_id.HasValue
+                        && adminMenuIds.Contains(e.menu_id.Value))
+            .ToListAsync(cancellationToken);
+
+        if (mappings.Count == 0)
+        {
+            return;
+        }
+
+        context.um_group_menu.RemoveRange(mappings);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

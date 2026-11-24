@@ -793,6 +793,220 @@ namespace DeckZa.Infrastructure.Migrations.Main
                     b.ToTable("rf_notification_type");
                 });
 
+            modelBuilder.Entity("DeckZa.Domain.Entities.rf_plan", b =>
+                {
+                    b.Property<string>("id")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<bool>("allows_calendar")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("allows_excel_import")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("allows_supervisor_mode")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("approvalTypeId")
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("approval_type_id");
+
+                    b.Property<string>("approvedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("approved_by");
+
+                    b.Property<DateTime?>("approvedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("approved_date");
+
+                    b.Property<int>("billing_interval_count")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("billing_period")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("createdBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("createdDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("deletedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<DateTime?>("deletedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("deleted_date");
+
+                    b.Property<string>("description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool?>("isActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool?>("isDefault")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool?>("isDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool?>("isLocked")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_locked");
+
+                    b.Property<int?>("max_active_tasks")
+                        .HasColumnType("int");
+
+                    b.Property<string>("modifiedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("modified_by");
+
+                    b.Property<DateTime?>("modifiedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("modified_date");
+
+                    b.Property<int>("order_seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("plan_name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("price_amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("price_currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<int?>("report_period_months")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("statusApproval")
+                        .HasColumnType("int")
+                        .HasColumnName("status_approval");
+
+                    b.Property<string>("upgrade_group_id")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("id");
+
+                    b.ToTable("rf_plan");
+                });
+
+            modelBuilder.Entity("DeckZa.Domain.Entities.rf_plan_feature", b =>
+                {
+                    b.Property<long>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("id"));
+
+                    b.Property<string>("approvalTypeId")
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("approval_type_id");
+
+                    b.Property<string>("approvedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("approved_by");
+
+                    b.Property<DateTime?>("approvedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("approved_date");
+
+                    b.Property<string>("createdBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("createdDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("deletedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<DateTime?>("deletedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("deleted_date");
+
+                    b.Property<string>("feature_text")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool?>("isActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool?>("isDefault")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool?>("isDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool?>("isLocked")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_locked");
+
+                    b.Property<string>("modifiedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("modified_by");
+
+                    b.Property<DateTime?>("modifiedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("modified_date");
+
+                    b.Property<int>("order_seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("plan_id")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<int?>("statusApproval")
+                        .HasColumnType("int")
+                        .HasColumnName("status_approval");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("plan_id");
+
+                    b.ToTable("rf_plan_feature");
+                });
+
             modelBuilder.Entity("DeckZa.Domain.Entities.rf_status", b =>
                 {
                     b.Property<string>("status_id")
@@ -1053,6 +1267,18 @@ namespace DeckZa.Infrastructure.Migrations.Main
                     b.Property<Guid>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("attachment_content_type")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("attachment_file_name")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("attachment_storage_path")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("attempt_count")
                         .HasColumnType("int");
@@ -1478,6 +1704,307 @@ namespace DeckZa.Infrastructure.Migrations.Main
                     b.HasIndex("user_id");
 
                     b.ToTable("tb_password_reset_token");
+                });
+
+            modelBuilder.Entity("DeckZa.Domain.Entities.tb_payment_invoice", b =>
+                {
+                    b.Property<long>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("id"));
+
+                    b.Property<DateTime?>("activated_from")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("activated_to")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("approvalTypeId")
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("approval_type_id");
+
+                    b.Property<string>("approvedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("approved_by");
+
+                    b.Property<DateTime?>("approvedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("approved_date");
+
+                    b.Property<string>("billing_period")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("content_type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("createdBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("createdDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("deletedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<DateTime?>("deletedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("deleted_date");
+
+                    b.Property<string>("file_name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("invoice_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("invoice_no")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<bool?>("isActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool?>("isDefault")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool?>("isDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool?>("isLocked")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_locked");
+
+                    b.Property<string>("modifiedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("modified_by");
+
+                    b.Property<DateTime?>("modifiedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("modified_date");
+
+                    b.Property<long>("payment_request_id")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("plan_id")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("plan_name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<long>("size_bytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<int?>("statusApproval")
+                        .HasColumnType("int")
+                        .HasColumnName("status_approval");
+
+                    b.Property<string>("stored_path")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("user_id")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("invoice_no")
+                        .IsUnique();
+
+                    b.HasIndex("payment_request_id")
+                        .IsUnique();
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("tb_payment_invoice");
+                });
+
+            modelBuilder.Entity("DeckZa.Domain.Entities.tb_payment_request", b =>
+                {
+                    b.Property<long>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("id"));
+
+                    b.Property<DateTime?>("activated_from")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("activated_to")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("approvalTypeId")
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("approval_type_id");
+
+                    b.Property<string>("approvedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("approved_by");
+
+                    b.Property<DateTime?>("approvedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("approved_date");
+
+                    b.Property<string>("createdBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("createdDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("deletedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<DateTime?>("deletedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("deleted_date");
+
+                    b.Property<bool?>("isActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool?>("isDefault")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool?>("isDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool?>("isLocked")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_locked");
+
+                    b.Property<string>("modifiedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("modified_by");
+
+                    b.Property<DateTime?>("modifiedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("modified_date");
+
+                    b.Property<string>("payment_method")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("plan_id")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("proof_content_type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("proof_file_name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<long>("proof_size_bytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("proof_stored_path")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("request_no")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("review_note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("reviewed_by")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("reviewed_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<int?>("statusApproval")
+                        .HasColumnType("int")
+                        .HasColumnName("status_approval");
+
+                    b.Property<string>("transfer_reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("user_id")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("request_no")
+                        .IsUnique();
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("tb_payment_request");
                 });
 
             modelBuilder.Entity("DeckZa.Domain.Entities.tb_report_set", b =>
@@ -2188,6 +2715,14 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("external_provider")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("external_provider_id")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
                     b.Property<string>("full_name")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -2221,6 +2756,10 @@ namespace DeckZa.Infrastructure.Migrations.Main
                     b.Property<string>("phone_number")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("registration_source")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<string>("user_id")
                         .IsRequired()
@@ -2520,6 +3059,10 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .HasColumnType("datetime2")
                         .HasColumnName("approved_date");
 
+                    b.Property<string>("avatar_url")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("createdBy")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
@@ -2541,6 +3084,14 @@ namespace DeckZa.Infrastructure.Migrations.Main
                     b.Property<string>("email")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("external_provider")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("external_provider_id")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("full_name")
                         .HasMaxLength(100)
@@ -2586,11 +3137,26 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("plan_id")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime?>("profile_synced_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("registration_source")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
                     b.Property<int?>("statusApproval")
                         .HasColumnType("int")
                         .HasColumnName("status_approval");
 
                     b.HasKey("user_id");
+
+                    b.HasIndex("external_provider", "external_provider_id")
+                        .IsUnique()
+                        .HasFilter("[external_provider_id] IS NOT NULL");
 
                     b.ToTable("um_user_app");
                 });
@@ -2904,6 +3470,15 @@ namespace DeckZa.Infrastructure.Migrations.Main
                     b.ToTable("um_user_refresh_token");
                 });
 
+            modelBuilder.Entity("DeckZa.Domain.Entities.rf_plan_feature", b =>
+                {
+                    b.HasOne("DeckZa.Domain.Entities.rf_plan", null)
+                        .WithMany()
+                        .HasForeignKey("plan_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("DeckZa.Domain.Entities.tb_notification", b =>
                 {
                     b.HasOne("DeckZa.Domain.Entities.rf_notification_type", null)
@@ -2927,6 +3502,15 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .WithMany()
                         .HasForeignKey("tb_parameter_sytem_temporary_id")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DeckZa.Domain.Entities.tb_payment_invoice", b =>
+                {
+                    b.HasOne("DeckZa.Domain.Entities.tb_payment_request", null)
+                        .WithMany()
+                        .HasForeignKey("payment_request_id")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

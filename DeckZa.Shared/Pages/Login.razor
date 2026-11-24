@@ -172,6 +172,77 @@
                     }
                 </div>
             }
+            else if (_mode == LoginMode.SignUp)
+            {
+                <EditForm Model="@_signUpModel" OnValidSubmit="@OnSignUpAsync">
+                    <DataAnnotationsValidator />
+                    <div class="maui-auth-fields">
+                        <MudTextField @bind-Value="_signUpModel.UserId"
+                                      Label="User ID"
+                                      Placeholder="Choose your user ID"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Badge" />
+                        <MudTextField @bind-Value="_signUpModel.FullName"
+                                      Label="Full Name"
+                                      Placeholder="Enter your full name"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Person" />
+                        <MudTextField @bind-Value="_signUpModel.Email"
+                                      Label="Email"
+                                      Placeholder="Enter your email"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      InputType="InputType.Email"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Email" />
+                        <MudTextField @bind-Value="_signUpModel.Password"
+                                      Label="Password"
+                                      Placeholder="Enter your password"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      InputType="InputType.Password"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Lock" />
+                        <MudTextField @bind-Value="_signUpModel.ConfirmPassword"
+                                      Label="Confirm Password"
+                                      Placeholder="Repeat your password"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      InputType="InputType.Password"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Lock" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            Minimum 8 characters, with uppercase, lowercase, number, and special character.
+                        </MudText>
+                    </div>
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Size="Size.Large"
+                               Class="maui-auth-submit"
+                               Disabled="@_signUpLoading">
+                        @if (_signUpLoading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Color="Color.Info" Indeterminate="true" />
+                        }
+                        else
+                        {
+                            <span>Register</span>
+                        }
+                    </MudButton>
+                    <button type="button" class="login-text-link maui-auth-back" @onclick="ShowSignIn">Back to Login</button>
+                </EditForm>
+            }
             else
             {
                 <EditForm Model="@_loginModel" OnValidSubmit="@OnLoginAsync">
@@ -212,6 +283,14 @@
                         {
                             <span>Login</span>
                         }
+                    </MudButton>
+                    <MudDivider Class="login-divider my-4" />
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Size="Size.Large"
+                               OnClick="ShowSignUp">
+                        Register
                     </MudButton>
                 </EditForm>
             }
@@ -392,6 +471,76 @@ else
                     <button type="button" class="login-text-link" @onclick="ShowSignIn">Back to Sign In</button>
                 </div>
             }
+            else if (_mode == LoginMode.SignUp)
+            {
+                <EditForm Model="@_signUpModel" OnValidSubmit="@OnSignUpAsync">
+                    <DataAnnotationsValidator />
+                    <div class="login-form-fields">
+                        <MudTextField @bind-Value="_signUpModel.UserId"
+                                      Label="User ID"
+                                      Placeholder="Choose your user ID"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Badge" />
+                        <MudTextField @bind-Value="_signUpModel.FullName"
+                                      Label="Full Name"
+                                      Placeholder="Enter your full name"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Person" />
+                        <MudTextField @bind-Value="_signUpModel.Email"
+                                      Label="Email"
+                                      Placeholder="Enter your email"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      InputType="InputType.Email"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Email" />
+                        <MudTextField @bind-Value="_signUpModel.Password"
+                                      Label="Password"
+                                      Placeholder="Enter your password"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      InputType="InputType.Password"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Lock" />
+                        <MudTextField @bind-Value="_signUpModel.ConfirmPassword"
+                                      Label="Confirm Password"
+                                      Placeholder="Repeat your password"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Required="true"
+                                      InputType="InputType.Password"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Lock" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            Minimum 8 characters, with uppercase, lowercase, number, and special character.
+                        </MudText>
+                        <MudButton ButtonType="ButtonType.Submit"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   FullWidth="true"
+                                   Size="Size.Large"
+                                   Disabled="@_signUpLoading">
+                            @if (_signUpLoading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Color="Color.Info" Indeterminate="true" />
+                            }
+                            else
+                            {
+                                <span>Register</span>
+                            }
+                        </MudButton>
+                        <button type="button" class="login-text-link" @onclick="ShowSignIn">Back to Login</button>
+                    </div>
+                </EditForm>
+            }
             else
             {
                 <EditForm Model="@_loginModel" OnValidSubmit="@OnLoginAsync">
@@ -428,8 +577,16 @@ else
                             }
                             else
                             {
-                                <span>Login to Dashboard</span>
+                                <span>Login</span>
                             }
+                        </MudButton>
+                        <MudDivider Class="login-divider my-4" />
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   FullWidth="true"
+                                   Size="Size.Large"
+                                   OnClick="ShowSignUp">
+                            Register
                         </MudButton>
                     </div>
                 </EditForm>
@@ -456,10 +613,12 @@ else
     private readonly ForgotPasswordRequestDto _forgotModel = new();
     private readonly ResetPasswordRequestDto _resetModel = new();
     private FirstLoginPasswordDto _firstLoginModel = new();
+    private RegisterRequestDto _signUpModel = new();
     private LoginMode _mode = LoginMode.SignIn;
     private bool _isLoading;
     private bool _forgotLoading;
     private bool _resetLoading;
+    private bool _signUpLoading;
     private bool _resetTokenInvalid;
     private bool _requiresPasswordChange;
     private string? _errorMessage;
@@ -470,6 +629,7 @@ else
         SignIn,
         Forgot,
         Reset,
+        SignUp,
     }
 
     private string HeaderTitle => _requiresPasswordChange
@@ -478,6 +638,7 @@ else
         {
             LoginMode.Forgot => "Forgot Password",
             LoginMode.Reset => "Reset Password",
+            LoginMode.SignUp => "Register",
             _ => "Sign In",
         };
 
@@ -487,6 +648,7 @@ else
         {
             LoginMode.Forgot => "Enter your username or email. If the account is registered, reset instructions will be sent.",
             LoginMode.Reset => "Choose a new password for your account.",
+            LoginMode.SignUp => "Create your account",
             _ => "Please enter your credentials to access your account.",
         };
 
@@ -556,6 +718,14 @@ else
         _forgotModel.UserIdOrEmail = _loginModel.UserId;
     }
 
+    private void ShowSignUp()
+    {
+        _mode = LoginMode.SignUp;
+        _errorMessage = null;
+        _successMessage = null;
+        _signUpModel.UserId = _loginModel.UserId;
+    }
+
     private void ShowSignIn()
     {
         _mode = LoginMode.SignIn;
@@ -567,6 +737,7 @@ else
         _resetModel.Token = string.Empty;
         _resetModel.NewPassword = string.Empty;
         _resetModel.ConfirmNewPassword = string.Empty;
+        _signUpModel = new RegisterRequestDto();
 
         var path = Navigation.ToBaseRelativePath(Navigation.Uri).Split('?')[0].Trim('/');
         if (path.Equals("forgot-password", StringComparison.OrdinalIgnoreCase)
@@ -604,6 +775,89 @@ else
         finally
         {
             _forgotLoading = false;
+        }
+    }
+
+    private async Task OnSignUpAsync()
+    {
+        if (_signUpLoading)
+        {
+            return;
+        }
+
+        var userId = (_signUpModel.UserId ?? string.Empty).Trim();
+        var fullName = (_signUpModel.FullName ?? string.Empty).Trim();
+        var email = (_signUpModel.Email ?? string.Empty).Trim();
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            _errorMessage = "User ID is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            _errorMessage = "Full name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            _errorMessage = "Email is required.";
+            return;
+        }
+
+        if (!email.Contains('@', StringComparison.Ordinal))
+        {
+            _errorMessage = "Email format is not valid.";
+            return;
+        }
+
+        if (!string.Equals(_signUpModel.Password, _signUpModel.ConfirmPassword, StringComparison.Ordinal))
+        {
+            _errorMessage = "Password and confirmation do not match.";
+            return;
+        }
+
+        var policyError = PasswordPolicy.Validate(_signUpModel.Password);
+        if (policyError != null)
+        {
+            _errorMessage = policyError;
+            return;
+        }
+
+        _signUpLoading = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            await AuthService.RegisterAsync(new RegisterRequestDto
+            {
+                UserId = userId,
+                FullName = fullName,
+                Email = email,
+                Password = _signUpModel.Password,
+                ConfirmPassword = _signUpModel.ConfirmPassword,
+            });
+
+            ShowSignIn();
+            _successMessage = "Registration successful.";
+        }
+        catch (Exception ex)
+        {
+            if (IsMauiApp)
+            {
+                await ShowMauiErrorAsync("MobileSignUp", ex, userId);
+            }
+            else
+            {
+                _errorMessage = ex.Message;
+            }
+        }
+        finally
+        {
+            _signUpLoading = false;
         }
     }
 

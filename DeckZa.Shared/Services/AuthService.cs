@@ -30,6 +30,15 @@ public class AuthService
         throw new Exception(await ReadErrorAsync(response));
     }
 
+    public async Task RegisterAsync(RegisterRequestDto request)
+    {
+        var response = await _httpClient.PostAsJsonAsync("api/auth/register", request);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception(await ReadErrorAsync(response));
+        }
+    }
+
     public async Task<LoginResponseDto?> RefreshTokenAsync(string refreshToken)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/refresh", new { refreshToken });

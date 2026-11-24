@@ -57,6 +57,7 @@
             <MudTh><MudTableSortLabel T="UserListItemDto" SortLabel="phonenumber">Phone Number</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel T="UserListItemDto" SortLabel="groupname">Role</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel T="UserListItemDto" SortLabel="isactive">Status</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="UserListItemDto" SortLabel="registrationsource">Registration Source</MudTableSortLabel></MudTh>
         </HeaderContent>
         <RowTemplate>
             <PermissionGate AnyOf="PermissionSets.EditDelete">
@@ -89,6 +90,7 @@
                     <MudChip T="string" Size="Size.Small" Color="Color.Default">Inactive</MudChip>
                 }
             </MudTd>
+            <MudTd DataLabel="Registration Source">@context.RegistrationSource</MudTd>
         </RowTemplate>
         <NoRecordsContent>
             <MudText>No users found.</MudText>

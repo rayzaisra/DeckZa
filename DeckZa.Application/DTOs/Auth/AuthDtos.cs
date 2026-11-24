@@ -7,6 +7,15 @@ public class LoginRequestDto
     public bool RememberMe { get; set; }
 }
 
+public class RegisterRequestDto
+{
+    public string UserId { get; set; } = string.Empty;
+    public string? FullName { get; set; }
+    public string? Email { get; set; }
+    public string Password { get; set; } = string.Empty;
+    public string? ConfirmPassword { get; set; }
+}
+
 public class LoginResponseDto
 {
     public string AccessToken { get; set; } = string.Empty;

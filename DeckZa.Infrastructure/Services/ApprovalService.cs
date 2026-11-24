@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
+using DeckZa.Application.Common;
 using DeckZa.Application.DTOs.Approval;
 using DeckZa.Application.DTOs.General;
 using DeckZa.Application.Interfaces;
@@ -18,6 +19,7 @@ public class ApprovalService : IApprovalService
     private readonly ICurrentUserService _currentUser;
     private readonly INotificationService _notificationService;
     private readonly IErrorLogService _errorLog;
+    private readonly IEmailDispatchService _emailDispatch;
 
     public ApprovalService(
         IUnitOfWork unitOfWork,
@@ -25,7 +27,8 @@ public class ApprovalService : IApprovalService
         AuditLogDbContext audit,
         ICurrentUserService currentUser,
         INotificationService notificationService,
-        IErrorLogService errorLog)
+        IErrorLogService errorLog,
+        IEmailDispatchService emailDispatch)
     {
         _unitOfWork = unitOfWork;
         _queryService = queryService;
@@ -33,6 +36,7 @@ public class ApprovalService : IApprovalService
         _currentUser = currentUser;
         _notificationService = notificationService;
         _errorLog = errorLog;
+        _emailDispatch = emailDispatch;
     }
 
     private string Actor => _currentUser.UserId ?? "system";
@@ -53,11 +57,11 @@ public class ApprovalService : IApprovalService
 
         if (pending.approval_type_id == Const.ApprovalType.ADD)
         {
-            if (string.IsNullOrWhiteSpace(pending.password))
+            if (string.IsNullOrWhiteSpace(pending.external_provider_id)
+                && string.IsNullOrWhiteSpace(pending.password))
             {
                 return Fail("Password payload is missing.");
             }
-
         }
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync();
@@ -96,7 +100,8 @@ public class ApprovalService : IApprovalService
                 user.approvedDate = now;
 
                 await EnsureUserRoleAsync(pending, now, resetPermissions: true);
-                await EnsureUserFlagAsync(pending.user_id, now, isNew: true, passwordChanged: true);
+                await EnsureUserFlagAsync(pending.user_id, now, isNew: true, passwordChanged: true,
+                    hasLocalPassword: !string.IsNullOrWhiteSpace(user.password));
             }
             else if (pending.approval_type_id == Const.ApprovalType.MODIFIED)
             {
@@ -120,7 +125,8 @@ public class ApprovalService : IApprovalService
                 user.modifiedDate = pending.created_date;
 
                 await EnsureUserRoleAsync(pending, now, resetPermissions: false);
-                await EnsureUserFlagAsync(pending.user_id, now, isNew: false, passwordChanged: !string.IsNullOrWhiteSpace(pending.password));
+                await EnsureUserFlagAsync(pending.user_id, now, isNew: false, passwordChanged: !string.IsNullOrWhiteSpace(pending.password),
+                    hasLocalPassword: !string.IsNullOrWhiteSpace(user.password));
             }
             else if (pending.approval_type_id == Const.ApprovalType.DELETE)
             {
@@ -163,6 +169,7 @@ public class ApprovalService : IApprovalService
             await transaction.CommitAsync();
             await AuditAsync("UserApproval", "APPROVE", $"User {pending.user_id} approved ({TypeLabel(pending.approval_type_id)}).");
             await NotifyAsync(pending.created_by, $"User {pending.user_id} approved.");
+            await SendRegistrationOutcomeAsync(pending, approved: true);
             return Success("User approval applied.");
         }
         catch (Exception ex)
@@ -181,11 +188,88 @@ public class ApprovalService : IApprovalService
             return Fail("Pending request not found.");
         }
 
+        // Notifikasi & email disiapkan sebelum baris pending dihapus —
+        // data email dan nama pendaftar hanya tersedia di baris tersebut.
+        await SendRegistrationOutcomeAsync(pending, approved: false);
+
         _unitOfWork.TempUserAppPending.Remove(pending);
         await _unitOfWork.SaveChangesAsync();
         await AuditAsync("UserApproval", "REJECT", $"User {pending.user_id} rejected ({TypeLabel(pending.approval_type_id)}).");
         await NotifyAsync(pending.created_by, $"User {pending.user_id} rejected.");
         return Success("User request rejected.");
+    }
+
+    /// <summary>
+    /// Mengirim notifikasi web + email hasil review pendaftaran ke user yang di-approve/reject.
+    /// Hanya berlaku untuk pembuatan akun (approval type ADD) — notifikasi "pendaftaran
+    /// disetujui/ditolak" tidak relevan untuk request modifikasi atau penghapusan.
+    /// </summary>
+    private async Task SendRegistrationOutcomeAsync(temp_user_app_pending pending, bool approved)
+    {
+        if (pending.approval_type_id != Const.ApprovalType.ADD)
+        {
+            return;
+        }
+
+        var shortText = approved ? "Registration approved" : "Registration rejected";
+        // {{long_text}} pada template REGISTRATION_REJECTED menjadi paragraf tersendiri,
+        // jadi isinya adalah alasan penolakan — bukan mengulang kalimat template.
+        // Endpoint reject belum menerima parameter alasan, jadi alasannya generik.
+        var longText = approved
+            ? "Your account has been approved. You can sign in and set your password."
+            : "No additional details were provided by the administrator.";
+        const string href = "/";
+
+        try
+        {
+            await _notificationService.CreateAsync(
+                pending.user_id,
+                shortText,
+                longText,
+                href,
+                NotificationTypeIds.UserRegistration);
+        }
+        catch (Exception ex)
+        {
+            await LogErrorAsync(ex);
+        }
+
+        var email = pending.email;
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return;
+        }
+
+        try
+        {
+            var template = await _unitOfWork.EmailTemplates.GetActiveByKeyAsync(
+                approved ? EmailTemplateKeys.RegistrationApproved : EmailTemplateKeys.RegistrationRejected);
+
+            var subject = template?.subject
+                          ?? (approved ? "DeckZa registration approved" : "DeckZa registration rejected");
+            var bodyHtml = template?.body_html
+                           ?? "<p>Hello {{full_name}},</p><p>Your DeckZa registration ({{user_id}}) has been processed. {{long_text}}</p>";
+            var bodyText = template?.body_text
+                           ?? "Hello {{full_name}},\n\nYour DeckZa registration ({{user_id}}) has been processed. {{long_text}}";
+
+            var fullName = string.IsNullOrWhiteSpace(pending.full_name) ? pending.user_id : pending.full_name;
+
+            subject = EmailTemplateRenderer.ApplyValues(subject, fullName, pending.user_id, shortText, longText, href);
+            bodyHtml = EmailTemplateRenderer.ApplyValues(bodyHtml, fullName, pending.user_id, shortText, longText, href);
+            bodyText = EmailTemplateRenderer.ApplyValues(bodyText, fullName, pending.user_id, shortText, longText, href);
+
+            await _emailDispatch.QueueAsync(
+                email,
+                subject,
+                bodyHtml,
+                bodyText,
+                "REGISTRATION",
+                pending.user_id);
+        }
+        catch (Exception ex)
+        {
+            await LogErrorAsync(ex);
+        }
     }
 
     public Task<GeneralListResponseDto<GroupApprovalListItemDto>> GetPendingGroupsAsync(DataTableRequestDto request)
@@ -595,9 +679,28 @@ public class ApprovalService : IApprovalService
 
     private async Task EnsureUserRoleAsync(temp_user_app_pending pending, DateTime now, bool resetPermissions)
     {
-        if (string.IsNullOrWhiteSpace(pending.group_id))
+        var groupId = pending.group_id;
+
+        if (string.IsNullOrWhiteSpace(groupId))
         {
-            return;
+            // Pendaftaran mandiri: defaultkan ke grup Guest agar user mendapat role
+            // dan tidak gagal login dengan "User has no assigned role."
+            if (string.Equals(pending.registration_source, Const.RegistrationSource.SELF, StringComparison.OrdinalIgnoreCase))
+            {
+                groupId = Const.DEFAULT_GROUP_ID_GUEST_CODE;
+            }
+            else
+            {
+                // Request dibuat admin tanpa group_id — jangan buat role dengan grup kosong.
+                // Perilaku lama dipertahankan, tapi dicatat agar terlihat.
+                await _errorLog.LogAsync(
+                    "Approval",
+                    "WARN",
+                    new InvalidOperationException(
+                        $"User approval '{pending.user_id}' has no group_id. Role was not assigned."),
+                    Actor);
+                return;
+            }
         }
 
         var role = await _unitOfWork.UmUserGroup.GetByIdAsync(pending.user_id);
@@ -613,7 +716,7 @@ public class ApprovalService : IApprovalService
             resetPermissions = true;
         }
 
-        role.group_id = pending.group_id;
+        role.group_id = groupId;
         if (resetPermissions)
         {
             role.can_add_edit = true;
@@ -630,7 +733,7 @@ public class ApprovalService : IApprovalService
         role.approvedDate = now;
     }
 
-    private async Task EnsureUserFlagAsync(string userId, DateTime now, bool isNew, bool passwordChanged)
+    private async Task EnsureUserFlagAsync(string userId, DateTime now, bool isNew, bool passwordChanged, bool hasLocalPassword)
     {
         var flag = await _unitOfWork.UmUserAppFlag.GetByUserIdAsync(userId);
         if (flag == null)
@@ -645,7 +748,7 @@ public class ApprovalService : IApprovalService
 
         if (isNew)
         {
-            flag.is_first_login = true;
+            flag.is_first_login = hasLocalPassword;
             flag.is_login = false;
             flag.last_login_date = now;
         }
@@ -664,6 +767,20 @@ public class ApprovalService : IApprovalService
         user.email = pending.email;
         user.phone_number = pending.phone_number;
         user.gender_id = pending.gender_id;
+
+        // TASK2-004 (revisi): teruskan asal pendaftaran ke user.
+        // Bertingkat agar tidak pernah NULL: pending -> nilai user lama -> default ADMIN.
+        // (Pending lawas bisa kosong, dan user existing sudah punya nilainya.)
+        var source = pending.registration_source;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            source = user.registration_source;
+        }
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            source = Const.RegistrationSource.ADMIN;
+        }
+        user.registration_source = source;
     }
 
     private async Task<Dictionary<string, string?>> LoadDetailsAsync(Guid id)

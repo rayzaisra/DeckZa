@@ -39,4 +39,13 @@ public partial class tb_email_outbox
     public string? last_error { get; set; }
 
     public DateTime? created_date { get; set; }
+
+    [StringLength(255)]
+    public string? attachment_file_name { get; set; }
+
+    [StringLength(100)]
+    public string? attachment_content_type { get; set; }
+
+    [StringLength(500)]
+    public string? attachment_storage_path { get; set; }
 }

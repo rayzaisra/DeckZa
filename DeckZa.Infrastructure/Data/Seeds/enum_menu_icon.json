@@ -110,6 +110,11 @@
     "menu_icon_name_alternate": null
   },
   {
+    "menu_icon_code": "AutoStories",
+    "menu_icon_name": "Auto Stories",
+    "menu_icon_name_alternate": null
+  },
+  {
     "menu_icon_code": "Badge",
     "menu_icon_name": "Badge",
     "menu_icon_name_alternate": null

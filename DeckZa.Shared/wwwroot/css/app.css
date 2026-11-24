@@ -1842,6 +1842,15 @@ body:has(.app-dark) {
     text-underline-offset: 3px;
 }
 
+/* Pemisah Login / Register: garis tebal rata gaya neo-brutalism.
+   MudBlazor .mud-divider memakai border-width:1px + border-style top-only,
+   jadi cukup menaikkan lebar border atas dan warnanya. */
+.neo-brutalism .login-divider {
+    border-top: 3px solid var(--neo-ink) !important;
+    margin-top: 28px;
+    margin-bottom: 28px;
+}
+
 body:has(.neo-brutalism) {
     --neo-ink: #0f172a;
 }
@@ -2674,13 +2683,13 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
 }
 
 .approval-radios {
-    gap: 6px 10px;
+    gap: 6px 8px;
 }
 
 .approval-radios .mud-radio {
-    gap: 5px;
+    gap: 6px;
     min-height: 24px;
-    margin: 0;
+    margin: 0 4px;
     padding: 0;
     white-space: nowrap;
 }

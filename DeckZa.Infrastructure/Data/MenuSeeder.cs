@@ -12,6 +12,10 @@ public static class MenuSeeder
     private const string DocumentationPageRoute = "/dashboard/documentation/framework-flows";
     private const string DocumentationComponent = "DeckZa.Shared.Pages.Documentation.FrameworkFlows, DeckZa.Shared";
 
+    private const string DeckZaPageUnique = "DOC-DECKZA";
+    private const string DeckZaPageRoute = "/dashboard/documentation/deckza-flows";
+    private const string DeckZaComponent = "DeckZa.Shared.Pages.Documentation.DeckZaFlows, DeckZa.Shared";
+
     private static readonly (string Code, string Name)[] Icons =
     {
         ("Settings", "Settings"),
@@ -139,16 +143,13 @@ public static class MenuSeeder
         CancellationToken cancellationToken)
     {
         var now = DateTime.Now;
-        var root = await context.um_menu
-            .FirstOrDefaultAsync(e => e.menu_unique == DocumentationUnique, cancellationToken);
-
-        if (root == null)
-        {
-            root = new um_menu
+        var root = await EnsureMenuAsync(
+            context,
+            new um_menu
             {
                 menu_unique = DocumentationUnique,
                 menu_name = "Docs",
-                parent_level_id = "A",
+                parent_level_id = Const.ParentLevel.FIRST_PARENT,
                 menu_unique_parent = string.Empty,
                 menu_icon = "MenuBook",
                 order_seq = 90,
@@ -159,27 +160,17 @@ public static class MenuSeeder
                 isDefault = false,
                 createdBy = "system",
                 createdDate = now,
-            };
+            },
+            cancellationToken);
 
-            await context.um_menu.AddAsync(root, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        else if (!string.Equals(root.menu_name, "Docs", StringComparison.Ordinal))
-        {
-            root.menu_name = "Docs";
-        }
-
-        var page = await context.um_menu
-            .FirstOrDefaultAsync(e => e.menu_unique == DocumentationPageUnique, cancellationToken);
-
-        if (page == null)
-        {
-            page = new um_menu
+        var frameworkPage = await EnsureMenuAsync(
+            context,
+            new um_menu
             {
                 menu_unique = DocumentationPageUnique,
                 menu_name = "Framework Flows",
                 menu_url = DocumentationPageRoute,
-                parent_level_id = "D",
+                parent_level_id = Const.ParentLevel.CHILD,
                 menu_unique_parent = DocumentationUnique,
                 menu_icon = "Description",
                 order_seq = 1,
@@ -191,50 +182,178 @@ public static class MenuSeeder
                 isDefault = false,
                 createdBy = "system",
                 createdDate = now,
-            };
+            },
+            cancellationToken);
 
-            await context.um_menu.AddAsync(page, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
-        }
+        var deckZaPage = await EnsureMenuAsync(
+            context,
+            new um_menu
+            {
+                menu_unique = DeckZaPageUnique,
+                menu_name = "DeckZa Flows",
+                menu_url = DeckZaPageRoute,
+                parent_level_id = Const.ParentLevel.CHILD,
+                menu_unique_parent = DocumentationUnique,
+                menu_icon = "AutoStories",
+                order_seq = 2,
+                component_type = DeckZaComponent,
+                statusApproval = Const.StatusApproval.APPROVED,
+                isActive = true,
+                isDeleted = false,
+                isLocked = false,
+                isDefault = false,
+                createdBy = "system",
+                createdDate = now,
+            },
+            cancellationToken);
 
+        // Aturan akses dokumentasi:
+        //   - Docs (root)         -> semua grup aktif, agar dropdown muncul untuk semua peran
+        //   - DeckZa Flows        -> semua grup aktif (Administrator, Member, Guest)
+        //   - Framework Flows     -> HANYA Administrator (grup 00)
         var groupIds = await context.um_group_app
             .Where(e => e.isActive != false && e.isDeleted != true)
             .Select(e => e.group_id)
             .ToListAsync(cancellationToken);
 
-        var menuIds = new[] { root.id, page.id };
+        var allGroupIds = groupIds
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Select(e => e!)
+            .ToList();
+
+        var adminGroupIds = allGroupIds
+            .Where(e => string.Equals(e, Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE, StringComparison.Ordinal))
+            .ToList();
+
+        await EnsureGroupMenuAsync(context, root.id, allGroupIds, now, cancellationToken);
+        await EnsureGroupMenuAsync(context, deckZaPage.id, allGroupIds, now, cancellationToken);
+        await EnsureGroupMenuAsync(context, frameworkPage.id, adminGroupIds, now, cancellationToken);
+
+        // DB existing sudah terlanjur memetakan Framework Flows ke semua grup.
+        // Cabut pemetaannya agar Member dan Guest tidak lagi melihat menu ini.
+        await RemoveGroupMenuAsync(context, frameworkPage.id, allGroupIds.Except(adminGroupIds), cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Membuat menu bila belum ada, atau memperbaiki nama dan atribut tampilannya
+    /// bila sudah ada. Idempoten.
+    /// </summary>
+    private static async Task<um_menu> EnsureMenuAsync(
+        DeckZaDbContext context,
+        um_menu desired,
+        CancellationToken cancellationToken)
+    {
+        var existing = await context.um_menu
+            .FirstOrDefaultAsync(e => e.menu_unique == desired.menu_unique, cancellationToken);
+
+        if (existing == null)
+        {
+            await context.um_menu.AddAsync(desired, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+            return desired;
+        }
+
+        var changed = false;
+
+        if (!string.Equals(existing.menu_name, desired.menu_name, StringComparison.Ordinal))
+        {
+            existing.menu_name = desired.menu_name;
+            changed = true;
+        }
+
+        if (!string.Equals(existing.menu_url, desired.menu_url, StringComparison.Ordinal))
+        {
+            existing.menu_url = desired.menu_url;
+            changed = true;
+        }
+
+        if (!string.Equals(existing.component_type, desired.component_type, StringComparison.Ordinal))
+        {
+            existing.component_type = desired.component_type;
+            changed = true;
+        }
+
+        if (existing.order_seq != desired.order_seq)
+        {
+            existing.order_seq = desired.order_seq;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        return existing;
+    }
+
+    private static async Task EnsureGroupMenuAsync(
+        DeckZaDbContext context,
+        long menuId,
+        IEnumerable<string> groupIds,
+        DateTime now,
+        CancellationToken cancellationToken)
+    {
         var existing = await context.um_group_menu
-            .Where(e => e.menu_id != null && menuIds.Contains(e.menu_id.Value))
-            .Select(e => new { e.group_id, e.menu_id })
+            .Where(e => e.menu_id == menuId)
+            .Select(e => e.group_id)
             .ToListAsync(cancellationToken);
-        var existingPairs = existing
-            .Select(e => (GroupId: e.group_id ?? string.Empty, MenuId: e.menu_id ?? 0))
-            .ToHashSet();
+
+        var mapped = existing
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Select(e => e!)
+            .ToHashSet(StringComparer.Ordinal);
 
         foreach (var groupId in groupIds)
         {
-            foreach (var menuId in menuIds)
+            if (mapped.Contains(groupId))
             {
-                if (existingPairs.Contains((groupId, menuId)))
-                {
-                    continue;
-                }
-
-                await context.um_group_menu.AddAsync(new um_group_menu
-                {
-                    group_id = groupId,
-                    menu_id = menuId,
-                    statusApproval = Const.StatusApproval.APPROVED,
-                    isActive = true,
-                    isDeleted = false,
-                    isLocked = false,
-                    isDefault = false,
-                    createdBy = "system",
-                    createdDate = now,
-                }, cancellationToken);
+                continue;
             }
+
+            await context.um_group_menu.AddAsync(new um_group_menu
+            {
+                group_id = groupId,
+                menu_id = menuId,
+                statusApproval = Const.StatusApproval.APPROVED,
+                isActive = true,
+                isDeleted = false,
+                isLocked = false,
+                isDefault = false,
+                createdBy = "system",
+                createdDate = now,
+            }, cancellationToken);
+        }
+    }
+
+    private static async Task RemoveGroupMenuAsync(
+        DeckZaDbContext context,
+        long menuId,
+        IEnumerable<string> groupIds,
+        CancellationToken cancellationToken)
+    {
+        var targets = groupIds
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Select(e => e!)
+            .ToHashSet(StringComparer.Ordinal);
+
+        if (targets.Count == 0)
+        {
+            return;
         }
 
+        var mappings = await context.um_group_menu
+            .Where(e => e.menu_id == menuId && e.group_id != null && targets.Contains(e.group_id))
+            .ToListAsync(cancellationToken);
+
+        if (mappings.Count == 0)
+        {
+            return;
+        }
+
+        context.um_group_menu.RemoveRange(mappings);
         await context.SaveChangesAsync(cancellationToken);
     }
 

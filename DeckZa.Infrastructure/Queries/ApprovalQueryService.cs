@@ -36,6 +36,7 @@ public class ApprovalQueryService : IApprovalQueryService
                         GroupName = grp != null ? grp.group_name : null,
                         ApprovalType = pending.approval_type_id ?? string.Empty,
                         RequesterFullName = user != null ? user.full_name : pending.created_by,
+                        RegistrationSource = pending.registration_source,
                         CreatedDate = pending.created_date,
                     };
 
@@ -57,6 +58,7 @@ public class ApprovalQueryService : IApprovalQueryService
             "email" => desc ? query.OrderByDescending(x => x.Email) : query.OrderBy(x => x.Email),
             "approvaltype" => desc ? query.OrderByDescending(x => x.ApprovalType) : query.OrderBy(x => x.ApprovalType),
             "requesterfullname" => desc ? query.OrderByDescending(x => x.RequesterFullName) : query.OrderBy(x => x.RequesterFullName),
+            "registrationsource" => desc ? query.OrderByDescending(x => x.RegistrationSource) : query.OrderBy(x => x.RegistrationSource),
             "createddate" => desc ? query.OrderByDescending(x => x.CreatedDate) : query.OrderBy(x => x.CreatedDate),
             _ => desc ? query.OrderByDescending(x => x.UserId) : query.OrderBy(x => x.UserId),
         };

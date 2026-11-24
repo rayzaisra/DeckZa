@@ -75,6 +75,11 @@ public class DeckZaDbContext : DbContext
     public DbSet<tb_email_outbox> tb_email_outbox => Set<tb_email_outbox>();
     public DbSet<tb_password_reset_token> tb_password_reset_token => Set<tb_password_reset_token>();
 
+    public DbSet<rf_plan> rf_plan => Set<rf_plan>();
+    public DbSet<rf_plan_feature> rf_plan_feature => Set<rf_plan_feature>();
+    public DbSet<tb_payment_request> tb_payment_request => Set<tb_payment_request>();
+    public DbSet<tb_payment_invoice> tb_payment_invoice => Set<tb_payment_invoice>();
+
     public override int SaveChanges()
     {
         var auditRecords = CaptureAuditRecords();
@@ -241,6 +246,7 @@ public class DeckZaDbContext : DbContext
         ConfigureReferences(modelBuilder);
         ConfigureEmailAndReset(modelBuilder);
         ConfigureDeckZaTasks(modelBuilder);
+        ConfigureGuestPlanAndBilling(modelBuilder);
 
         modelBuilder.Entity<proc_seq>().HasKey(e => e.id);
     }
@@ -284,6 +290,10 @@ public class DeckZaDbContext : DbContext
     private static void ConfigureUsers(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<um_user_app>().HasKey(e => e.user_id);
+        modelBuilder.Entity<um_user_app>()
+            .HasIndex(e => new { e.external_provider, e.external_provider_id })
+            .IsUnique()
+            .HasFilter("[external_provider_id] IS NOT NULL");
         modelBuilder.Entity<um_user_group>().HasKey(e => e.user_id);
         modelBuilder.Entity<um_group_app>().HasKey(e => e.group_id);
         modelBuilder.Entity<um_user_app_flag>().HasKey(e => e.user_id);
@@ -491,6 +501,43 @@ public class DeckZaDbContext : DbContext
 
         modelBuilder.Entity<tb_task_history>().HasIndex(e => new { e.task_id, e.createdDate });
         modelBuilder.Entity<tb_task_history>().Property(e => e.order_seq).HasDefaultValue(0);
+    }
+
+    private static void ConfigureGuestPlanAndBilling(ModelBuilder modelBuilder)
+    {
+        ConfigureDeckZaAuditColumns<rf_plan>(modelBuilder);
+        ConfigureDeckZaAuditColumns<rf_plan_feature>(modelBuilder);
+        ConfigureDeckZaAuditColumns<tb_payment_request>(modelBuilder);
+        ConfigureDeckZaAuditColumns<tb_payment_invoice>(modelBuilder);
+
+        modelBuilder.Entity<rf_plan>().HasKey(e => e.id);
+        modelBuilder.Entity<rf_plan>().Property(e => e.id).ValueGeneratedNever();
+        modelBuilder.Entity<rf_plan>().Property(e => e.order_seq).HasDefaultValue(0);
+        modelBuilder.Entity<rf_plan>().Property(e => e.billing_interval_count).HasDefaultValue(1);
+
+        modelBuilder.Entity<rf_plan_feature>().HasKey(e => e.id);
+        modelBuilder.Entity<rf_plan_feature>().Property(e => e.order_seq).HasDefaultValue(0);
+
+        modelBuilder.Entity<rf_plan_feature>()
+            .HasOne<rf_plan>()
+            .WithMany()
+            .HasForeignKey(e => e.plan_id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<tb_payment_request>().HasKey(e => e.id);
+        modelBuilder.Entity<tb_payment_request>().HasIndex(e => e.request_no).IsUnique();
+        modelBuilder.Entity<tb_payment_request>().HasIndex(e => e.user_id);
+
+        modelBuilder.Entity<tb_payment_invoice>().HasKey(e => e.id);
+        modelBuilder.Entity<tb_payment_invoice>().HasIndex(e => e.invoice_no).IsUnique();
+        modelBuilder.Entity<tb_payment_invoice>().HasIndex(e => e.payment_request_id).IsUnique();
+        modelBuilder.Entity<tb_payment_invoice>().HasIndex(e => e.user_id);
+
+        modelBuilder.Entity<tb_payment_invoice>()
+            .HasOne<tb_payment_request>()
+            .WithMany()
+            .HasForeignKey(e => e.payment_request_id)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private static void ConfigureDeckZaAuditColumns<TEntity>(ModelBuilder modelBuilder)

@@ -13,22 +13,22 @@
                 <MudItem xs="12" sm="6">
                     <MudTextField @bind-Value="_model.UserId"
                                   Label="User Id"
-                                  Variant="Variant.Text"
+                                  Variant="Variant.Outlined"
                                   Required="true"
                                   Disabled="@IsEdit" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTextField @bind-Value="_model.FullName"
                                   Label="Full Name"
-                                  Variant="Variant.Text"
+                                  Variant="Variant.Outlined"
                                   Required="true" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSelect T="string"
                                @bind-Value="_model.GenderId"
                                Label="Gender"
-                               Variant="Variant.Text"
-                               Required="true" Clearable="true">
+                               Variant="Variant.Outlined"
+                               Clearable="true">
                         @foreach (var gender in _genders)
                         {
                             <MudSelectItem Value="@gender.Value">@gender.Text</MudSelectItem>
@@ -38,21 +38,21 @@
                 <MudItem xs="12" sm="6">
                     <MudTextField @bind-Value="_model.Email"
                                   Label="Email"
-                                  Variant="Variant.Text"
+                                  Variant="Variant.Outlined"
                                   InputType="InputType.Email"
                                   Required="true" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTextField @bind-Value="_model.PhoneNumber"
                                   Label="Phone Number"
-                                  Variant="Variant.Text" />
+                                  Variant="Variant.Outlined" />
                 </MudItem>
                 @if (!IsEdit)
                 {
                     <MudItem xs="12" sm="6">
                         <MudTextField @bind-Value="_model.Password"
                                       Label="Password"
-                                      Variant="Variant.Text"
+                                      Variant="Variant.Outlined"
                                       InputType="InputType.Password"
                                       Required="true" />
                     </MudItem>
@@ -64,9 +64,9 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Close</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))" Disabled="@_saving" OnClick="@(_ => SubmitAsync())">
-            @(_saving ? "Saving..." : "Save Changes")
+            @(_saving ? "Saving..." : "Save")
         </MudButton>
     </DialogActions>
 </MudDialog>

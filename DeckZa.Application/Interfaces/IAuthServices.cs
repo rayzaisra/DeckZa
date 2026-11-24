@@ -1,6 +1,7 @@
 using System.Security.Claims;
 
 using DeckZa.Application.DTOs.Auth;
+using DeckZa.Application.DTOs.General;
 using DeckZa.Domain.Entities;
 
 namespace DeckZa.Application.Interfaces;
@@ -14,6 +15,7 @@ public interface IAuthService
     Task<UserResponseDto?> UpdateProfileAsync(string userId, UpdateProfileDto request);
     Task ChangeFirstLoginPasswordAsync(FirstLoginPasswordDto request);
     Task ChangePasswordAsync(string userId, ChangePasswordDto request);
+    Task<BaseGeneralResponse> RegisterAsync(RegisterRequestDto request, CancellationToken cancellationToken = default);
 }
 
 public interface IJWTService

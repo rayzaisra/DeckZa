@@ -42,6 +42,7 @@ public class UserQueryService : IUserQueryService
                         GroupName = g != null ? g.group_name : null,
                         IsActive = u.isActive == true,
                         IsLocked = f != null && f.is_locked == true,
+                        RegistrationSource = u.registration_source,
                         LastLoginDate = f != null ? f.last_login_date : null,
                     };
 
@@ -64,6 +65,7 @@ public class UserQueryService : IUserQueryService
             "phonenumber" => desc ? query.OrderByDescending(x => x.PhoneNumber) : query.OrderBy(x => x.PhoneNumber),
             "groupname" => desc ? query.OrderByDescending(x => x.GroupName) : query.OrderBy(x => x.GroupName),
             "isactive" => desc ? query.OrderByDescending(x => x.IsActive) : query.OrderBy(x => x.IsActive),
+            "registrationsource" => desc ? query.OrderByDescending(x => x.RegistrationSource) : query.OrderBy(x => x.RegistrationSource),
             _ => desc ? query.OrderByDescending(x => x.UserId) : query.OrderBy(x => x.UserId),
         };
 

@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 using DeckZa.Application.Common;
 using DeckZa.Application.DTOs.Auth;
+using DeckZa.Application.DTOs.General;
 using DeckZa.Application.Exceptions;
 using DeckZa.Application.Interfaces;
 using DeckZa.Domain.Entities;
@@ -20,6 +22,8 @@ public class AuthService : IAuthService
     private readonly ICurrentUserService _currentUser;
     private readonly IConfiguration _configuration;
     private readonly IUserSessionNotifier _sessionNotifier;
+    private readonly INotificationService _notificationService;
+    private readonly IEmailDispatchService _emailDispatch;
 
     public AuthService(
         IUnitOfWork unitOfWork,
@@ -27,7 +31,9 @@ public class AuthService : IAuthService
         IPasswordHasherService passwordHasher,
         ICurrentUserService currentUser,
         IConfiguration configuration,
-        IUserSessionNotifier sessionNotifier)
+        IUserSessionNotifier sessionNotifier,
+        INotificationService notificationService,
+        IEmailDispatchService emailDispatch)
     {
         _unitOfWork = unitOfWork;
         _jwtService = jwtService;
@@ -35,6 +41,8 @@ public class AuthService : IAuthService
         _currentUser = currentUser;
         _configuration = configuration;
         _sessionNotifier = sessionNotifier;
+        _notificationService = notificationService;
+        _emailDispatch = emailDispatch;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
@@ -70,6 +78,13 @@ public class AuthService : IAuthService
         }
 
         var sessionId = Guid.NewGuid().ToString("N");
+
+        if (string.IsNullOrWhiteSpace(user.password))
+        {
+            throw new AuthenticationException(
+                "Akun ini terdaftar melalui Google. Silakan masuk dengan tombol Google.");
+        }
+
         var isValid = _passwordHasher.ValidatePassword(request.Password, user.password ?? string.Empty);
 
         if (!isValid)
@@ -169,6 +184,101 @@ public class AuthService : IAuthService
 
         ApplyPasswordExpiryPolicy(user, flag, response);
         return response;
+    }
+
+    public async Task<BaseGeneralResponse> RegisterAsync(
+        RegisterRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = (request.UserId ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Fail("User ID is required.");
+        }
+
+        var fullName = (request.FullName ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            return Fail("Full name is required.");
+        }
+
+        var email = (request.Email ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Fail("Email is required.");
+        }
+
+        if (!IsValidEmail(email))
+        {
+            return Fail("Email format is not valid.");
+        }
+
+        if (!string.Equals(request.Password, request.ConfirmPassword, StringComparison.Ordinal))
+        {
+            return Fail("Password and confirmation do not match.");
+        }
+
+        var policyError = PasswordPolicy.Validate(request.Password);
+        if (policyError != null)
+        {
+            return Fail(policyError);
+        }
+
+        if (await _unitOfWork.UmUserApp.ExistsAnyAsync(userId, cancellationToken))
+        {
+            return Fail("User ID is already registered.");
+        }
+
+        if (await _unitOfWork.TempUserAppPending.ExistsAsync(userId, cancellationToken))
+        {
+            return Fail("A registration for this User ID is already waiting for approval.");
+        }
+
+        var now = DateTime.Now;
+        await _unitOfWork.TempUserAppPending.AddAsync(new temp_user_app_pending
+        {
+            user_id = userId,
+            full_name = fullName,
+            email = email,
+            password = _passwordHasher.HashPassword(request.Password),
+            approval_type_id = Const.ApprovalType.ADD,
+            group_id = Const.DEFAULT_GROUP_ID_GUEST_CODE,
+            registration_source = Const.RegistrationSource.SELF,
+            is_active = true,
+            is_deleted = false,
+            created_by = userId,
+            created_date = now,
+        }, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        const string approvalHref = "/dashboard/maintenance/user-approval";
+        const string shortText = "User Registration";
+        var longText = $"User {userId} ({email}) submitted a self registration and is waiting for approval.";
+
+        var adminIds = await _unitOfWork.UmUserGroup.GetActiveAdministratorUserIdsAsync(cancellationToken);
+        foreach (var adminId in adminIds)
+        {
+            await _notificationService.CreateAsync(
+                adminId,
+                shortText,
+                longText,
+                approvalHref,
+                NotificationTypeIds.UserRegistration,
+                cancellationToken);
+
+            var admin = await _unitOfWork.UmUserApp.GetByIdAsync(adminId);
+            if (admin == null || string.IsNullOrWhiteSpace(admin.email))
+            {
+                continue;
+            }
+
+            await QueueAdminNotificationEmailAsync(admin, shortText, longText, approvalHref, cancellationToken);
+        }
+
+        await SendRegistrationReceivedEmailAsync(userId, fullName, email, cancellationToken);
+
+        return Success("Registration successful.");
     }
 
     public async Task<LoginResponseDto> RefreshTokenAsync(string refreshToken)
@@ -439,4 +549,91 @@ public class AuthService : IAuthService
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
         return Convert.ToBase64String(bytes);
     }
+
+    private async Task SendRegistrationReceivedEmailAsync(
+        string userId,
+        string fullName,
+        string email,
+        CancellationToken cancellationToken)
+    {
+        var template = await _unitOfWork.EmailTemplates.GetActiveByKeyAsync(
+            EmailTemplateKeys.RegistrationReceived,
+            cancellationToken);
+
+        var subject = template?.subject ?? "DeckZa registration received";
+        var bodyHtml = template?.body_html
+                       ?? "<p>Hello {{full_name}},</p><p>Your DeckZa registration ({{user_id}}) has been received and is awaiting administrator approval.</p>";
+        var bodyText = template?.body_text
+                       ?? "Hello {{full_name}},\n\nYour DeckZa registration ({{user_id}}) has been received and is awaiting administrator approval.";
+
+        subject = EmailTemplateRenderer.ApplyValues(subject, fullName, userId, null, null, null);
+        bodyHtml = EmailTemplateRenderer.ApplyValues(bodyHtml, fullName, userId, null, null, null);
+        bodyText = EmailTemplateRenderer.ApplyValues(bodyText, fullName, userId, null, null, null);
+
+        await _emailDispatch.QueueAsync(
+            email,
+            subject,
+            bodyHtml,
+            bodyText,
+            "REGISTRATION",
+            userId,
+            cancellationToken);
+    }
+
+    private async Task QueueAdminNotificationEmailAsync(
+        um_user_app admin,
+        string shortText,
+        string longText,
+        string href,
+        CancellationToken cancellationToken)
+    {
+        var template = await _unitOfWork.EmailTemplates.GetActiveByKeyAsync(
+            EmailTemplateKeys.Notification,
+            cancellationToken);
+
+        var subject = template?.subject ?? "DeckZa notification";
+        var bodyHtml = template?.body_html
+                       ?? "<p>Hello {{full_name}},</p><p>{{short_text}}</p><p>{{long_text}}</p><p><a href=\"{{link}}\">Open DeckZa</a></p>";
+        var bodyText = template?.body_text
+                       ?? "Hello {{full_name}},\n\n{{short_text}}\n\n{{long_text}}\n\nOpen DeckZa: {{link}}";
+
+        var fullName = admin.full_name ?? admin.user_id;
+
+        subject = EmailTemplateRenderer.ApplyValues(subject, fullName, admin.user_id, shortText, longText, href);
+        bodyHtml = EmailTemplateRenderer.ApplyValues(bodyHtml, fullName, admin.user_id, shortText, longText, href);
+        bodyText = EmailTemplateRenderer.ApplyValues(bodyText, fullName, admin.user_id, shortText, longText, href);
+
+        await _emailDispatch.QueueAsync(
+            admin.email!,
+            subject,
+            bodyHtml,
+            bodyText,
+            "NOTIFICATION",
+            NotificationTypeIds.UserRegistration,
+            cancellationToken);
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        if (!MailAddress.TryCreate(email, out var address))
+        {
+            return false;
+        }
+
+        return address.Host.Contains('.');
+    }
+
+    private static BaseGeneralResponse Success(string message) => new()
+    {
+        Success = true,
+        Code = Const.SUCCESS_CODE,
+        Message = message,
+    };
+
+    private static BaseGeneralResponse Fail(string message) => new()
+    {
+        Success = false,
+        Code = Const.ERROR_CODE,
+        Message = message,
+    };
 }

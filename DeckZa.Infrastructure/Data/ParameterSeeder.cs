@@ -24,6 +24,10 @@ public static class ParameterSeeder
         ("tb_parameter_system_detail", "Parameter System Detail", "SettingsSystemDaydream"),
         ("tb_report_set", "Report Set", "Report"),
         ("tb_screen_menu", "Screen Menu", "Settings"),
+        ("rf_plan", "Plan", "WorkspacePremium"),
+        ("rf_plan_feature", "Plan Feature", "List"),
+        ("tb_payment_request", "Payment Request", "Payment"),
+        ("tb_payment_invoice", "Payment Invoice", "Receipt"),
     };
 
     public static async Task SeedAsync(DeckZaDbContext context, CancellationToken cancellationToken = default)
@@ -207,6 +211,79 @@ public static class ParameterSeeder
             Field("query_list_param", "Query List Param", "text", order: 7),
             Field("status_approval", "Status Approval", "number", order: 8),
             Field("is_active", "Active", "bit", order: 9),
+        });
+
+        await AddFieldsAsync(context, "rf_plan", cancellationToken, new[]
+        {
+            Field("id", "Plan ID", "text", key: true, mandatory: true, order: 1),
+            Field("plan_name", "Plan Name", "text", mandatory: true, order: 2),
+            Field("description", "Description", "text", order: 3),
+            Field("price_amount", "Price", "number", order: 4),
+            Field("price_currency", "Currency", "text", order: 5),
+            Field("billing_period", "Billing Period", "list", mandatory: true, order: 6,
+                reff: "select N'ONE_TIME' as value, N'ONE_TIME' as text union all select N'MONTHLY' as value, N'MONTHLY' as text union all select N'YEARLY' as value, N'YEARLY' as text"),
+            Field("billing_interval_count", "Billing Interval", "number", order: 7),
+            Field("max_active_tasks", "Max Active Tasks", "number", order: 8),
+            Field("report_period_months", "Report Period (Months)", "number", order: 9),
+            Field("allows_calendar", "Allow Calendar", "bit", order: 10),
+            Field("allows_excel_import", "Allow Excel Import", "bit", order: 11),
+            Field("allows_supervisor_mode", "Allow Supervisor Mode", "bit", order: 12),
+            Field("upgrade_group_id", "Upgrade Group", "list", order: 13,
+                reff: "select group_id as value, group_name as text from um_group_app where is_active=1 and is_deleted=0"),
+            Field("order_seq", "Order", "number", order: 14),
+            Field("is_active", "Active", "bit", order: 15),
+        });
+
+        await AddFieldsAsync(context, "rf_plan_feature", cancellationToken, new[]
+        {
+            Field("plan_id", "Plan", "list", key: true, mandatory: true, order: 1,
+                reff: "select id as value, plan_name as text from rf_plan where is_active=1 and is_deleted=0"),
+            Field("feature_text", "Feature", "text", key: true, mandatory: true, order: 2),
+            Field("order_seq", "Order", "number", order: 3),
+            Field("is_active", "Active", "bit", order: 4),
+        });
+
+        await AddFieldsAsync(context, "tb_payment_request", cancellationToken, new[]
+        {
+            Field("request_no", "Request No", "text", key: true, mandatory: true, order: 1),
+            Field("user_id", "User", "text", mandatory: true, order: 2),
+            Field("plan_id", "Plan", "list", order: 3,
+                reff: "select id as value, plan_name as text from rf_plan where is_active=1 and is_deleted=0"),
+            Field("amount", "Amount", "number", order: 4),
+            Field("currency", "Currency", "text", order: 5),
+            Field("payment_method", "Payment Method", "text", order: 6),
+            Field("transfer_reference", "Transfer Reference", "text", order: 7),
+            Field("proof_file_name", "Proof File Name", "text", order: 8),
+            Field("proof_stored_path", "Proof Stored Path", "text", order: 9),
+            Field("proof_content_type", "Proof Content Type", "text", order: 10),
+            Field("proof_size_bytes", "Proof Size (Bytes)", "number", order: 11),
+            Field("status", "Status", "list", order: 12,
+                reff: "select N'PENDING' as value, N'PENDING' as text union all select N'APPROVED' as value, N'APPROVED' as text union all select N'REJECTED' as value, N'REJECTED' as text"),
+            Field("reviewed_by", "Reviewed By", "text", order: 13),
+            Field("reviewed_date", "Reviewed Date", "date", order: 14),
+            Field("review_note", "Review Note", "textarea", order: 15),
+            Field("activated_from", "Activated From", "date", order: 16),
+            Field("activated_to", "Activated To", "date", order: 17),
+        });
+
+        await AddFieldsAsync(context, "tb_payment_invoice", cancellationToken, new[]
+        {
+            Field("invoice_no", "Invoice No", "text", key: true, mandatory: true, order: 1),
+            Field("payment_request_id", "Payment Request ID", "number", mandatory: true, order: 2),
+            Field("user_id", "User", "text", order: 3),
+            Field("plan_id", "Plan", "text", order: 4),
+            Field("plan_name", "Plan Name", "text", order: 5),
+            Field("amount", "Amount", "number", order: 6),
+            Field("currency", "Currency", "text", order: 7),
+            Field("billing_period", "Billing Period", "text", order: 8),
+            Field("invoice_date", "Invoice Date", "date", order: 9),
+            Field("activated_from", "Activated From", "date", order: 10),
+            Field("activated_to", "Activated To", "date", order: 11),
+            Field("status", "Status", "text", order: 12),
+            Field("file_name", "File Name", "text", order: 13),
+            Field("stored_path", "Stored Path", "text", order: 14),
+            Field("content_type", "Content Type", "text", order: 15),
+            Field("size_bytes", "Size (Bytes)", "number", order: 16),
         });
     }
 

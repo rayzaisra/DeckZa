@@ -49,6 +49,7 @@
             <MudTh><MudTableSortLabel T="UserApprovalListItemDto" SortLabel="email">Email</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel T="UserApprovalListItemDto" SortLabel="approvaltype">Approval Type</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel T="UserApprovalListItemDto" SortLabel="requesterfullname">Requester</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="UserApprovalListItemDto" SortLabel="registrationsource">Registration Source</MudTableSortLabel></MudTh>
             <PermissionGate AnyOf="PermissionSets.ApproveReject">
                 <MudTh Style="text-align:center;">Action</MudTh>
             </PermissionGate>
@@ -59,6 +60,7 @@
             <MudTd DataLabel="Email">@context.Email</MudTd>
             <MudTd DataLabel="Approval Type">@context.ApprovalType</MudTd>
             <MudTd DataLabel="Requester">@context.RequesterFullName</MudTd>
+            <MudTd DataLabel="Registration Source">@context.RegistrationSource</MudTd>
             <PermissionGate AnyOf="PermissionSets.ApproveReject">
                 <MudTd DataLabel="Action" Style="text-align:center;">
                     <MudRadioGroup @bind-Value="context.SelectedAction" Class="approval-radios">

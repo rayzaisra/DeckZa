@@ -32,6 +32,13 @@ public class UserManagementService : IUserManagementService
     private Task LogErrorAsync(Exception exception)
         => _errorLog.LogAsync("UserManagement", "ERROR", exception);
 
+    /// <summary>
+    /// Pertahankan asal pendaftaran user saat edit/delete.
+    /// Default "ADMIN" bila nilainya belum pernah diisi.
+    /// </summary>
+    private static string ResolveSource(string? current)
+        => string.IsNullOrWhiteSpace(current) ? Const.RegistrationSource.ADMIN : current;
+
     public Task<GeneralListResponseDto<UserListItemDto>> GetListAsync(DataTableRequestDto request)
         => _queryService.GetListAsync(request);
 
@@ -89,6 +96,7 @@ public class UserManagementService : IUserManagementService
                 gender_id = dto.GenderId,
                 password = _passwordHasher.HashPassword(dto.Password),
                 approval_type_id = Const.ApprovalType.ADD,
+                registration_source = Const.RegistrationSource.ADMIN,
                 is_active = dto.IsActive,
                 is_deleted = false,
                 created_by = actor,
@@ -132,6 +140,7 @@ public class UserManagementService : IUserManagementService
                 gender_id = dto.GenderId,
                 password = string.IsNullOrWhiteSpace(dto.Password) ? null : _passwordHasher.HashPassword(dto.Password),
                 approval_type_id = Const.ApprovalType.MODIFIED,
+                registration_source = ResolveSource(user.registration_source),
                 is_active = dto.IsActive,
                 is_deleted = false,
                 created_by = actor,
@@ -176,6 +185,7 @@ public class UserManagementService : IUserManagementService
                 gender_id = user.gender_id,
                 group_id = role?.group_id,
                 approval_type_id = Const.ApprovalType.DELETE,
+                registration_source = ResolveSource(user.registration_source),
                 is_active = false,
                 is_deleted = true,
                 created_by = actor,

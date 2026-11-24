@@ -1,6 +1,6 @@
 ﻿@page "/dashboard/documentation/framework-flows"
 @layout AuthenticatedLayout
-@attribute [Authorize]
+@attribute [Authorize(Roles = "00")]
 @using MudBlazor
 @using DeckZa.Shared.Pages.Documentation
 

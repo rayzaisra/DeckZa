@@ -12,6 +12,7 @@ public class UserListItemDto
     public string? GroupName { get; set; }
     public bool IsActive { get; set; }
     public bool IsLocked { get; set; }
+    public string? RegistrationSource { get; set; }
     public DateTime? LastLoginDate { get; set; }
 }
 

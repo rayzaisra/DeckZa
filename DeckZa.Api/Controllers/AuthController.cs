@@ -59,6 +59,29 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
+    {
+        try
+        {
+            var result = await _authService.RegisterAsync(request, HttpContext.RequestAborted);
+            var response = ApiResponseFactory.FromResult(result);
+            if (!result.Success)
+            {
+                return BadRequest(response);
+            }
+
+            _backgroundJobs.Enqueue<EmailOutboxProcessor>(job => job.ProcessPendingAsync());
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            await _errorLog.LogAsync("Auth", "ERROR", ex);
+            return BadRequest(ApiResponseFactory.Error<string>(ex.Message));
+        }
+    }
+
     [HttpPost("refresh")]
     [AllowAnonymous]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto request)

@@ -45,4 +45,16 @@ public partial class temp_user_app_pending
     public bool? is_active { get; set; }
 
     public bool? is_deleted { get; set; }
+
+    [Column(TypeName = "varchar(20)")]
+    [StringLength(20)]
+    public string? registration_source { get; set; }
+
+    [Column(TypeName = "varchar(30)")]
+    [StringLength(30)]
+    public string? external_provider { get; set; }
+
+    [Column(TypeName = "varchar(255)")]
+    [StringLength(255)]
+    public string? external_provider_id { get; set; }
 }

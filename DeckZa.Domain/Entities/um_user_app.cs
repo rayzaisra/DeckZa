@@ -24,4 +24,26 @@ public partial class um_user_app : BaseEntity
     public string? gender_id { get; set; }
 
     public DateTime? last_password_change_date { get; set; }
+
+    [Column(TypeName = "varchar(20)")]
+    [StringLength(20)]
+    public string? registration_source { get; set; }
+
+    [Column(TypeName = "varchar(20)")]
+    [StringLength(20)]
+    public string? plan_id { get; set; }
+
+    [Column(TypeName = "varchar(30)")]
+    [StringLength(30)]
+    public string? external_provider { get; set; }
+
+    [Column(TypeName = "varchar(255)")]
+    [StringLength(255)]
+    public string? external_provider_id { get; set; }
+
+    [StringLength(500)]
+    public string? avatar_url { get; set; }
+
+    [Column(TypeName = "datetime2")]
+    public DateTime? profile_synced_date { get; set; }
 }

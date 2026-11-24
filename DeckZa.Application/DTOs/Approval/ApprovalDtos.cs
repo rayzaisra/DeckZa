@@ -10,6 +10,7 @@ public class UserApprovalListItemDto
     public string? GroupName { get; set; }
     public string ApprovalType { get; set; } = string.Empty;
     public string? RequesterFullName { get; set; }
+    public string? RegistrationSource { get; set; }
     public DateTime? CreatedDate { get; set; }
     public int SelectedAction { get; set; } = 2;
 }

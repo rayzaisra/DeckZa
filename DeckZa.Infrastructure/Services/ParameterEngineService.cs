@@ -38,6 +38,10 @@ public class ParameterEngineService : IParameterEngineService
         "tb_parameter_system_detail",
         "tb_report_set",
         "tb_screen_menu",
+        "rf_plan",
+        "rf_plan_feature",
+        "tb_payment_request",
+        "tb_payment_invoice",
         "__import__",
     };
 
