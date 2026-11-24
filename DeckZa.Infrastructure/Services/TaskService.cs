@@ -16,6 +16,7 @@ public class TaskService : ITaskService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITaskQueryService _queryService;
     private readonly ITaskReferenceQueryService _referenceQueryService;
+    private readonly IPlanService _planService;
     private readonly ICurrentUserService _currentUser;
     private readonly IErrorLogService _errorLog;
 
@@ -23,12 +24,14 @@ public class TaskService : ITaskService
         IUnitOfWork unitOfWork,
         ITaskQueryService queryService,
         ITaskReferenceQueryService referenceQueryService,
+        IPlanService planService,
         ICurrentUserService currentUser,
         IErrorLogService errorLog)
     {
         _unitOfWork = unitOfWork;
         _queryService = queryService;
         _referenceQueryService = referenceQueryService;
+        _planService = planService;
         _currentUser = currentUser;
         _errorLog = errorLog;
     }
@@ -102,6 +105,18 @@ public class TaskService : ITaskService
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Fail("User session is not valid.");
+            }
+
+            var plan = await _planService.GetEffectivePlanAsync(userId, cancellationToken);
+            if (plan?.MaxActiveTasks is int limit)
+            {
+                var active = await _unitOfWork.Tasks.CountActiveByUserAsync(userId, cancellationToken);
+                if (active >= limit)
+                {
+                    return Fail(
+                        $"You have reached the {limit} active task limit for the {plan.PlanName} plan. " +
+                        "Delete an old task or upgrade your plan.");
+                }
             }
 
             var title = (dto.Title ?? string.Empty).Trim();

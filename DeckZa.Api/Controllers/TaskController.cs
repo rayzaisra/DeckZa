@@ -21,11 +21,19 @@ public class TaskController : ControllerBase
 
     private readonly ITaskService _taskService;
     private readonly ITaskImportService _taskImportService;
+    private readonly IPlanService _planService;
+    private readonly ICurrentUserService _currentUser;
 
-    public TaskController(ITaskService taskService, ITaskImportService taskImportService)
+    public TaskController(
+        ITaskService taskService,
+        ITaskImportService taskImportService,
+        IPlanService planService,
+        ICurrentUserService currentUser)
     {
         _taskService = taskService;
         _taskImportService = taskImportService;
+        _planService = planService;
+        _currentUser = currentUser;
     }
 
     [HttpPost("list")]
@@ -80,6 +88,17 @@ public class TaskController : ControllerBase
     [RequireMenuAccess(PermissionAction.Export, "TSK-KANBAN", "TSK-CAL")]
     public async Task<IActionResult> GetImportTemplate(CancellationToken cancellationToken)
     {
+        var userId = _currentUser.UserId;
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            var plan = await _planService.GetEffectivePlanAsync(userId, cancellationToken);
+            if (plan is { AllowsExcelImport: false })
+            {
+                return StatusCode(403, ApiResponseFactory.Error<string>(
+                    "Excel import is not available on your plan."));
+            }
+        }
+
         var template = await _taskImportService.BuildTemplateAsync(cancellationToken);
         return File(template.Content, ExcelContentType, template.FileName);
     }
@@ -89,6 +108,17 @@ public class TaskController : ControllerBase
     [RequireMenuAccess(PermissionAction.Import, "TSK-KANBAN", "TSK-CAL")]
     public async Task<IActionResult> Import([FromForm] IFormFile? file, CancellationToken cancellationToken)
     {
+        var userId = _currentUser.UserId;
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            var plan = await _planService.GetEffectivePlanAsync(userId, cancellationToken);
+            if (plan is { AllowsExcelImport: false })
+            {
+                return StatusCode(403, ApiResponseFactory.Error<TaskImportResultDto>(
+                    "Excel import is not available on your plan."));
+            }
+        }
+
         if (file == null)
         {
             return BadRequest(ApiResponseFactory.Error<TaskImportResultDto>("Please choose an Excel file."));

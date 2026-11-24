@@ -23,6 +23,13 @@ public class TaskRepository : ITaskRepository
                  && e.isDeleted == false,
             cancellationToken);
 
+    public Task<int> CountActiveByUserAsync(string userId, CancellationToken cancellationToken = default)
+        => _context.tb_task.CountAsync(
+            e => e.createdBy == userId
+                 && e.isActive == true
+                 && e.isDeleted == false,
+            cancellationToken);
+
     public Task AddAsync(tb_task entity, CancellationToken cancellationToken = default)
         => _context.tb_task.AddAsync(entity, cancellationToken).AsTask();
 

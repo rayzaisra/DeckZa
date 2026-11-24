@@ -3,10 +3,12 @@
 @attribute [Authorize]
 @inject CurrentUserAccessService Access
 @inject TaskApiService TaskApi
+@inject PlanApiService PlanApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject MotionService Motion
+@using DeckZa.Application.DTOs.Plans
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
@@ -15,39 +17,57 @@
         <div class="dashboard-kicker">Workspace</div>
         <h1>Task Board</h1>
         <p>Plan, move, and finish your work across statuses.</p>
+        @if (_plan?.MaxActiveTasks is int maxTasks)
+        {
+            <MudChip T="string"
+                     Size="Size.Small"
+                     Variant="Variant.Outlined"
+                     Color="@(_plan.ActiveTaskCount >= maxTasks ? Color.Warning : Color.Default)"
+                     Class="mt-2">
+                @_plan.ActiveTaskCount / @maxTasks tasks
+            </MudChip>
+        }
     </div>
-    <PermissionGate Action="PermissionAction.AddEdit">
-        <div class="d-flex gap-2 align-center">
-            <MudButton Variant="Variant.Outlined"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Download"
-                       OnClick="@(_ => DownloadTemplateAsync())">
-                Import Template
-            </MudButton>
-            <MudFileUpload T="IBrowserFile"
-                           Accept=".xlsx"
-                           Disabled="@_importing"
-                           Class="import-excel-upload"
-                           OnFilesChanged="ImportExcelAsync">
-                <CustomContent Context="upload">
-                    <MudButton Variant="Variant.Outlined"
-                               Color="Color.Primary"
-                               StartIcon="@Icons.Material.Filled.UploadFile"
-                               Class="@("ryz-busy-button" + (_importing ? " is-busy" : string.Empty))"
+    <div class="d-flex gap-2 align-center">
+        @if (_plan?.AllowsExcelImport != false)
+        {
+            <PermissionGate Action="PermissionAction.Export">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Download"
+                           OnClick="@(_ => DownloadTemplateAsync())">
+                    Import Template
+                </MudButton>
+            </PermissionGate>
+            <PermissionGate Action="PermissionAction.Import">
+                <MudFileUpload T="IBrowserFile"
+                               Accept=".xlsx"
                                Disabled="@_importing"
-                               OnClick="@(_ => upload.OpenFilePickerAsync())">
-                        @(_importing ? "Importing..." : "Upload Excel")
-                    </MudButton>
-                </CustomContent>
-            </MudFileUpload>
+                               Class="import-excel-upload"
+                               OnFilesChanged="ImportExcelAsync">
+                    <CustomContent Context="upload">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.UploadFile"
+                                   Class="@("ryz-busy-button" + (_importing ? " is-busy" : string.Empty))"
+                                   Disabled="@_importing"
+                                   OnClick="@(_ => upload.OpenFilePickerAsync())">
+                            @(_importing ? "Importing..." : "Upload Excel")
+                        </MudButton>
+                    </CustomContent>
+                </MudFileUpload>
+            </PermissionGate>
+        }
+        <PermissionGate Action="PermissionAction.AddEdit">
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Add"
+                       Disabled="@IsTaskLimitReached"
                        OnClick="@(_ => OpenCreateAsync(null))">
                 New Task
             </MudButton>
-        </div>
-    </PermissionGate>
+        </PermissionGate>
+    </div>
 </div>
 
 <MudPaper Elevation="0" Class="dashboard-card kanban-toolbar">
@@ -191,7 +211,10 @@ else
                     }
 
                     <PermissionGate Action="PermissionAction.Add">
-                        <button type="button" class="kanban-add" @onclick="@(_ => OpenCreateAsync(column.StatusId))">
+                        <button type="button"
+                                class="kanban-add"
+                                disabled="@IsTaskLimitReached"
+                                @onclick="@(_ => OpenCreateAsync(column.StatusId))">
                             <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Small" />
                             <span>New task</span>
                         </button>
@@ -217,6 +240,7 @@ else
     private List<DropdownItemDto> _taskTypes = new();
     private List<DropdownItemDto> _taskPriorities = new();
     private List<DropdownItemDto> _taskStatuses = new();
+    private EffectivePlanDto? _plan;
 
     private string _filterApplicationId = string.Empty;
     private string _filterTaskTypeId = string.Empty;
@@ -234,10 +258,14 @@ else
     private bool _uploadAnimationPending;
     private string? _loadError;
 
+    private bool IsTaskLimitReached
+        => _plan?.MaxActiveTasks is int maxTasks
+           && (_plan.ActiveTaskCount ?? 0) >= maxTasks;
+
     protected override async Task OnInitializedAsync()
     {
         await Access.EnsureLoadedAsync();
-        await LoadReferenceDataAsync();
+        await Task.WhenAll(LoadPlanAsync(), LoadReferenceDataAsync());
         await ReloadBoardAsync();
     }
 
@@ -247,6 +275,18 @@ else
         {
             _uploadAnimationPending = false;
             await Motion.StartUploadIndicatorAsync();
+        }
+    }
+
+    private async Task LoadPlanAsync()
+    {
+        try
+        {
+            _plan = await PlanApi.GetMyPlanAsync();
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
         }
     }
 
@@ -605,7 +645,7 @@ else
             if (response.Success)
             {
                 Snackbar.Add(response.Message ?? "Task created.", Severity.Success);
-                await ReloadBoardAsync();
+                await Task.WhenAll(LoadPlanAsync(), ReloadBoardAsync());
             }
             else
             {
@@ -686,7 +726,7 @@ else
             if (response.Success)
             {
                 Snackbar.Add(response.Message ?? "Task deleted.", Severity.Success);
-                await ReloadBoardAsync();
+                await Task.WhenAll(LoadPlanAsync(), ReloadBoardAsync());
             }
             else
             {

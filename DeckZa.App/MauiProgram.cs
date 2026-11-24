@@ -54,6 +54,7 @@ public static class MauiProgram
         builder.Services.AddScoped<DashboardApiService>();
         builder.Services.AddScoped<SettingApiService>();
         builder.Services.AddScoped<TaskApiService>();
+        builder.Services.AddScoped<PlanApiService>();
         builder.Services.AddScoped<ReportApiService>();
         builder.Services.AddScoped<ApprovalApiService>();
         builder.Services.AddScoped<ParameterApiService>();

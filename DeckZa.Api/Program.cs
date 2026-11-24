@@ -97,6 +97,7 @@ builder.Services.AddScoped<IDynamicEngineService, DynamicEngineService>();
 builder.Services.AddScoped<IScreenMenuEditorService, ScreenMenuEditorService>();
 builder.Services.AddScoped<IUserSessionNotifier, UserSessionNotifier>();
 builder.Services.AddScoped<IErrorLogService, ErrorLogService>();
+builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.Configure<ApiActivityLogOptions>(
     builder.Configuration.GetSection(ApiActivityLogOptions.SectionName));
 builder.Services.AddSingleton<ApiActivityLogQueue>();
