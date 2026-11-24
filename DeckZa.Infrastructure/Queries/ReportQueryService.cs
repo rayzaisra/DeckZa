@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 
+using DeckZa.Application.DTOs.Plans;
 using DeckZa.Application.DTOs.Reports;
+using DeckZa.Application.Interfaces;
 using DeckZa.Application.Interfaces.Queries;
 using DeckZa.Domain.Entities;
 using DeckZa.Infrastructure.Data;
@@ -39,15 +41,21 @@ public class ReportQueryService : IReportQueryService
     };
 
     private readonly DeckZaDbContext _context;
+    private readonly IPlanService _planService;
 
-    public ReportQueryService(DeckZaDbContext context) => _context = context;
+    public ReportQueryService(DeckZaDbContext context, IPlanService planService)
+    {
+        _context = context;
+        _planService = planService;
+    }
 
     public async Task<ReportResultDto> BuildAsync(
         string userId,
         ReportFilterDto filter,
         CancellationToken cancellationToken = default)
     {
-        var (periodStart, periodEndExclusive) = ResolvePeriod(filter);
+        var plan = await _planService.GetEffectivePlanAsync(userId, cancellationToken);
+        var (periodStart, periodEndExclusive) = ResolvePeriod(filter, plan);
 
         var memberName = await _context.um_user_app
             .AsNoTracking()
@@ -189,15 +197,28 @@ public class ReportQueryService : IReportQueryService
                TaskPriorityId = task.task_priority_id,
            };
 
-    private static (DateTime Start, DateTime EndExclusive) ResolvePeriod(ReportFilterDto filter)
+    private static (DateTime Start, DateTime EndExclusive) ResolvePeriod(
+        ReportFilterDto filter,
+        EffectivePlanDto? plan)
     {
         var today = DateTime.Today;
-        var start = filter.DateFrom?.Date
+        DateTime start;
+        DateTime endExclusive;
+
+        if (plan?.ReportPeriodMonths is int months && months > 0)
+        {
+            start = new DateTime(today.Year, today.Month, 1);
+            endExclusive = start.AddMonths(months);
+        }
+        else
+        {
+            start = filter.DateFrom?.Date
                     ?? new DateTime(today.Year, today.Month, 1);
 
-        var endExclusive = filter.DateTo.HasValue
-            ? filter.DateTo.Value.Date.AddDays(1)
-            : start.AddMonths(1);
+            endExclusive = filter.DateTo.HasValue
+                ? filter.DateTo.Value.Date.AddDays(1)
+                : start.AddMonths(1);
+        }
 
         if (endExclusive <= start)
         {

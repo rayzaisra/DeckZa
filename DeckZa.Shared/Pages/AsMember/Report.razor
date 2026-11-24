@@ -4,6 +4,7 @@
 @inject ReportApiService ReportApi
 @inject TaskApiService TaskApi
 @inject ExportApiService ExportApi
+@inject PlanApiService PlanApi
 @inject CurrentUserAccessService Access
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -35,16 +36,28 @@
 </div>
 
 <MudPaper Elevation="0" Class="dashboard-card kanban-toolbar">
+    @if (IsReportPeriodLocked)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+            Plan Anda hanya mendukung report bulan berjalan.
+        </MudAlert>
+    }
     <div class="kanban-toolbar-row">
         <MudDatePicker @bind-Date="_dateFrom"
                        Label="Date From"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
+                       MinDate="ReportMinDate"
+                       MaxDate="ReportMaxDate"
+                       ReadOnly="IsReportPeriodLocked"
                        Class="kanban-filter" />
         <MudDatePicker @bind-Date="_dateTo"
                        Label="Date To"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
+                       MinDate="ReportMinDate"
+                       MaxDate="ReportMaxDate"
+                       ReadOnly="IsReportPeriodLocked"
                        Class="kanban-filter" />
         <MudSelect T="string"
                    @bind-Value="_taskTypeId"
@@ -176,6 +189,7 @@ else if (_report != null)
     };
 
     private ReportResultDto? _report;
+    private EffectivePlanDto? _plan;
     private List<DropdownItemDto> _taskTypes = new();
     private List<DropdownItemDto> _statuses = new();
     private DateTime? _dateFrom;
@@ -186,6 +200,26 @@ else if (_report != null)
     private bool _exporting;
     private bool _revealPending = true;
 
+    private bool IsReportPeriodLocked => _plan?.ReportPeriodMonths is int months && months > 0;
+
+    private DateTime? ReportMinDate => IsReportPeriodLocked
+        ? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1)
+        : null;
+
+    private DateTime? ReportMaxDate
+    {
+        get
+        {
+            if (!IsReportPeriodLocked)
+            {
+                return null;
+            }
+
+            var start = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            return start.AddMonths(_plan!.ReportPeriodMonths!.Value).AddDays(-1);
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await Access.EnsureLoadedAsync();
@@ -194,8 +228,26 @@ else if (_report != null)
         _dateFrom = new DateTime(today.Year, today.Month, 1);
         _dateTo = new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1);
 
+        await LoadPlanAsync();
         await LoadReferenceDataAsync();
         await PreviewAsync();
+    }
+
+    private async Task LoadPlanAsync()
+    {
+        try
+        {
+            _plan = await PlanApi.GetMyPlanAsync();
+            if (IsReportPeriodLocked)
+            {
+                _dateFrom = ReportMinDate;
+                _dateTo = ReportMaxDate;
+            }
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -224,8 +276,8 @@ else if (_report != null)
 
     private ReportFilterDto BuildFilter() => new()
     {
-        DateFrom = _dateFrom,
-        DateTo = _dateTo,
+        DateFrom = IsReportPeriodLocked ? ReportMinDate : _dateFrom,
+        DateTo = IsReportPeriodLocked ? ReportMaxDate : _dateTo,
         TaskTypeId = string.IsNullOrWhiteSpace(_taskTypeId) ? null : _taskTypeId,
         StatusId = string.IsNullOrWhiteSpace(_statusId) ? null : _statusId,
     };

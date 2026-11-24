@@ -2,6 +2,7 @@
 @layout AuthenticatedLayout
 @attribute [Authorize]
 @inject TaskApiService TaskApi
+@inject PlanApiService PlanApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject MotionService Motion
@@ -14,24 +15,35 @@
         <h1>Calendar</h1>
         <p>See every task that has a due date across the month or the whole year.</p>
     </div>
-    <div class="d-flex gap-2 align-center">
-        <MudButton Variant="Variant.Outlined"
-                   Color="Color.Default"
-                   StartIcon="@Icons.Material.Filled.Today"
-                   OnClick="@(_ => GoToTodayAsync())">
-            Today
-        </MudButton>
-        <MudToggleGroup T="string"
-                        @bind-Value="_viewMode"
-                        @bind-Value:after="OnViewModeChangedAsync"
-                        Size="Size.Small"
-                        Color="Color.Primary">
-            <MudToggleItem Value="@("month")" Text="Month" />
-            <MudToggleItem Value="@("year")" Text="Year" />
-        </MudToggleGroup>
-    </div>
+    @if (!_calendarUnavailable)
+    {
+        <div class="d-flex gap-2 align-center">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       StartIcon="@Icons.Material.Filled.Today"
+                       OnClick="@(_ => GoToTodayAsync())">
+                Today
+            </MudButton>
+            <MudToggleGroup T="string"
+                            @bind-Value="_viewMode"
+                            @bind-Value:after="OnViewModeChangedAsync"
+                            Size="Size.Small"
+                            Color="Color.Primary">
+                <MudToggleItem Value="@("month")" Text="Month" />
+                <MudToggleItem Value="@("year")" Text="Year" />
+            </MudToggleGroup>
+        </div>
+    }
 </div>
 
+@if (_calendarUnavailable)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+        Fitur Calendar tidak tersedia pada plan Anda saat ini. Upgrade plan untuk mengakses Calendar.
+    </MudAlert>
+}
+else
+{
 <MudPaper Elevation="0" Class="dashboard-card kanban-toolbar">
     <div class="kanban-toolbar-row">
         <MudSelect T="string"
@@ -238,6 +250,7 @@
         </MudPaper>
     </div>
 }
+}
 
 @code {
     private static readonly string[] WeekdayLabels = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
@@ -265,6 +278,7 @@
     private DateTime _cursor = DateTime.Today;
     private DateTime? _selectedDate;
     private bool _loading;
+    private bool _calendarUnavailable;
     private string? _loadError;
     private int _slideDirection;
 
@@ -283,6 +297,20 @@
 
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            var plan = await PlanApi.GetMyPlanAsync();
+            if (plan != null && !plan.AllowsCalendar)
+            {
+                _calendarUnavailable = true;
+                return;
+            }
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+
         await LoadReferenceDataAsync();
         await ReloadAsync();
     }
