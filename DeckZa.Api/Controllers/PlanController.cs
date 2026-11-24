@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using DeckZa.Api.Helpers;
 using DeckZa.Application.DTOs.Plans;
 using DeckZa.Application.Interfaces;
+using DeckZa.Application.Interfaces.Queries;
 
 namespace DeckZa.Api.Controllers;
 
@@ -12,13 +13,25 @@ namespace DeckZa.Api.Controllers;
 [Authorize]
 public class PlanController : ControllerBase
 {
+    private readonly IPlanQueryService _planQueryService;
     private readonly IPlanService _planService;
     private readonly ICurrentUserService _currentUser;
 
-    public PlanController(IPlanService planService, ICurrentUserService currentUser)
+    public PlanController(
+        IPlanQueryService planQueryService,
+        IPlanService planService,
+        ICurrentUserService currentUser)
     {
+        _planQueryService = planQueryService;
         _planService = planService;
         _currentUser = currentUser;
+    }
+
+    [HttpGet("list")]
+    public async Task<IActionResult> GetPlans(CancellationToken cancellationToken)
+    {
+        var plans = await _planQueryService.GetActivePlansAsync(cancellationToken);
+        return Ok(ApiResponseFactory.Success(plans, "Plans retrieved successfully"));
     }
 
     [HttpGet("me")]

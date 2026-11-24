@@ -1,6 +1,9 @@
 @page "/dashboard/upgrade-plan"
 @layout AuthenticatedLayout
 @attribute [Authorize]
+@inject PlanApiService PlanApi
+@inject TabStateService TabService
+@inject ISnackbar Snackbar
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
@@ -12,14 +15,170 @@
     </div>
 </div>
 
-<MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-    Halaman Upgrade Plan akan tersedia pada TASK2-009.
-</MudAlert>
+@if (_loading)
+{
+    <div class="plan-grid">
+        @for (var i = 0; i < 2; i++)
+        {
+            <MudPaper Elevation="0" Class="dashboard-card plan-card">
+                <MudSkeleton Width="35%" Height="28px" Class="mb-3" />
+                <MudSkeleton Width="55%" Height="42px" Class="mb-2" />
+                <MudSkeleton Width="30%" Height="18px" Class="mb-5" />
+                <MudSkeleton Width="90%" Class="mb-2" />
+                <MudSkeleton Width="85%" Class="mb-2" />
+                <MudSkeleton Width="75%" Class="mb-6" />
+                <MudSkeleton Width="100%" Height="40px" />
+            </MudPaper>
+        }
+    </div>
+}
+else if (_loadError is not null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">@_loadError</MudAlert>
+}
+else
+{
+    <div class="plan-grid">
+        @foreach (var plan in _plans)
+        {
+            var isCurrent = IsCurrentPlan(plan);
+            <section class="dashboard-card plan-card @(isCurrent ? "is-current" : string.Empty)">
+                <div class="plan-head">
+                    <div>
+                        <h2 class="plan-name">@plan.PlanName</h2>
+                        @if (!string.IsNullOrWhiteSpace(plan.Description))
+                        {
+                            <p class="plan-description">@plan.Description</p>
+                        }
+                    </div>
+                    @if (isCurrent)
+                    {
+                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
+                            Plan Anda saat ini
+                        </MudChip>
+                    }
+                </div>
+
+                <p class="plan-price">@FormatPrice(plan)</p>
+                <p class="plan-period">@FormatPeriod(plan)</p>
+
+                <ul class="plan-features">
+                    @foreach (var feature in plan.Features)
+                    {
+                        <li class="plan-feature">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="plan-feature-icon" />
+                            <span>@feature</span>
+                        </li>
+                    }
+                </ul>
+
+                <div class="plan-actions">
+                    @if (isCurrent)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   Disabled="true"
+                                   FullWidth="true">
+                            Plan Anda saat ini
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   FullWidth="true"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward"
+                                   OnClick="@(_ => OpenBilling(plan))">
+                            Pilih Plan
+                        </MudButton>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+}
 
 @code {
+    private const string BillingComponent = "DeckZa.Shared.Pages.AsMember.Billing, DeckZa.Shared";
+
     private readonly List<BreadcrumbItem> _breadcrumbs = new()
     {
         new BreadcrumbItem("Dashboard", "/dashboard"),
         new BreadcrumbItem("Upgrade Plan", null, disabled: true),
     };
+
+    private List<PlanDto> _plans = new();
+    private EffectivePlanDto? _myPlan;
+    private bool _loading = true;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var plansTask = PlanApi.GetPlansAsync();
+            var myPlanTask = PlanApi.GetMyPlanAsync();
+            await Task.WhenAll(plansTask, myPlanTask);
+            _plans = await plansTask;
+            _myPlan = await myPlanTask;
+        }
+        catch (Exception exception)
+        {
+            _loadError = exception.Message;
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private bool IsCurrentPlan(PlanDto plan)
+        => !string.IsNullOrWhiteSpace(_myPlan?.Id)
+           && string.Equals(_myPlan.Id, plan.Id, StringComparison.OrdinalIgnoreCase);
+
+    private void OpenBilling(PlanDto plan)
+    {
+        TabService.OpenTab(
+            "Billing",
+            BillingComponent,
+            "/dashboard/billing",
+            icon: "ReceiptLong",
+            parameters: new Dictionary<string, object> { ["PlanId"] = plan.Id });
+    }
+
+    private static string FormatPrice(PlanDto plan)
+    {
+        var currency = plan.PriceCurrency?.Trim().ToUpperInvariant() ?? "IDR";
+        var prefix = currency switch
+        {
+            "IDR" => "Rp ",
+            "USD" => "$",
+            _ => currency + " "
+        };
+
+        var amount = plan.PriceAmount.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("id-ID"));
+        return prefix + amount;
+    }
+
+    private static string FormatPeriod(PlanDto plan)
+    {
+        if (plan.PriceAmount <= 0)
+        {
+            return "Gratis";
+        }
+
+        var period = plan.BillingPeriod?.Trim().ToUpperInvariant();
+        var interval = plan.BillingIntervalCount <= 0 ? 1 : plan.BillingIntervalCount;
+
+        return period switch
+        {
+            "MONTHLY" when interval == 1 => "/ bulan",
+            "MONTHLY" => $"/ {interval} bulan",
+            "YEARLY" when interval == 1 => "/ tahun",
+            "YEARLY" => $"/ {interval} tahun",
+            "ONE_TIME" => "Sekali bayar",
+            _ => "Sekali bayar",
+        };
+    }
 }

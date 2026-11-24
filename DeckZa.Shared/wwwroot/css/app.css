@@ -3334,6 +3334,103 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
     }
 }
 
+/* Upgrade plan */
+.plan-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: stretch;
+}
+
+.plan-card {
+    display: flex;
+    flex-direction: column;
+    padding: 28px 28px 24px;
+}
+
+.plan-card.is-current {
+    border-color: color-mix(in srgb, var(--app-accent) 55%, var(--app-border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--app-accent) 28%, transparent), var(--card-shadow);
+}
+
+.plan-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.plan-name {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--app-text-strong);
+}
+
+.plan-description {
+    margin: 6px 0 0;
+    color: var(--app-muted);
+    font-size: .9rem;
+}
+
+.plan-price {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--app-text-strong);
+}
+
+.plan-period {
+    margin: 6px 0 22px;
+    color: var(--app-muted);
+    font-size: .92rem;
+}
+
+.plan-features {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+    flex: 1 1 auto;
+}
+
+.plan-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--app-text);
+    font-size: .94rem;
+}
+
+.plan-feature-icon {
+    color: var(--app-accent);
+    margin-top: 1px;
+    flex: 0 0 auto;
+}
+
+.plan-actions {
+    margin-top: auto;
+}
+
+.neo-brutalism .plan-card {
+    border: 3px solid var(--neo-ink);
+    border-radius: 6px;
+    box-shadow: var(--neo-shadow);
+}
+
+.neo-brutalism .plan-card.is-current {
+    background: color-mix(in srgb, var(--app-accent) 10%, var(--app-surface));
+}
+
+@media (max-width: 900px) {
+    .plan-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 /* Member dashboard — bento grid, driven by the active theme palette. */
 .bento-upgrade-banner {
     display: flex;
