@@ -29,17 +29,20 @@
         }
     </div>
     <div class="d-flex gap-2 align-center">
-        @if (_plan?.AllowsExcelImport != false)
+        @if (AllowsImport && Access.Can(PermissionAction.Export))
         {
-            <PermissionGate Action="PermissionAction.Export">
+            <span class="@RevealClass">
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Download"
                            OnClick="@(_ => DownloadTemplateAsync())">
                     Import Template
                 </MudButton>
-            </PermissionGate>
-            <PermissionGate Action="PermissionAction.Import">
+            </span>
+        }
+        @if (AllowsImport && Access.Can(PermissionAction.Import))
+        {
+            <span class="@RevealClass">
                 <MudFileUpload T="IBrowserFile"
                                Accept=".xlsx"
                                Disabled="@_importing"
@@ -56,17 +59,20 @@
                         </MudButton>
                     </CustomContent>
                 </MudFileUpload>
-            </PermissionGate>
+            </span>
         }
-        <PermissionGate Action="PermissionAction.AddEdit">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       Disabled="@IsTaskLimitReached"
-                       OnClick="@(_ => OpenCreateAsync(null))">
-                New Task
-            </MudButton>
-        </PermissionGate>
+        @if (Access.Can(PermissionAction.AddEdit))
+        {
+            <span class="@RevealClass">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Disabled="@IsTaskLimitReached"
+                           OnClick="@(_ => OpenCreateAsync(null))">
+                    New Task
+                </MudButton>
+            </span>
+        }
     </div>
 </div>
 
@@ -256,7 +262,16 @@ else
     private readonly HashSet<Guid> _pendingMoves = new();
     private bool _importing;
     private bool _uploadAnimationPending;
+    private bool _planResolved;
+    private bool _planFailed;
+    private bool _revealPending;
+    private bool _revealDone;
     private string? _loadError;
+
+    private string RevealClass => _revealPending && !_revealDone ? "ryz-enter-pending" : string.Empty;
+
+    private bool AllowsImport
+        => _planFailed || _plan?.AllowsExcelImport == true;
 
     private bool IsTaskLimitReached
         => _plan?.MaxActiveTasks is int maxTasks
@@ -271,6 +286,19 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_revealPending && !_revealDone && _planResolved)
+        {
+            _revealPending = false;
+            _revealDone = true;
+
+            if (!await Motion.TryRevealEnterAsync())
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+
+            return;
+        }
+
         if (_uploadAnimationPending)
         {
             _uploadAnimationPending = false;
@@ -286,7 +314,13 @@ else
         }
         catch (Exception exception)
         {
+            _planFailed = true;
             Snackbar.Add(exception.Message, Severity.Error);
+        }
+        finally
+        {
+            _planResolved = true;
+            _revealPending = true;
         }
     }
 

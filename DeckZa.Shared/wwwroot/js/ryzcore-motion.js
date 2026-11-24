@@ -260,6 +260,40 @@ export function playTabPanel() {
     }
 }
 
+const enterPendingClass = "ryz-enter-pending";
+
+export function revealEnter(selector) {
+    const elements = Array.from(document.querySelectorAll(selector || `.${enterPendingClass}`)).slice(0, 10);
+    if (elements.length === 0) {
+        return true;
+    }
+
+    for (const element of elements) {
+        element.style.opacity = "0";
+        element.classList.remove(enterPendingClass);
+    }
+
+    if (!motionAllowed()) {
+        for (const element of elements) {
+            element.style.removeProperty("opacity");
+        }
+
+        return true;
+    }
+
+    animate(elements, {
+        opacity: [0, 1],
+        y: [10, 0],
+        scale: [0.96, 1],
+        duration: 300,
+        delay: stagger(70),
+        ease: "out(3)",
+        onComplete: finish
+    });
+
+    return true;
+}
+
 export function playNotificationArrival() {
     if (!motionAllowed()) {
         return;

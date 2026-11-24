@@ -85,7 +85,7 @@ public static class PlanSeeder
                     isActive = true,
                     isDeleted = false,
                     isLocked = false,
-                    isDefault = false,
+                    isDefault = item.Id == Const.PlanIds.Member,
                     approvedBy = "system",
                     approvedDate = now,
                     createdBy = "system",

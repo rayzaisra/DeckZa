@@ -4,8 +4,10 @@
 @inject ReportApiService ReportApi
 @inject TaskApiService TaskApi
 @inject ExportApiService ExportApi
+@inject CurrentUserAccessService Access
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject MotionService Motion
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
@@ -16,16 +18,19 @@
         <p>Preview your performance and export it as a five-sheet Excel report.</p>
     </div>
     <div class="d-flex gap-2">
-        <PermissionGate Action="PermissionAction.Export">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Download"
-                       Class="@("ryz-busy-button" + (_exporting ? " is-busy" : string.Empty))"
-                       Disabled="@_exporting"
-                       OnClick="@(_ => ExportAsync())">
-                @(_exporting ? "Exporting..." : "Export Excel")
-            </MudButton>
-        </PermissionGate>
+        @if (Access.Can(PermissionAction.Export))
+        {
+            <span class="@RevealClass">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Download"
+                           Class="@("ryz-busy-button" + (_exporting ? " is-busy" : string.Empty))"
+                           Disabled="@_exporting"
+                           OnClick="@(_ => ExportAsync())">
+                    @(_exporting ? "Exporting..." : "Export Excel")
+                </MudButton>
+            </span>
+        }
     </div>
 </div>
 
@@ -179,15 +184,37 @@ else if (_report != null)
     private string _statusId = string.Empty;
     private bool _loading;
     private bool _exporting;
+    private bool _revealPending = true;
+    private bool _revealDone;
+
+    private string RevealClass => _revealPending && !_revealDone ? "ryz-enter-pending" : string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        await Access.EnsureLoadedAsync();
+
         var today = DateTime.Today;
         _dateFrom = new DateTime(today.Year, today.Month, 1);
         _dateTo = new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1);
 
         await LoadReferenceDataAsync();
         await PreviewAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_revealPending || _revealDone)
+        {
+            return;
+        }
+
+        _revealPending = false;
+        _revealDone = true;
+
+        if (!await Motion.TryRevealEnterAsync())
+        {
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task LoadReferenceDataAsync()
