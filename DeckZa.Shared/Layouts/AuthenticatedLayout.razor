@@ -199,6 +199,8 @@
             <ChildContent>
                 <MudMenuItem OnClick="@(_ => OpenProfile())">Profile</MudMenuItem>
                 <MudDivider />
+                <MudMenuItem OnClick="@(_ => OpenUpgradePlan())">Upgrade Plan</MudMenuItem>
+                <MudDivider />
                 <MudMenuItem OnClick="@(_ => LogoutAsync())">Logout</MudMenuItem>
             </ChildContent>
         </MudMenu>
@@ -316,6 +318,7 @@
     private const string BrandName = "DeckZa";
     private const string DashboardComponent = "DeckZa.Shared.Pages.Dashboard, DeckZa.Shared";
     private const string ProfileComponent = "DeckZa.Shared.Pages.Profile, DeckZa.Shared";
+    private const string UpgradePlanComponent = "DeckZa.Shared.Pages.AsMember.UpgradePlan, DeckZa.Shared";
     private const string NotificationsComponent = "DeckZa.Shared.Pages.Notifications, DeckZa.Shared";
 
     private readonly Guid _viewportObserverId = Guid.NewGuid();
@@ -690,6 +693,9 @@
 
     private void OpenProfile()
         => TabService.OpenTab("Profile", ProfileComponent, "/profile", icon: "Person");
+
+    private void OpenUpgradePlan()
+        => TabService.OpenTab("Upgrade Plan", UpgradePlanComponent, "/dashboard/upgrade-plan", icon: "WorkspacePremium");
 
     private void RefreshTab(AppTabDto tab) => TabService.RefreshTab(tab);
 

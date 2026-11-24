@@ -3335,6 +3335,54 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
 }
 
 /* Member dashboard — bento grid, driven by the active theme palette. */
+.bento-upgrade-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    border-radius: var(--radius);
+    background: linear-gradient(
+        105deg,
+        color-mix(in srgb, var(--app-accent) 18%, var(--app-surface)),
+        color-mix(in srgb, var(--app-secondary) 14%, var(--app-surface))
+    );
+    border: 1px solid color-mix(in srgb, var(--app-accent) 22%, var(--app-border));
+    box-shadow: var(--card-shadow);
+}
+
+.bento-upgrade-banner-copy {
+    min-width: 0;
+}
+
+.bento-upgrade-banner-copy h3 {
+    margin: 2px 0 4px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--app-text-strong);
+}
+
+.bento-upgrade-banner-copy p {
+    margin: 0;
+    color: var(--app-muted);
+    font-size: .9rem;
+}
+
+.neo-brutalism .bento-upgrade-banner {
+    border: 3px solid var(--neo-ink);
+    border-radius: 6px;
+    box-shadow: var(--neo-shadow);
+    background: color-mix(in srgb, var(--app-accent) 14%, var(--app-surface));
+}
+
+@media (max-width: 860px) {
+    .bento-upgrade-banner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 .bento-dashboard {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));

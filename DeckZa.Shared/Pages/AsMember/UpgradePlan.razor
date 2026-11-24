@@ -1,0 +1,25 @@
+@page "/dashboard/upgrade-plan"
+@layout AuthenticatedLayout
+@attribute [Authorize]
+
+<MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
+
+<div class="page-heading">
+    <div>
+        <div class="dashboard-kicker">Workspace</div>
+        <h1>Upgrade Plan</h1>
+        <p>Bandingkan plan dan tingkatkan akun Anda.</p>
+    </div>
+</div>
+
+<MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+    Halaman Upgrade Plan akan tersedia pada TASK2-009.
+</MudAlert>
+
+@code {
+    private readonly List<BreadcrumbItem> _breadcrumbs = new()
+    {
+        new BreadcrumbItem("Dashboard", "/dashboard"),
+        new BreadcrumbItem("Upgrade Plan", null, disabled: true),
+    };
+}

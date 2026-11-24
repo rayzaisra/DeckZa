@@ -5,6 +5,23 @@
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+@if (ShowUpgradeBanner)
+{
+    <section class="bento-upgrade-banner">
+        <div class="bento-upgrade-banner-copy">
+            <div class="dashboard-kicker">Plan Guest</div>
+            <h3>Tingkatkan ke Member</h3>
+            <p>Task unlimited, report tanpa batas periode, dan Calendar task.</p>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   EndIcon="@Icons.Material.Filled.ArrowForward"
+                   OnClick="@(_ => OpenTab("Upgrade Plan", UpgradePlanComponent, "/dashboard/upgrade-plan", "WorkspacePremium"))">
+            Upgrade Plan
+        </MudButton>
+    </section>
+}
+
 <div class="bento-dashboard">
     <section class="bento-card bento-greeting">
         <div class="bento-greeting-copy">
@@ -167,11 +184,14 @@
 </div>
 
 @code {
+    [Parameter] public bool ShowUpgradeBanner { get; set; }
+
     private static readonly string[] WeekdayLabels = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 
     private const string KanbanComponent = "DeckZa.Shared.Pages.AsMember.Kanban, DeckZa.Shared";
     private const string CalendarComponent = "DeckZa.Shared.Pages.AsMember.Calendar, DeckZa.Shared";
     private const string ReportComponent = "DeckZa.Shared.Pages.AsMember.Report, DeckZa.Shared";
+    private const string UpgradePlanComponent = "DeckZa.Shared.Pages.AsMember.UpgradePlan, DeckZa.Shared";
 
     private readonly List<BentoMonthCell> _monthCells = new();
     private readonly List<TaskListItemDto> _openTasks = new();
