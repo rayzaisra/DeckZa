@@ -29,49 +29,52 @@
         }
     </div>
     <div class="d-flex gap-2 align-center">
-        @if (AllowsImport && Access.Can(PermissionAction.Export))
+        @if (_planResolved)
         {
-            <span class="@RevealClass">
-                <MudButton Variant="Variant.Outlined"
-                           Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.Download"
-                           OnClick="@(_ => DownloadTemplateAsync())">
-                    Import Template
-                </MudButton>
-            </span>
-        }
-        @if (AllowsImport && Access.Can(PermissionAction.Import))
-        {
-            <span class="@RevealClass">
-                <MudFileUpload T="IBrowserFile"
-                               Accept=".xlsx"
-                               Disabled="@_importing"
-                               Class="import-excel-upload"
-                               OnFilesChanged="ImportExcelAsync">
-                    <CustomContent Context="upload">
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.UploadFile"
-                                   Class="@("ryz-busy-button" + (_importing ? " is-busy" : string.Empty))"
+            @if (AllowsImport && Access.Can(PermissionAction.Export))
+            {
+                <span class="ryz-reveal">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               OnClick="@(_ => DownloadTemplateAsync())">
+                        Import Template
+                    </MudButton>
+                </span>
+            }
+            @if (AllowsImport && Access.Can(PermissionAction.Import))
+            {
+                <span class="ryz-reveal">
+                    <MudFileUpload T="IBrowserFile"
+                                   Accept=".xlsx"
                                    Disabled="@_importing"
-                                   OnClick="@(_ => upload.OpenFilePickerAsync())">
-                            @(_importing ? "Importing..." : "Upload Excel")
-                        </MudButton>
-                    </CustomContent>
-                </MudFileUpload>
-            </span>
-        }
-        @if (Access.Can(PermissionAction.AddEdit))
-        {
-            <span class="@RevealClass">
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.Add"
-                           Disabled="@IsTaskLimitReached"
-                           OnClick="@(_ => OpenCreateAsync(null))">
-                    New Task
-                </MudButton>
-            </span>
+                                   Class="import-excel-upload"
+                                   OnFilesChanged="ImportExcelAsync">
+                        <CustomContent Context="upload">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.UploadFile"
+                                       Class="@("ryz-busy-button" + (_importing ? " is-busy" : string.Empty))"
+                                       Disabled="@_importing"
+                                       OnClick="@(_ => upload.OpenFilePickerAsync())">
+                                @(_importing ? "Importing..." : "Upload Excel")
+                            </MudButton>
+                        </CustomContent>
+                    </MudFileUpload>
+                </span>
+            }
+            @if (Access.Can(PermissionAction.AddEdit))
+            {
+                <span class="ryz-reveal">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Disabled="@IsTaskLimitReached"
+                               OnClick="@(_ => OpenCreateAsync(null))">
+                        New Task
+                    </MudButton>
+                </span>
+            }
         }
     </div>
 </div>
@@ -264,10 +267,7 @@ else
     private bool _uploadAnimationPending;
     private bool _planResolved;
     private bool _revealPending;
-    private bool _revealDone;
     private string? _loadError;
-
-    private string RevealClass => _revealPending && !_revealDone ? "ryz-enter-pending" : string.Empty;
 
     private bool AllowsImport => _plan?.AllowsExcelImport == true;
 
@@ -284,17 +284,10 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_revealPending && !_revealDone && _planResolved)
+        if (_revealPending)
         {
             _revealPending = false;
-            _revealDone = true;
-
-            if (!await Motion.TryRevealEnterAsync())
-            {
-                await InvokeAsync(StateHasChanged);
-            }
-
-            return;
+            await Motion.RevealEnterAsync();
         }
 
         if (_uploadAnimationPending)

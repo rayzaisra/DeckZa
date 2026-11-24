@@ -27,28 +27,7 @@ public sealed class MotionService : IAsyncDisposable
 
     public Task PlayNotificationArrivalAsync() => InvokeAsync("playNotificationArrival");
 
-    public async Task<bool> TryRevealEnterAsync(string? selector = null)
-    {
-        if (_unavailable)
-        {
-            return false;
-        }
-
-        try
-        {
-            return await _js.InvokeAsync<bool>("ryzMotionInvoke", "revealEnter", new object?[] { selector });
-        }
-        catch (JSDisconnectedException)
-        {
-            return false;
-        }
-        catch (Exception ex) when (ex is JSException or InvalidOperationException)
-        {
-            _logger.LogWarning(ex, "Motion layer is unavailable; the UI remains functional without animation.");
-            _unavailable = true;
-            return false;
-        }
-    }
+    public Task RevealEnterAsync(string? selector = null) => InvokeAsync("revealEnter", selector);
 
     public Task StartUploadIndicatorAsync() => InvokeAsync("startUploadIndicator");
 

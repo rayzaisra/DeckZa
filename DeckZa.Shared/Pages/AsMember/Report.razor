@@ -20,7 +20,7 @@
     <div class="d-flex gap-2">
         @if (Access.Can(PermissionAction.Export))
         {
-            <span class="@RevealClass">
+            <span class="ryz-reveal">
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Download"
@@ -185,9 +185,6 @@ else if (_report != null)
     private bool _loading;
     private bool _exporting;
     private bool _revealPending = true;
-    private bool _revealDone;
-
-    private string RevealClass => _revealPending && !_revealDone ? "ryz-enter-pending" : string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -203,18 +200,13 @@ else if (_report != null)
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!_revealPending || _revealDone)
+        if (!_revealPending)
         {
             return;
         }
 
         _revealPending = false;
-        _revealDone = true;
-
-        if (!await Motion.TryRevealEnterAsync())
-        {
-            await InvokeAsync(StateHasChanged);
-        }
+        await Motion.RevealEnterAsync();
     }
 
     private async Task LoadReferenceDataAsync()

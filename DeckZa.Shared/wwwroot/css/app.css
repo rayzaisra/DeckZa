@@ -1658,18 +1658,6 @@ html, body {
     white-space: nowrap;
 }
 
-.ryz-enter-pending {
-    opacity: 0;
-    visibility: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .ryz-enter-pending {
-        opacity: 1;
-        visibility: visible;
-    }
-}
-
 html:has(.app-dark),
 body:has(.app-dark) {
     background: var(--app-bg, #111c2d);

@@ -260,25 +260,36 @@ export function playTabPanel() {
     }
 }
 
-const enterPendingClass = "ryz-enter-pending";
-
 export function revealEnter(selector) {
-    const elements = Array.from(document.querySelectorAll(selector || `.${enterPendingClass}`)).slice(0, 10);
+    const elements = Array.from(document.querySelectorAll(selector || ".ryz-reveal"))
+        .filter((element) => element.dataset.ryzRevealed !== "1")
+        .slice(0, 10);
+
     if (elements.length === 0) {
-        return true;
+        return;
+    }
+
+    for (const element of elements) {
+        element.dataset.ryzRevealed = "1";
+    }
+
+    // Nilai akhir harus selalu "terlihat". Inline style dibersihkan sendiri di
+    // akhir animasi karena cleanInlineStyles() memulihkan nilai awal (opacity 0)
+    // sehingga elemen bisa tertinggal tak terlihat.
+    const settle = (element) => {
+        element.style.removeProperty("opacity");
+        element.style.removeProperty("transform");
+        element.style.removeProperty("translate");
+        element.style.removeProperty("scale");
+    };
+
+    if (!motionAllowed()) {
+        elements.forEach(settle);
+        return;
     }
 
     for (const element of elements) {
         element.style.opacity = "0";
-        element.classList.remove(enterPendingClass);
-    }
-
-    if (!motionAllowed()) {
-        for (const element of elements) {
-            element.style.removeProperty("opacity");
-        }
-
-        return true;
     }
 
     animate(elements, {
@@ -288,10 +299,8 @@ export function revealEnter(selector) {
         duration: 300,
         delay: stagger(70),
         ease: "out(3)",
-        onComplete: finish
+        onComplete: () => elements.forEach(settle)
     });
-
-    return true;
 }
 
 export function playNotificationArrival() {
