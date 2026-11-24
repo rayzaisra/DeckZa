@@ -342,6 +342,10 @@ public static class ParameterSeeder
             ("V021", "Default usia maksimal berdasarkan rate asuransi", "65"),
             ("V022", "Default waktu valid pengecekan SLIK dalam hari", "30"),
             ("NOTIF_MAIL", "Notification email enabled", "false"),
+            ("PAY_BNK_NM", "Payment bank name", "BCA"),
+            ("PAY_BNK_NO", "Payment bank account number", "1234567890"),
+            ("PAY_BNK_AN", "Payment bank account holder", "PT DeckZa Indonesia"),
+            ("PAY_INSTR", "Payment transfer instructions", "Transfer sesuai nominal, lalu unggah bukti pembayaran."),
         };
 
         foreach (var item in defaults)

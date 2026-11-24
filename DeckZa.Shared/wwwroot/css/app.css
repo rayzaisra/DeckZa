@@ -3334,6 +3334,112 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
     }
 }
 
+/* Billing */
+.billing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.billing-card {
+    padding: 24px;
+}
+
+.billing-section-title {
+    margin: 0 0 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--app-text-strong);
+}
+
+.billing-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px dashed color-mix(in srgb, var(--app-border) 80%, transparent);
+    font-size: .92rem;
+}
+
+.billing-summary-row:last-of-type {
+    border-bottom: none;
+}
+
+.billing-label {
+    color: var(--app-muted);
+}
+
+.billing-value {
+    font-weight: 600;
+    color: var(--app-text-strong);
+    text-align: right;
+}
+
+.billing-account {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.billing-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 26px 16px;
+    border: 1.5px dashed color-mix(in srgb, var(--app-accent) 30%, var(--app-border));
+    border-radius: calc(var(--radius) - 2px);
+    background: color-mix(in srgb, var(--app-soft) 45%, transparent);
+    color: var(--app-muted);
+    font-size: .88rem;
+    cursor: pointer;
+}
+
+.billing-dropzone strong {
+    color: var(--app-accent);
+}
+
+.billing-dropzone-hint {
+    font-size: .8rem;
+}
+
+.billing-file-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: calc(var(--radius) - 4px);
+    background: var(--app-soft);
+    font-size: .88rem;
+}
+
+.billing-file-name {
+    font-weight: 600;
+    color: var(--app-text-strong);
+}
+
+.billing-file-meta {
+    color: var(--app-muted);
+    font-size: .8rem;
+    margin-left: auto;
+}
+
+.neo-brutalism .billing-dropzone,
+.neo-brutalism .billing-file-pill {
+    border: 2px solid var(--neo-ink);
+    border-radius: 4px;
+}
+
+@media (max-width: 900px) {
+    .billing-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 /* Upgrade plan */
 .plan-grid {
     display: grid;

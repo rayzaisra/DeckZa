@@ -43,13 +43,27 @@ public class ApiService
         string fileName,
         CancellationToken cancellationToken = default)
     {
+        return await PostMultipartAsync(
+            url,
+            content =>
+            {
+                var fileContent = new StreamContent(stream);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                content.Add(fileContent, "file", fileName);
+            },
+            cancellationToken);
+    }
+
+    public async Task<HttpResponseMessage> PostMultipartAsync(
+        string url,
+        Action<MultipartFormDataContent> buildContent,
+        CancellationToken cancellationToken = default)
+    {
         var client = _httpClientFactory.CreateClient("ApiClient");
         var token = await _tokenStorage.GetAccessTokenAsync();
         using var content = new MultipartFormDataContent();
-        var fileContent = new StreamContent(stream);
-        fileContent.Headers.ContentType = new MediaTypeHeaderValue(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        content.Add(fileContent, "file", fileName);
+        buildContent(content);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
         if (!string.IsNullOrEmpty(token))
