@@ -34,6 +34,7 @@ public class PlanQueryService : IPlanQueryService
                 AllowsExcelImport = e.allows_excel_import,
                 AllowsSupervisorMode = e.allows_supervisor_mode,
                 UpgradeGroupId = e.upgrade_group_id,
+                OrderSeq = e.order_seq,
             })
             .ToListAsync(cancellationToken);
 

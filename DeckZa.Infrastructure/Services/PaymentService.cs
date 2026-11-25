@@ -122,15 +122,38 @@ public class PaymentService : IPaymentService
             return Fail("Plan not found or inactive.");
         }
 
+        var currentPlan = await GetCurrentPlanAsync(userId, cancellationToken);
+        if (currentPlan != null)
+        {
+            if (string.Equals(currentPlan.id, plan.id, StringComparison.OrdinalIgnoreCase))
+            {
+                return Fail("Anda sudah berada di plan ini.");
+            }
+
+            if (plan.order_seq < currentPlan.order_seq)
+            {
+                return Fail("Penurunan plan tidak dapat diajukan lewat halaman ini. Hubungi administrator bila memang diperlukan.");
+            }
+
+            if (plan.order_seq == currentPlan.order_seq)
+            {
+                return Fail("Perubahan plan ini tidak dapat diajukan lewat halaman billing.");
+            }
+        }
+
+        if (plan.price_amount <= 0)
+        {
+            return Fail("Plan gratis tidak memerlukan pengajuan bukti transfer.");
+        }
+
         var hasPending = await _context.tb_payment_request.AnyAsync(
             e => e.user_id == userId
-                 && e.plan_id == planId
                  && e.status == "PENDING"
                  && e.isDeleted == false,
             cancellationToken);
         if (hasPending)
         {
-            return Fail("Anda masih memiliki pengajuan pembayaran yang sedang menunggu review untuk plan ini.");
+            return Fail("Anda masih memiliki pengajuan pembayaran yang sedang menunggu review.");
         }
 
         var requestNo = await GenerateRequestNoAsync(cancellationToken);
@@ -268,6 +291,37 @@ public class PaymentService : IPaymentService
             .Replace("{{plan_name}}", planName, StringComparison.OrdinalIgnoreCase)
             .Replace("{{amount}}", amount, StringComparison.OrdinalIgnoreCase)
             .Replace("{{status}}", request.status, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<rf_plan?> GetCurrentPlanAsync(string userId, CancellationToken cancellationToken)
+    {
+        var groupId = await _context.um_user_group
+            .AsNoTracking()
+            .Where(e => e.user_id == userId
+                        && e.isActive == true
+                        && e.isDeleted == false)
+            .Select(e => e.group_id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        rf_plan? plan = null;
+        if (!string.IsNullOrWhiteSpace(groupId))
+        {
+            plan = await _context.rf_plan
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    e => e.upgrade_group_id == groupId
+                         && e.isActive == true
+                         && e.isDeleted == false,
+                    cancellationToken);
+        }
+
+        return plan ?? await _context.rf_plan
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                e => e.isDefault == true
+                     && e.isActive == true
+                     && e.isDeleted == false,
+                cancellationToken);
     }
 
     private static BaseGeneralResponse Fail(string message) => new()

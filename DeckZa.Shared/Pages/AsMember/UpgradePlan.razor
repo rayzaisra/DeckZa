@@ -42,6 +42,7 @@ else
         @foreach (var plan in _plans)
         {
             var isCurrent = IsCurrentPlan(plan);
+            var isLower = IsLowerPlan(plan);
             <section class="dashboard-card plan-card @(isCurrent ? "is-current" : string.Empty)">
                 <div class="plan-head">
                     <div>
@@ -72,27 +73,18 @@ else
                     }
                 </ul>
 
-                <div class="plan-actions">
-                    @if (isCurrent)
-                    {
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Default"
-                                   Disabled="true"
-                                   FullWidth="true">
-                            Plan Anda saat ini
-                        </MudButton>
-                    }
-                    else
-                    {
+                @if (!isCurrent && !isLower)
+                {
+                    <div class="plan-actions">
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
                                    FullWidth="true"
                                    EndIcon="@Icons.Material.Filled.ArrowForward"
                                    OnClick="@(_ => OpenBilling(plan))">
-                            Pilih Plan
+                            Upgrade ke @plan.PlanName
                         </MudButton>
-                    }
-                </div>
+                    </div>
+                }
             </section>
         }
     </div>
@@ -137,8 +129,18 @@ else
         => !string.IsNullOrWhiteSpace(_myPlan?.Id)
            && string.Equals(_myPlan.Id, plan.Id, StringComparison.OrdinalIgnoreCase);
 
+    private bool IsLowerPlan(PlanDto plan)
+        => _myPlan is not null
+           && !IsCurrentPlan(plan)
+           && plan.OrderSeq < _myPlan.OrderSeq;
+
     private void OpenBilling(PlanDto plan)
     {
+        if (IsCurrentPlan(plan) || IsLowerPlan(plan))
+        {
+            return;
+        }
+
         TabService.OpenTab(
             "Billing",
             BillingComponent,

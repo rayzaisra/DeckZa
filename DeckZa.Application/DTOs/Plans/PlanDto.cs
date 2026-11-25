@@ -15,5 +15,6 @@ public sealed class PlanDto
     public bool AllowsExcelImport { get; set; }
     public bool AllowsSupervisorMode { get; set; }
     public string? UpgradeGroupId { get; set; }
+    public int OrderSeq { get; set; }
     public List<string> Features { get; set; } = new();
 }

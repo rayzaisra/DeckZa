@@ -18,20 +18,20 @@ namespace DeckZa.Infrastructure.Migrations.Main
             migrationBuilder.Sql(
                 """
                 IF NOT EXISTS (SELECT 1 FROM rf_default_value WHERE def_code = 'PAY_BNK_NM')
-                    INSERT INTO rf_default_value (def_code, def_name, def_value, is_active, is_deleted, statusApproval, isLocked, createdBy, createdDate)
-                    VALUES ('PAY_BNK_NM', 'Payment bank name', 'BCA', 1, 0, 'APV', 0, 'system', SYSUTCDATETIME());
+                    INSERT INTO rf_default_value (def_code, def_name, def_value, is_active, is_deleted, status_approval, is_locked, created_by, created_date)
+                    VALUES ('PAY_BNK_NM', 'Payment bank name', 'BCA', 1, 0, 4, 0, 'system', SYSUTCDATETIME());
 
                 IF NOT EXISTS (SELECT 1 FROM rf_default_value WHERE def_code = 'PAY_BNK_NO')
-                    INSERT INTO rf_default_value (def_code, def_name, def_value, is_active, is_deleted, statusApproval, isLocked, createdBy, createdDate)
-                    VALUES ('PAY_BNK_NO', 'Payment bank account number', '1234567890', 1, 0, 'APV', 0, 'system', SYSUTCDATETIME());
+                    INSERT INTO rf_default_value (def_code, def_name, def_value, is_active, is_deleted, status_approval, is_locked, created_by, created_date)
+                    VALUES ('PAY_BNK_NO', 'Payment bank account number', '1234567890', 1, 0, 4, 0, 'system', SYSUTCDATETIME());
 
                 IF NOT EXISTS (SELECT 1 FROM rf_default_value WHERE def_code = 'PAY_BNK_AN')
-                    INSERT INTO rf_default_value (def_code, def_name, def_value, is_active, is_deleted, statusApproval, isLocked, createdBy, createdDate)
-                    VALUES ('PAY_BNK_AN', 'Payment bank account holder', 'PT DeckZa Indonesia', 1, 0, 'APV', 0, 'system', SYSUTCDATETIME());
+                    INSERT INTO rf_default_value (def_code, def_name, def_value, is_active, is_deleted, status_approval, is_locked, created_by, created_date)
+                    VALUES ('PAY_BNK_AN', 'Payment bank account holder', 'PT DeckZa Indonesia', 1, 0, 4, 0, 'system', SYSUTCDATETIME());
 
                 IF NOT EXISTS (SELECT 1 FROM rf_default_value WHERE def_code = 'PAY_INSTR')
-                    INSERT INTO rf_default_value (def_code, def_name, def_value, is_active, is_deleted, statusApproval, isLocked, createdBy, createdDate)
-                    VALUES ('PAY_INSTR', 'Payment transfer instructions', 'Transfer sesuai nominal, lalu unggah bukti pembayaran.', 1, 0, 'APV', 0, 'system', SYSUTCDATETIME());
+                    INSERT INTO rf_default_value (def_code, def_name, def_value, is_active, is_deleted, status_approval, is_locked, created_by, created_date)
+                    VALUES ('PAY_INSTR', 'Payment transfer instructions', 'Transfer sesuai nominal, lalu unggah bukti pembayaran.', 1, 0, 4, 0, 'system', SYSUTCDATETIME());
                 """);
         }
 

@@ -65,10 +65,7 @@ public class JwtAuthStateProvider : AuthenticationStateProvider, INotifyAuthenti
     }
 
     public void NotifyUserLogin(string userId)
-    {
-        var identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId) }, "jwt");
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity))));
-    }
+        => NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
 
     public void NotifyUserLogout()
     {

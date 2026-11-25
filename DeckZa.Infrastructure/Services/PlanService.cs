@@ -63,6 +63,7 @@ public class PlanService : IPlanService
         {
             Id = plan.id,
             PlanName = plan.plan_name,
+            OrderSeq = plan.order_seq,
             MaxActiveTasks = plan.max_active_tasks,
             ReportPeriodMonths = plan.report_period_months,
             AllowsCalendar = plan.allows_calendar,

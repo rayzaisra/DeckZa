@@ -18,6 +18,17 @@ public class TabStateService
         var existing = Tabs.FirstOrDefault(t => t.ComponentType == componentType && t.Url == url);
         if (existing != null)
         {
+            if (parameters is { Count: > 0 })
+            {
+                existing.Parameters ??= new Dictionary<string, object>();
+                foreach (var entry in parameters)
+                {
+                    existing.Parameters[entry.Key] = entry.Value;
+                }
+
+                existing.RefreshKey = Guid.NewGuid();
+            }
+
             ActiveTab = existing;
             NotifyChanged();
             return;
