@@ -17,32 +17,36 @@ public class PdfExportJob
     private readonly IErrorLogService _errorLog;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<PdfExportJob> _logger;
+    private readonly IExportJobTrackingService _trackingService;
 
     public PdfExportJob(
         IDynamicEngineService dynamicEngine,
         INotificationService notificationService,
         IErrorLogService errorLog,
         IWebHostEnvironment environment,
-        ILogger<PdfExportJob> logger)
+        ILogger<PdfExportJob> logger,
+        IExportJobTrackingService trackingService)
     {
         _dynamicEngine = dynamicEngine;
         _notificationService = notificationService;
         _errorLog = errorLog;
         _environment = environment;
         _logger = logger;
+        _trackingService = trackingService;
     }
 
-    public async Task ExportReportAsync(string reportId, DynamicLoadRequestDto request, string userId, string fileName)
+    public async Task ExportReportAsync(string reportId, DynamicLoadRequestDto request, string userId, string jobId, string fileName)
     {
         try
         {
             var (columns, rows) = await LoadReportRowsAsync(reportId, request, userId);
             WritePdf(fileName, reportId, columns, rows);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
             await _notificationService.CreateAsync(
                 userId,
                 "PDF export ready",
                 $"Report {reportId} PDF is ready to download.",
-                $"/api/export/download/{fileName}",
+                $"/api/export/download-export/{jobId}",
                 NotificationTypeIds.Export);
         }
         catch (Exception ex)
@@ -52,17 +56,18 @@ public class PdfExportJob
         }
     }
 
-    public async Task ExportScreenAsync(string screenId, DynamicLoadRequestDto request, string userId, string fileName)
+    public async Task ExportScreenAsync(string screenId, DynamicLoadRequestDto request, string userId, string jobId, string fileName)
     {
         try
         {
             var (columns, rows) = await LoadScreenRowsAsync(screenId, request, userId);
             WritePdf(fileName, screenId, columns, rows);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
             await _notificationService.CreateAsync(
                 userId,
                 "PDF export ready",
                 $"Screen {screenId} PDF is ready to download.",
-                $"/api/export/download/{fileName}",
+                $"/api/export/download-export/{jobId}",
                 NotificationTypeIds.Export);
         }
         catch (Exception ex)

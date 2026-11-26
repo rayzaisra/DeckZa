@@ -110,12 +110,18 @@ builder.Services.AddSingleton<IApiActivityLogQueue>(
     services => services.GetRequiredService<ApiActivityLogQueue>());
 builder.Services.AddHostedService<ApiActivityLogWriter>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+builder.Services.Configure<GoogleAuthOptions>(builder.Configuration.GetSection(GoogleAuthOptions.SectionName));
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<IEmailProviderService, EmailProviderService>();
 builder.Services.AddScoped<IDashboardWidgetService, DashboardWidgetService>();
 builder.Services.AddScoped<EmailOutboxProcessor>();
 builder.Services.AddScoped<INotificationPusher, SignalRNotificationPusher>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEmailDispatchService, EmailDispatchService>();
+builder.Services.AddScoped<IExportJobRepository, ExportJobRepository>();
+builder.Services.AddScoped<IExportJobTrackingService, ExportJobTrackingService>();
+builder.Services.AddScoped<ExportCleanupJob>();
 builder.Services.AddScoped<ExcelExportJob>();
 builder.Services.AddScoped<PdfExportJob>();
 builder.Services.AddScoped<ManagementExportJob>();
@@ -277,6 +283,10 @@ recurringJobs.AddOrUpdate<EmailOutboxProcessor>(
     "email-outbox",
     job => job.ProcessPendingAsync(),
     "*/1 * * * *");
+recurringJobs.AddOrUpdate<ExportCleanupJob>(
+    "export-cleanup",
+    job => job.CleanupExpiredAsync(),
+    "0 3 * * *");
 app.Run();
 
 static void EnsureWritableTempPath(IWebHostEnvironment environment)

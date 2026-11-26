@@ -212,11 +212,6 @@ public class MenuManagementService : IMenuManagementService
                 }
             }
 
-            foreach (var root in allMenus.Where(e => e.parent_level_id == Const.ParentLevel.FIRST_PARENT))
-            {
-                requestedIds.Add(root.id);
-            }
-
             var existing = await _unitOfWork.GroupMenus.GetByGroupAsync(dto.GroupId);
             _unitOfWork.GroupMenus.RemoveRange(existing);
 

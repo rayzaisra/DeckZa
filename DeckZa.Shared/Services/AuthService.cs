@@ -39,6 +39,54 @@ public class AuthService
         }
     }
 
+    public async Task<GoogleAuthConfigDto?> GetGoogleConfigAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("api/auth/google/config");
+            if (!response.IsSuccessStatusCode)
+            {
+                return new GoogleAuthConfigDto { Enabled = false };
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResponse<GoogleAuthConfigDto>>();
+            return wrapper?.Data ?? new GoogleAuthConfigDto { Enabled = false };
+        }
+        catch
+        {
+            return new GoogleAuthConfigDto { Enabled = false };
+        }
+    }
+
+    public async Task<LoginResponseDto?> SignInWithGoogleAsync(GoogleSignInRequestDto request)
+    {
+        var response = await _httpClient.PostAsJsonAsync("api/auth/google", request);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<LoginResponseDto>();
+        }
+
+        throw new Exception(await ReadErrorAsync(response));
+    }
+
+    public async Task<UserResponseDto?> SyncGoogleProfileAsync(string accessToken)
+    {
+        using var message = new HttpRequestMessage(HttpMethod.Post, "api/auth/google/sync")
+        {
+            Content = JsonContent.Create(new GoogleSyncRequestDto { AccessToken = accessToken }),
+        };
+        await AttachTokenAsync(message);
+
+        var response = await _httpClient.SendAsync(message);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception(await ReadErrorAsync(response));
+        }
+
+        var wrapper = await response.Content.ReadFromJsonAsync<ApiResponse<UserResponseDto>>();
+        return wrapper?.Data;
+    }
+
     public async Task<LoginResponseDto?> RefreshTokenAsync(string refreshToken)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/refresh", new { refreshToken });

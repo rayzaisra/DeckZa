@@ -15,6 +15,7 @@ using DeckZa.Application.DTOs.Export;
 using DeckZa.Application.DTOs.General;
 using DeckZa.Application.DTOs.Reports;
 using DeckZa.Application.Interfaces;
+using DeckZa.Domain.Enums;
 
 namespace DeckZa.Api.Controllers;
 
@@ -28,20 +29,23 @@ public class ExportController : ControllerBase
     private readonly IBackgroundJobClient _jobs;
     private readonly IWebHostEnvironment _environment;
     private readonly IPermissionService _permissions;
+    private readonly IExportJobTrackingService _trackingService;
 
     public ExportController(
         IBackgroundJobClient jobs,
         IWebHostEnvironment environment,
-        IPermissionService permissions)
+        IPermissionService permissions,
+        IExportJobTrackingService trackingService)
     {
         _jobs = jobs;
         _environment = environment;
         _permissions = permissions;
+        _trackingService = trackingService;
     }
 
     [HttpPost("users")]
     [RequireMenuAccess(PermissionAction.Export, "MNT-USER-LST")]
-    public IActionResult QueueUsers([FromBody] DataTableRequestDto request)
+    public async Task<IActionResult> QueueUsers([FromBody] DataTableRequestDto request)
     {
         var userId = CurrentUserId();
         if (userId == null)
@@ -49,8 +53,7 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var jobId = Guid.NewGuid().ToString("N");
-        var fileName = $"users_{jobId}.xlsx";
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "users", "users");
         _jobs.Enqueue<ManagementExportJob>(job =>
             job.ExportUsersAsync(request.SearchTerm, userId, jobId, fileName));
         return Queued(jobId, fileName);
@@ -58,7 +61,7 @@ public class ExportController : ControllerBase
 
     [HttpPost("groups")]
     [RequireMenuAccess(PermissionAction.Export, "MNT-GRP-LST")]
-    public IActionResult QueueGroups([FromBody] DataTableRequestDto request)
+    public async Task<IActionResult> QueueGroups([FromBody] DataTableRequestDto request)
     {
         var userId = CurrentUserId();
         if (userId == null)
@@ -66,8 +69,7 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var jobId = Guid.NewGuid().ToString("N");
-        var fileName = $"groups_{jobId}.xlsx";
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "groups", "groups");
         _jobs.Enqueue<ManagementExportJob>(job =>
             job.ExportGroupsAsync(request.SearchTerm, userId, jobId, fileName));
         return Queued(jobId, fileName);
@@ -75,7 +77,7 @@ public class ExportController : ControllerBase
 
     [HttpPost("roles")]
     [RequireMenuAccess(PermissionAction.Export, "MNT-ROLE-LST")]
-    public IActionResult QueueRoles([FromBody] DataTableRequestDto request)
+    public async Task<IActionResult> QueueRoles([FromBody] DataTableRequestDto request)
     {
         var userId = CurrentUserId();
         if (userId == null)
@@ -83,8 +85,7 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var jobId = Guid.NewGuid().ToString("N");
-        var fileName = $"roles_{jobId}.xlsx";
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "roles", "roles");
         _jobs.Enqueue<ManagementExportJob>(job =>
             job.ExportRolesAsync(request.SearchTerm, userId, jobId, fileName));
         return Queued(jobId, fileName);
@@ -92,7 +93,7 @@ public class ExportController : ControllerBase
 
     [HttpPost("menus")]
     [RequireMenuAccess(PermissionAction.Export, "MNT-MENU-LST")]
-    public IActionResult QueueMenus([FromBody] DataTableRequestDto request)
+    public async Task<IActionResult> QueueMenus([FromBody] DataTableRequestDto request)
     {
         var userId = CurrentUserId();
         if (userId == null)
@@ -100,8 +101,7 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var jobId = Guid.NewGuid().ToString("N");
-        var fileName = $"menus_{jobId}.xlsx";
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "menus", "menus");
         _jobs.Enqueue<ManagementExportJob>(job =>
             job.ExportMenusAsync(request.SearchTerm, userId, jobId, fileName));
         return Queued(jobId, fileName);
@@ -109,7 +109,7 @@ public class ExportController : ControllerBase
 
     [HttpPost("parameters/{tableName}")]
     [RequireMenuAccess(PermissionAction.Export, "MNT-PARAM-MKR")]
-    public IActionResult QueueParameters(string tableName, [FromBody] DataTableRequestDto request)
+    public async Task<IActionResult> QueueParameters(string tableName, [FromBody] DataTableRequestDto request)
     {
         var userId = CurrentUserId();
         if (userId == null)
@@ -117,8 +117,7 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var jobId = Guid.NewGuid().ToString("N");
-        var fileName = $"parameters_{jobId}.xlsx";
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "parameters", "parameters");
         _jobs.Enqueue<ManagementExportJob>(job =>
             job.ExportParametersAsync(tableName, request.SearchTerm, userId, jobId, fileName));
         return Queued(jobId, fileName);
@@ -126,7 +125,7 @@ public class ExportController : ControllerBase
 
     [HttpPost("master-data/{tableName}")]
     [RequireMenuAccess(PermissionAction.Export, "TSKP-APP", "TSKP-TYP", "TSKP-PRI", "TSKP-STA")]
-    public IActionResult QueueMasterData(string tableName, [FromBody] DataTableRequestDto request)
+    public async Task<IActionResult> QueueMasterData(string tableName, [FromBody] DataTableRequestDto request)
     {
         var userId = CurrentUserId();
         if (userId == null)
@@ -134,8 +133,7 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var jobId = Guid.NewGuid().ToString("N");
-        var fileName = $"master_data_{jobId}.xlsx";
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "master-data", "master_data");
         _jobs.Enqueue<ManagementExportJob>(job =>
             job.ExportMasterDataAsync(tableName, request.SearchTerm, userId, jobId, fileName));
         return Queued(jobId, fileName);
@@ -143,7 +141,7 @@ public class ExportController : ControllerBase
 
     [HttpPost("report-performance")]
     [RequireMenuAccess(PermissionAction.Export, "TSK-RPT")]
-    public IActionResult QueueReportPerformance([FromBody] ReportFilterDto filter)
+    public async Task<IActionResult> QueueReportPerformance([FromBody] ReportFilterDto filter)
     {
         var userId = CurrentUserId();
         if (userId == null)
@@ -151,8 +149,7 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var jobId = DateTime.Now.ToString("yyyyMMddHHmmss");
-        var fileName = $"report_performance_{jobId}.xlsx";
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "report-performance", "report_performance");
         _jobs.Enqueue<ReportExportJob>(job =>
             job.ExportAsync(filter, userId, jobId, fileName));
 
@@ -160,9 +157,21 @@ public class ExportController : ControllerBase
     }
 
     [HttpGet("status/{jobId}")]
-    public IActionResult GetExportStatus(string jobId)
+    public async Task<IActionResult> GetExportStatus(string jobId)
     {
-        var file = FindExportFile(jobId);
+        var userId = CurrentUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        if (!await CanAccessJobAsync(jobId, userId))
+        {
+            return NotFound(ApiResponseFactory.NotFound<ExportStatusDto>("Export file not found."));
+        }
+
+        var job = await _trackingService.GetByJobIdAsync(jobId);
+        var file = ResolveExportFile(job?.file_name);
         return Ok(ApiResponseFactory.Success(new ExportStatusDto
         {
             Ready = file != null,
@@ -172,9 +181,21 @@ public class ExportController : ControllerBase
     }
 
     [HttpGet("download-export/{jobId}")]
-    public IActionResult DownloadExport(string jobId)
+    public async Task<IActionResult> DownloadExport(string jobId)
     {
-        var file = FindExportFile(jobId);
+        var userId = CurrentUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        if (!await CanAccessJobAsync(jobId, userId))
+        {
+            return NotFound(ApiResponseFactory.NotFound<string>("Export file not found."));
+        }
+
+        var job = await _trackingService.GetByJobIdAsync(jobId);
+        var file = ResolveExportFile(job?.file_name);
         if (file == null)
         {
             return NotFound(ApiResponseFactory.NotFound<string>("Export file not found."));
@@ -185,7 +206,7 @@ public class ExportController : ControllerBase
         System.IO.File.Delete(file);
         return File(
             bytes,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ContentTypeFor(fileName),
             fileName);
     }
 
@@ -203,9 +224,9 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var fileName = $"report_{Sanitize(reportId)}_{Guid.NewGuid():N}.xlsx";
-        var jobId = _jobs.Enqueue<ExcelExportJob>(job =>
-            job.ExportReportAsync(reportId, request, userId, fileName));
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "dynamic-report", $"report_{Sanitize(reportId)}");
+        _jobs.Enqueue<ExcelExportJob>(job =>
+            job.ExportReportAsync(reportId, request, userId, jobId, fileName));
 
         return Ok(ApiResponseFactory.Success(
             new ExportQueueResultDto { JobId = jobId, FileName = fileName },
@@ -226,9 +247,9 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var fileName = $"screen_{Sanitize(screenId)}_{Guid.NewGuid():N}.xlsx";
-        var jobId = _jobs.Enqueue<ExcelExportJob>(job =>
-            job.ExportScreenAsync(screenId, request, userId, fileName));
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "dynamic-screen", $"screen_{Sanitize(screenId)}");
+        _jobs.Enqueue<ExcelExportJob>(job =>
+            job.ExportScreenAsync(screenId, request, userId, jobId, fileName));
 
         return Ok(ApiResponseFactory.Success(
             new ExportQueueResultDto { JobId = jobId, FileName = fileName },
@@ -249,9 +270,9 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var fileName = $"report_{Sanitize(reportId)}_{Guid.NewGuid():N}.pdf";
-        var jobId = _jobs.Enqueue<PdfExportJob>(job =>
-            job.ExportReportAsync(reportId, request, userId, fileName));
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "dynamic-report-pdf", $"report_{Sanitize(reportId)}", ".pdf");
+        _jobs.Enqueue<PdfExportJob>(job =>
+            job.ExportReportAsync(reportId, request, userId, jobId, fileName));
 
         return Ok(ApiResponseFactory.Success(
             new ExportQueueResultDto { JobId = jobId, FileName = fileName },
@@ -272,9 +293,9 @@ public class ExportController : ControllerBase
             return Unauthorized();
         }
 
-        var fileName = $"screen_{Sanitize(screenId)}_{Guid.NewGuid():N}.pdf";
-        var jobId = _jobs.Enqueue<PdfExportJob>(job =>
-            job.ExportScreenAsync(screenId, request, userId, fileName));
+        var (jobId, fileName) = await CreateTrackedJobAsync(userId, "dynamic-screen-pdf", $"screen_{Sanitize(screenId)}", ".pdf");
+        _jobs.Enqueue<PdfExportJob>(job =>
+            job.ExportScreenAsync(screenId, request, userId, jobId, fileName));
 
         return Ok(ApiResponseFactory.Success(
             new ExportQueueResultDto { JobId = jobId, FileName = fileName },
@@ -282,7 +303,7 @@ public class ExportController : ControllerBase
     }
 
     [HttpGet("download/{fileName}")]
-    public IActionResult Download(string fileName)
+    public async Task<IActionResult> Download(string fileName)
     {
         var extension = Path.GetExtension(fileName).ToLowerInvariant();
         if (!SafeFileName.IsMatch(fileName) || extension is not (".xlsx" or ".pdf"))
@@ -290,40 +311,79 @@ public class ExportController : ControllerBase
             return BadRequest();
         }
 
+        var userId = CurrentUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        if (!await _trackingService.CanAccessByFileNameAsync(fileName, userId, IsAdministrator()))
+        {
+            return NotFound(ApiResponseFactory.NotFound<string>("Export file not found."));
+        }
+
         var path = Path.Combine(_environment.ContentRootPath, "exports", fileName);
         if (!System.IO.File.Exists(path))
         {
-            return NotFound();
+            return NotFound(ApiResponseFactory.NotFound<string>("Export file not found."));
         }
 
-        var contentType = extension == ".pdf"
-            ? "application/pdf"
-            : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        return PhysicalFile(path, contentType, fileName);
+        var bytes = System.IO.File.ReadAllBytes(path);
+        System.IO.File.Delete(path);
+        return File(bytes, ContentTypeFor(fileName), fileName);
     }
 
     private string? CurrentUserId()
         => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+    private bool IsAdministrator()
+        => User.IsInRole(Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE);
+
+    private async Task<bool> CanAccessJobAsync(string jobId, string userId)
+    {
+        if (string.IsNullOrWhiteSpace(jobId) || jobId.Any(ch => !char.IsLetterOrDigit(ch)))
+        {
+            return false;
+        }
+
+        return await _trackingService.CanAccessAsync(jobId, userId, IsAdministrator());
+    }
+
+    private async Task<(string JobId, string FileName)> CreateTrackedJobAsync(
+        string userId,
+        string exportType,
+        string prefix,
+        string extension = ".xlsx")
+    {
+        var jobId = Guid.NewGuid().ToString("N");
+        var fileName = $"{prefix}_{jobId}{extension}";
+        await _trackingService.CreateAsync(jobId, userId, exportType, fileName);
+        return (jobId, fileName);
+    }
 
     private IActionResult Queued(string jobId, string fileName)
         => Ok(ApiResponseFactory.Success(
             new ExportQueueResultDto { JobId = jobId, FileName = fileName },
             "Export started."));
 
-    private string? FindExportFile(string jobId)
+    private string? ResolveExportFile(string? fileName)
     {
-        if (string.IsNullOrWhiteSpace(jobId) || jobId.Any(ch => !char.IsLetterOrDigit(ch)))
+        if (string.IsNullOrWhiteSpace(fileName) || !SafeFileName.IsMatch(fileName))
         {
             return null;
         }
 
         var folder = Path.Combine(_environment.ContentRootPath, "exports");
-        if (!Directory.Exists(folder))
-        {
-            return null;
-        }
+        var path = Path.Combine(folder, fileName);
+        return System.IO.File.Exists(path) ? path : null;
+    }
 
-        return Directory.GetFiles(folder, $"*_{jobId}.xlsx").FirstOrDefault();
+    private static string ContentTypeFor(string fileName)
+    {
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        return extension == ".pdf"
+            ? "application/pdf"
+            : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     }
 
     private static string Sanitize(string value)

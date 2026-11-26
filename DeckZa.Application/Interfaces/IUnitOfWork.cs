@@ -1,4 +1,4 @@
-using DeckZa.Application.Interfaces.Repositories;
+﻿using DeckZa.Application.Interfaces.Repositories;
 
 namespace DeckZa.Application.Interfaces;
 
@@ -26,7 +26,9 @@ public interface IUnitOfWork
     ITaskRepository Tasks { get; }
     ITaskHistoryRepository TaskHistory { get; }
     ITaskImportRepository TaskImports { get; }
+    IExportJobRepository ExportJobs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
 }
+

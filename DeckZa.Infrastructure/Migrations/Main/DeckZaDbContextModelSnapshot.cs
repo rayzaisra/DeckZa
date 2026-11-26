@@ -1389,6 +1389,100 @@ namespace DeckZa.Infrastructure.Migrations.Main
                     b.ToTable("tb_email_outbox");
                 });
 
+            modelBuilder.Entity("DeckZa.Domain.Entities.tb_export_job", b =>
+                {
+                    b.Property<string>("job_id")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("approvalTypeId")
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("approval_type_id");
+
+                    b.Property<string>("approvedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("approved_by");
+
+                    b.Property<DateTime?>("approvedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("approved_date");
+
+                    b.Property<string>("createdBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("createdDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("deletedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<DateTime?>("deletedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("deleted_date");
+
+                    b.Property<DateTime?>("expires_at")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("export_type")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("file_name")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool?>("isActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool?>("isDefault")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool?>("isDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool?>("isLocked")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_locked");
+
+                    b.Property<string>("modifiedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("modified_by");
+
+                    b.Property<DateTime?>("modifiedDate")
+                        .HasColumnType("datetime")
+                        .HasColumnName("modified_date");
+
+                    b.Property<int?>("statusApproval")
+                        .HasColumnType("int")
+                        .HasColumnName("status_approval");
+
+                    b.Property<string>("user_id")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("job_id");
+
+                    b.HasIndex("expires_at");
+
+                    b.HasIndex("file_name");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("tb_export_job");
+                });
+
             modelBuilder.Entity("DeckZa.Domain.Entities.tb_import_batch", b =>
                 {
                     b.Property<Guid>("import_batch_id")

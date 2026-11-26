@@ -4,6 +4,8 @@
 @inject AuthService AuthService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
@@ -22,10 +24,26 @@ else
                 <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
                     <MudChip T="string" Size="Size.Small" Color="Color.Success">Verified Account</MudChip>
                     <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">ID: @_user.UserId</MudChip>
+                    @if (_isGoogleUser)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Google Account</MudChip>
+                    }
                 </div>
             </div>
         </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="EditProfileAsync">Edit Profile</MudButton>
+        <div class="d-flex gap-2 flex-wrap">
+            @if (_isGoogleUser)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Sync"
+                           Disabled="@_googleSyncLoading"
+                           OnClick="SyncGoogleProfileAsync">
+                    @(_googleSyncLoading ? "Menyinkronkan..." : "Sinkronkan dari Google")
+                </MudButton>
+            }
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="EditProfileAsync">Edit Profile</MudButton>
+        </div>
     </MudPaper>
 
     <MudGrid Spacing="3" Class="mt-1">
@@ -75,8 +93,18 @@ else
                     <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Primary" />
                     <MudText Typo="Typo.h6">Account Security</MudText>
                     <MudSpacer />
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Lock" OnClick="TogglePasswordUpdate">Change Password</MudButton>
+                    @if (!_isGoogleUser)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Lock" OnClick="TogglePasswordUpdate">Change Password</MudButton>
+                    }
                 </div>
+
+                @if (_isGoogleUser)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                        Akun ini terdaftar melalui Google. Password lokal tidak digunakan.
+                    </MudAlert>
+                }
 
                 @if (_showPasswordUpdate)
                 {
@@ -217,6 +245,9 @@ else
         }
     }
 
+    private bool _googleSyncLoading;
+    private bool _isGoogleUser => string.Equals(_user?.ExternalProvider, "GOOGLE", StringComparison.OrdinalIgnoreCase);
+
     private string RoleName => _user?.RoleName ?? _user?.RoleId ?? "-";
 
     private string GenderName => _user?.GenderId?.ToUpperInvariant() switch
@@ -226,9 +257,24 @@ else
         _ => _user?.GenderId ?? "-",
     };
 
+    [SupplyParameterFromQuery(Name = "google_sync")]
+    public string? GoogleSyncQuery { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         _user = await AuthService.GetCurrentUserAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !string.Equals(GoogleSyncQuery, "1", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        GoogleSyncQuery = null;
+        Navigation.NavigateTo("/profile", replace: true);
+        await SyncGoogleProfileAsync();
     }
 
     private async Task EditProfileAsync()
@@ -244,6 +290,45 @@ else
         if (result is { Canceled: false, Data: UserResponseDto updated })
         {
             _user = updated;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SyncGoogleProfileAsync()
+    {
+        if (_googleSyncLoading || !_isGoogleUser)
+        {
+            return;
+        }
+
+        _googleSyncLoading = true;
+        try
+        {
+            var accessToken = await JS.InvokeAsync<string?>("sessionStorage.getItem", "deckza_google_access_token");
+            var expRaw = await JS.InvokeAsync<string?>("sessionStorage.getItem", "deckza_google_access_token_exp");
+            var expired = !long.TryParse(expRaw, out var expUnix) || DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= expUnix;
+            if (string.IsNullOrWhiteSpace(accessToken) || expired)
+            {
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "deckza_google_sync_pending", "1");
+                Snackbar.Add("Sesi Google kedaluwarsa. Silakan masuk dengan Google untuk melanjutkan sinkronisasi.", Severity.Info);
+                Navigation.NavigateTo("/", forceLoad: true);
+                return;
+            }
+
+            var updated = await AuthService.SyncGoogleProfileAsync(accessToken);
+            if (updated != null)
+            {
+                _user = updated;
+                Snackbar.Add("Profil berhasil disinkronkan dari Google.", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _googleSyncLoading = false;
             StateHasChanged();
         }
     }

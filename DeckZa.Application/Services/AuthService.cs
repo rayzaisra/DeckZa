@@ -496,6 +496,12 @@ public class AuthService : IAuthService
 
     private void ApplyPasswordExpiryPolicy(um_user_app user, um_user_app_flag flag, LoginResponseDto response)
     {
+        if (string.Equals(user.external_provider, "GOOGLE", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(user.password))
+        {
+            return;
+        }
+
         var expiryDays = GetConfigInt("AppSettings:PasswordExpiryDays", 90);
         var warningDays = GetConfigInt("AppSettings:PasswordWarningDays", 10);
 

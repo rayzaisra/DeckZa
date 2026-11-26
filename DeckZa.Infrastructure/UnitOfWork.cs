@@ -34,6 +34,7 @@ public class UnitOfWork : IUnitOfWork
     private ITaskRepository? _tasks;
     private ITaskHistoryRepository? _taskHistory;
     private ITaskImportRepository? _taskImports;
+    private IExportJobRepository? _exportJobs;
 
     public UnitOfWork(DeckZaDbContext context) => _context = context;
 
@@ -59,6 +60,7 @@ public class UnitOfWork : IUnitOfWork
     public ITaskRepository Tasks => _tasks ??= new TaskRepository(_context);
     public ITaskHistoryRepository TaskHistory => _taskHistory ??= new TaskHistoryRepository(_context);
     public ITaskImportRepository TaskImports => _taskImports ??= new TaskImportRepository(_context);
+    public IExportJobRepository ExportJobs => _exportJobs ??= new ExportJobRepository(_context);
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => _context.SaveChangesAsync(cancellationToken);
@@ -81,3 +83,5 @@ internal sealed class UnitOfWorkTransaction : IUnitOfWorkTransaction
 
     public ValueTask DisposeAsync() => _transaction.DisposeAsync();
 }
+
+

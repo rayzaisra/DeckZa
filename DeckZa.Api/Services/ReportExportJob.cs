@@ -20,17 +20,20 @@ public class ReportExportJob
     private readonly IErrorLogService _errorLog;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<ReportExportJob> _logger;
+    private readonly IExportJobTrackingService _trackingService;
 
     public ReportExportJob(
         IReportQueryService reportQueryService,
         IErrorLogService errorLog,
         IWebHostEnvironment environment,
-        ILogger<ReportExportJob> logger)
+        ILogger<ReportExportJob> logger,
+        IExportJobTrackingService trackingService)
     {
         _reportQueryService = reportQueryService;
         _errorLog = errorLog;
         _environment = environment;
         _logger = logger;
+        _trackingService = trackingService;
     }
 
     public async Task ExportAsync(
@@ -54,6 +57,7 @@ public class ReportExportJob
 
             var path = SaveWorkbook(workbook, fileName);
             ExcelChartWriter.Apply(path, charts);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
         }
         catch (Exception exception)
         {

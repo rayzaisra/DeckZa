@@ -23,6 +23,7 @@ public class ManagementExportJob
     private readonly IErrorLogService _errorLog;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<ManagementExportJob> _logger;
+    private readonly IExportJobTrackingService _trackingService;
 
     public ManagementExportJob(
         IUserManagementService userService,
@@ -34,7 +35,8 @@ public class ManagementExportJob
         INotificationService notificationService,
         IErrorLogService errorLog,
         IWebHostEnvironment environment,
-        ILogger<ManagementExportJob> logger)
+        ILogger<ManagementExportJob> logger,
+        IExportJobTrackingService trackingService)
     {
         _userService = userService;
         _groupService = groupService;
@@ -46,6 +48,7 @@ public class ManagementExportJob
         _errorLog = errorLog;
         _environment = environment;
         _logger = logger;
+        _trackingService = trackingService;
     }
 
     public async Task ExportMasterDataAsync(string tableName, string? search, string userId, string jobId, string fileName)
@@ -78,6 +81,7 @@ public class ManagementExportJob
                 });
 
             WriteWorkbook(fileName, "Master Data", headers, rows);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
             await NotifyReadyAsync(userId, "Master data export is ready to download.", jobId);
         }
         catch (Exception ex)
@@ -108,6 +112,7 @@ public class ManagementExportJob
             });
 
             WriteWorkbook(fileName, "Users", headers, rows);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
             await NotifyReadyAsync(userId, "User export is ready to download.", jobId);
         }
         catch (Exception ex)
@@ -135,6 +140,7 @@ public class ManagementExportJob
             });
 
             WriteWorkbook(fileName, "Groups", headers, rows);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
             await NotifyReadyAsync(userId, "Group export is ready to download.", jobId);
         }
         catch (Exception ex)
@@ -165,6 +171,7 @@ public class ManagementExportJob
             });
 
             WriteWorkbook(fileName, "Roles", headers, rows);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
             await NotifyReadyAsync(userId, "Role export is ready to download.", jobId);
         }
         catch (Exception ex)
@@ -195,6 +202,7 @@ public class ManagementExportJob
             });
 
             WriteWorkbook(fileName, "Menus", headers, rows);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
             await NotifyReadyAsync(userId, "Menu export is ready to download.", jobId);
         }
         catch (Exception ex)
@@ -238,6 +246,7 @@ public class ManagementExportJob
                 .ToArray());
 
             WriteWorkbook(fileName, "Data", headers, dataRows);
+            await _trackingService.MarkReadyAsync(jobId, fileName);
             await NotifyReadyAsync(userId, "Parameter export is ready to download.", jobId);
         }
         catch (Exception ex)

@@ -224,6 +224,35 @@
                             Minimum 8 characters, with uppercase, lowercase, number, and special character.
                         </MudText>
                     </div>
+                    @if (_googleEnabled && !IsMauiApp)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   FullWidth="true"
+                                   Size="Size.Large"
+                                   Class="google-signin-btn"
+                                   Disabled="@(_googleLoading || _signUpLoading)"
+                                   OnClick="BeginGoogleSignInAsync">
+                            @if (_googleLoading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Connecting...</span>
+                            }
+                            else
+                            {
+                                <span class="google-signin-icon" aria-hidden="true">
+                                    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill="#EA4335" d="M9 7.3636v3.4909h4.8545c-.2127 1.1164-.8509 2.0627-1.8091 2.7018l2.9236 2.2691C16.6727 14.2582 17.6727 11.8909 17.6727 9.2045c0-.6382-.0582-1.2509-.1636-1.8409H9z"/>
+                                        <path fill="#34A853" d="M9 18c2.43 0 4.4673-.8055 5.9564-2.1818l-2.9236-2.2691c-.8055.54-1.8364.8664-3.0327.8664-2.3345 0-4.3164-1.5764-5.0255-3.6982H.9564v2.3455C2.4373 16.0164 5.4818 18 9 18z"/>
+                                        <path fill="#4A90E2" d="M3.9745 10.7173A5.41 5.41 0 0 1 3.6873 9c0-.5964.1036-1.1745.2873-1.7173V4.9373H.9564A8.9964 8.9964 0 0 0 0 9c0 1.4527.3473 2.8273.9564 4.0627l3.0182-2.3455z"/>
+                                        <path fill="#FBBC05" d="M9 3.5782c1.3218 0 2.5091.4545 3.4418 1.3455l2.5818-2.5818C13.4636.8918 11.4264 0 9 0 5.4818 0 2.4373 1.9836.9564 4.9373l3.0182 2.3455C4.6836 5.1545 6.6655 3.5782 9 3.5782z"/>
+                                    </svg>
+                                </span>
+                                <span>Masuk dengan Google</span>
+                            }
+                        </MudButton>
+                        <div class="login-or-divider"><span>atau</span></div>
+                    }
                     <MudButton ButtonType="ButtonType.Submit"
                                Variant="Variant.Filled"
                                Color="Color.Primary"
@@ -268,6 +297,35 @@
                             <button type="button" class="login-text-link" @onclick="ShowForgot">Forgot Password?</button>
                         </div>
                     </div>
+                    @if (_googleEnabled && !IsMauiApp)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   FullWidth="true"
+                                   Size="Size.Large"
+                                   Class="google-signin-btn"
+                                   Disabled="@(_googleLoading || _isLoading)"
+                                   OnClick="BeginGoogleSignInAsync">
+                            @if (_googleLoading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Connecting...</span>
+                            }
+                            else
+                            {
+                                <span class="google-signin-icon" aria-hidden="true">
+                                    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill="#EA4335" d="M9 7.3636v3.4909h4.8545c-.2127 1.1164-.8509 2.0627-1.8091 2.7018l2.9236 2.2691C16.6727 14.2582 17.6727 11.8909 17.6727 9.2045c0-.6382-.0582-1.2509-.1636-1.8409H9z"/>
+                                        <path fill="#34A853" d="M9 18c2.43 0 4.4673-.8055 5.9564-2.1818l-2.9236-2.2691c-.8055.54-1.8364.8664-3.0327.8664-2.3345 0-4.3164-1.5764-5.0255-3.6982H.9564v2.3455C2.4373 16.0164 5.4818 18 9 18z"/>
+                                        <path fill="#4A90E2" d="M3.9745 10.7173A5.41 5.41 0 0 1 3.6873 9c0-.5964.1036-1.1745.2873-1.7173V4.9373H.9564A8.9964 8.9964 0 0 0 0 9c0 1.4527.3473 2.8273.9564 4.0627l3.0182-2.3455z"/>
+                                        <path fill="#FBBC05" d="M9 3.5782c1.3218 0 2.5091.4545 3.4418 1.3455l2.5818-2.5818C13.4636.8918 11.4264 0 9 0 5.4818 0 2.4373 1.9836.9564 4.9373l3.0182 2.3455C4.6836 5.1545 6.6655 3.5782 9 3.5782z"/>
+                                    </svg>
+                                </span>
+                                <span>Masuk dengan Google</span>
+                            }
+                        </MudButton>
+                        <div class="login-or-divider"><span>atau</span></div>
+                    }
                     <MudButton ButtonType="ButtonType.Submit"
                                Variant="Variant.Filled"
                                Color="Color.Primary"
@@ -533,6 +591,35 @@ else
                         <MudText Typo="Typo.caption" Color="Color.Secondary">
                             Minimum 8 characters, with uppercase, lowercase, number, and special character.
                         </MudText>
+                        @if (_googleEnabled)
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Default"
+                                       FullWidth="true"
+                                       Size="Size.Large"
+                                       Class="google-signin-btn"
+                                       Disabled="@(_googleLoading || _signUpLoading)"
+                                       OnClick="BeginGoogleSignInAsync">
+                                @if (_googleLoading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Connecting...</span>
+                                }
+                                else
+                                {
+                                    <span class="google-signin-icon" aria-hidden="true">
+                                        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill="#EA4335" d="M9 7.3636v3.4909h4.8545c-.2127 1.1164-.8509 2.0627-1.8091 2.7018l2.9236 2.2691C16.6727 14.2582 17.6727 11.8909 17.6727 9.2045c0-.6382-.0582-1.2509-.1636-1.8409H9z"/>
+                                            <path fill="#34A853" d="M9 18c2.43 0 4.4673-.8055 5.9564-2.1818l-2.9236-2.2691c-.8055.54-1.8364.8664-3.0327.8664-2.3345 0-4.3164-1.5764-5.0255-3.6982H.9564v2.3455C2.4373 16.0164 5.4818 18 9 18z"/>
+                                            <path fill="#4A90E2" d="M3.9745 10.7173A5.41 5.41 0 0 1 3.6873 9c0-.5964.1036-1.1745.2873-1.7173V4.9373H.9564A8.9964 8.9964 0 0 0 0 9c0 1.4527.3473 2.8273.9564 4.0627l3.0182-2.3455z"/>
+                                            <path fill="#FBBC05" d="M9 3.5782c1.3218 0 2.5091.4545 3.4418 1.3455l2.5818-2.5818C13.4636.8918 11.4264 0 9 0 5.4818 0 2.4373 1.9836.9564 4.9373l3.0182 2.3455C4.6836 5.1545 6.6655 3.5782 9 3.5782z"/>
+                                        </svg>
+                                    </span>
+                                    <span>Masuk dengan Google</span>
+                                }
+                            </MudButton>
+                            <div class="login-or-divider"><span>atau</span></div>
+                        }
                         <MudButton ButtonType="ButtonType.Submit"
                                    Variant="Variant.Filled"
                                    Color="Color.Primary"
@@ -576,6 +663,35 @@ else
                             <MudCheckBox T="bool" @bind-Value="_loginModel.RememberMe" Color="Color.Primary">Remember this device</MudCheckBox>
                             <button type="button" class="login-text-link" @onclick="ShowForgot">Forgot Password?</button>
                         </div>
+                        @if (_googleEnabled)
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Default"
+                                       FullWidth="true"
+                                       Size="Size.Large"
+                                       Class="google-signin-btn"
+                                       Disabled="@(_googleLoading || _isLoading)"
+                                       OnClick="BeginGoogleSignInAsync">
+                                @if (_googleLoading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Connecting...</span>
+                                }
+                                else
+                                {
+                                    <span class="google-signin-icon" aria-hidden="true">
+                                        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill="#EA4335" d="M9 7.3636v3.4909h4.8545c-.2127 1.1164-.8509 2.0627-1.8091 2.7018l2.9236 2.2691C16.6727 14.2582 17.6727 11.8909 17.6727 9.2045c0-.6382-.0582-1.2509-.1636-1.8409H9z"/>
+                                            <path fill="#34A853" d="M9 18c2.43 0 4.4673-.8055 5.9564-2.1818l-2.9236-2.2691c-.8055.54-1.8364.8664-3.0327.8664-2.3345 0-4.3164-1.5764-5.0255-3.6982H.9564v2.3455C2.4373 16.0164 5.4818 18 9 18z"/>
+                                            <path fill="#4A90E2" d="M3.9745 10.7173A5.41 5.41 0 0 1 3.6873 9c0-.5964.1036-1.1745.2873-1.7173V4.9373H.9564A8.9964 8.9964 0 0 0 0 9c0 1.4527.3473 2.8273.9564 4.0627l3.0182-2.3455z"/>
+                                            <path fill="#FBBC05" d="M9 3.5782c1.3218 0 2.5091.4545 3.4418 1.3455l2.5818-2.5818C13.4636.8918 11.4264 0 9 0 5.4818 0 2.4373 1.9836.9564 4.9373l3.0182 2.3455C4.6836 5.1545 6.6655 3.5782 9 3.5782z"/>
+                                        </svg>
+                                    </span>
+                                    <span>Masuk dengan Google</span>
+                                }
+                            </MudButton>
+                            <div class="login-or-divider"><span>atau</span></div>
+                        }
                         <MudButton ButtonType="ButtonType.Submit"
                                    Variant="Variant.Filled"
                                    Color="Color.Primary"
@@ -620,6 +736,21 @@ else
     [SupplyParameterFromQuery(Name = "token")]
     public string? Token { get; set; }
 
+    [SupplyParameterFromQuery(Name = "code")]
+    public string? GoogleCode { get; set; }
+
+    [SupplyParameterFromQuery(Name = "state")]
+    public string? GoogleState { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? GoogleError { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error_description")]
+    public string? GoogleErrorDescription { get; set; }
+
+    [SupplyParameterFromQuery(Name = "message")]
+    public string? ErrorMessageQuery { get; set; }
+
     private readonly LoginRequestDto _loginModel = new();
     private readonly ForgotPasswordRequestDto _forgotModel = new();
     private readonly ResetPasswordRequestDto _resetModel = new();
@@ -632,6 +763,8 @@ else
     private bool _signUpLoading;
     private bool _resetTokenInvalid;
     private bool _requiresPasswordChange;
+    private bool _googleEnabled;
+    private bool _googleLoading;
     private string? _errorMessage;
     private string? _successMessage;
 
@@ -674,41 +807,49 @@ else
             return;
         }
 
-        if (!path.Equals("reset-password", StringComparison.OrdinalIgnoreCase))
+        if (path.Equals("reset-password", StringComparison.OrdinalIgnoreCase))
         {
+            _mode = LoginMode.Reset;
+            _resetModel.Token = Token ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(_resetModel.Token))
+            {
+                _resetTokenInvalid = true;
+                Snackbar.Add("Reset token is missing.", Severity.Error);
+                return;
+            }
+
+            try
+            {
+                _resetTokenInvalid = !await AuthService.ValidatePasswordResetTokenAsync(_resetModel.Token);
+            }
+            catch (Exception ex)
+            {
+                _resetTokenInvalid = true;
+                if (IsMauiApp)
+                {
+                    await ShowMauiErrorAsync("MobileValidateResetToken", ex);
+                }
+                else
+                {
+                    Snackbar.Add(ex.Message, Severity.Error);
+                }
+            }
+
+            if (_resetTokenInvalid)
+            {
+                Snackbar.Add("Reset token is invalid or has expired.", Severity.Error);
+            }
+
             return;
         }
 
-        _mode = LoginMode.Reset;
-        _resetModel.Token = Token ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(_resetModel.Token))
+        if (path.Equals("signin-google", StringComparison.OrdinalIgnoreCase))
         {
-            _resetTokenInvalid = true;
-            Snackbar.Add("Reset token is missing.", Severity.Error);
+            await HandleGoogleCallbackAsync();
             return;
         }
 
-        try
-        {
-            _resetTokenInvalid = !await AuthService.ValidatePasswordResetTokenAsync(_resetModel.Token);
-        }
-        catch (Exception ex)
-        {
-            _resetTokenInvalid = true;
-            if (IsMauiApp)
-            {
-                await ShowMauiErrorAsync("MobileValidateResetToken", ex);
-            }
-            else
-            {
-                Snackbar.Add(ex.Message, Severity.Error);
-            }
-        }
-
-        if (_resetTokenInvalid)
-        {
-            Snackbar.Add("Reset token is invalid or has expired.", Severity.Error);
-        }
+        await LoadGoogleConfigAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1061,5 +1202,194 @@ else
         _firstLoginModel = new FirstLoginPasswordDto();
         _errorMessage = null;
         _successMessage = null;
+    }
+
+    private async Task LoadGoogleConfigAsync()
+    {
+        if (IsMauiApp)
+        {
+            _googleEnabled = false;
+            return;
+        }
+
+        try
+        {
+            var config = await AuthService.GetGoogleConfigAsync();
+            _googleEnabled = config?.Enabled == true && !string.IsNullOrWhiteSpace(config.ClientId);
+        }
+        catch
+        {
+            _googleEnabled = false;
+        }
+    }
+
+    private async Task BeginGoogleSignInAsync()
+    {
+        if (_googleLoading || !_googleEnabled || IsMauiApp)
+        {
+            return;
+        }
+
+        _googleLoading = true;
+        _errorMessage = null;
+        _successMessage = null;
+        try
+        {
+            var config = await AuthService.GetGoogleConfigAsync();
+            if (config?.Enabled != true || string.IsNullOrWhiteSpace(config.ClientId))
+            {
+                _googleEnabled = false;
+                _errorMessage = "Google sign-in is not available.";
+                return;
+            }
+
+            var redirectUri = string.IsNullOrWhiteSpace(config.RedirectUri)
+                ? Navigation.ToAbsoluteUri("/signin-google").ToString()
+                : config.RedirectUri;
+            var state = CreateUrlSafeToken(32);
+            var codeVerifier = CreateUrlSafeToken(64);
+            var codeChallenge = CreateCodeChallenge(codeVerifier);
+
+            await JS.InvokeVoidAsync("sessionStorage.setItem", "deckza_google_state", state);
+            await JS.InvokeVoidAsync("sessionStorage.setItem", "deckza_google_verifier", codeVerifier);
+            await JS.InvokeVoidAsync("sessionStorage.setItem", "deckza_google_redirect", redirectUri);
+
+            var query = string.Join("&", new Dictionary<string, string>
+            {
+                ["client_id"] = config.ClientId,
+                ["redirect_uri"] = redirectUri,
+                ["response_type"] = "code",
+                ["scope"] = string.IsNullOrWhiteSpace(config.Scope) ? "openid email profile" : config.Scope,
+                ["state"] = state,
+                ["code_challenge"] = codeChallenge,
+                ["code_challenge_method"] = "S256",
+                ["prompt"] = "select_account",
+                ["access_type"] = "online",
+            }.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+
+            Navigation.NavigateTo($"https://accounts.google.com/o/oauth2/v2/auth?{query}", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _googleLoading = false;
+        }
+    }
+
+    private async Task HandleGoogleCallbackAsync()
+    {
+        if (IsMauiApp)
+        {
+            Navigation.NavigateTo("/", replace: true);
+            return;
+        }
+
+        _isLoading = true;
+        _googleLoading = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var config = await AuthService.GetGoogleConfigAsync();
+            _googleEnabled = config?.Enabled == true;
+
+            if (!string.IsNullOrWhiteSpace(GoogleError))
+            {
+                _errorMessage = GoogleError.Equals("access_denied", StringComparison.OrdinalIgnoreCase)
+                    ? "Google sign-in was cancelled."
+                    : $"Google sign-in failed: {GoogleError}.";
+                Navigation.NavigateTo("/", replace: true);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(GoogleCode) || string.IsNullOrWhiteSpace(GoogleState))
+            {
+                Navigation.NavigateTo("/", replace: true);
+                return;
+            }
+
+            var expectedState = await JS.InvokeAsync<string?>("sessionStorage.getItem", "deckza_google_state");
+            var codeVerifier = await JS.InvokeAsync<string?>("sessionStorage.getItem", "deckza_google_verifier");
+            var redirectUri = await JS.InvokeAsync<string?>("sessionStorage.getItem", "deckza_google_redirect");
+
+            await JS.InvokeVoidAsync("sessionStorage.removeItem", "deckza_google_state");
+            await JS.InvokeVoidAsync("sessionStorage.removeItem", "deckza_google_verifier");
+            await JS.InvokeVoidAsync("sessionStorage.removeItem", "deckza_google_redirect");
+
+            if (string.IsNullOrWhiteSpace(expectedState)
+                || !string.Equals(expectedState, GoogleState, StringComparison.Ordinal)
+                || string.IsNullOrWhiteSpace(codeVerifier)
+                || string.IsNullOrWhiteSpace(redirectUri))
+            {
+                Navigation.NavigateTo("/?message=" + Uri.EscapeDataString("Google sign-in session is invalid or expired. Please try again."), replace: true);
+                return;
+            }
+
+            var response = await AuthService.SignInWithGoogleAsync(new GoogleSignInRequestDto
+            {
+                Code = GoogleCode,
+                CodeVerifier = codeVerifier,
+                RedirectUri = redirectUri,
+            });
+
+            if (response == null)
+            {
+                Navigation.NavigateTo("/?message=" + Uri.EscapeDataString("Unable to sign in with Google. Please try again."), replace: true);
+                return;
+            }
+
+            await TokenStorage.SetRememberMeAsync(false);
+            await TokenStorage.SetAccessTokenAsync(response.AccessToken);
+            await TokenStorage.SetRefreshTokenAsync(response.RefreshToken);
+            if (!string.IsNullOrWhiteSpace(response.GoogleAccessToken))
+            {
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "deckza_google_access_token", response.GoogleAccessToken);
+                await JS.InvokeVoidAsync("sessionStorage.setItem", "deckza_google_access_token_exp", DateTimeOffset.UtcNow.AddMinutes(55).ToUnixTimeSeconds().ToString());
+            }
+            AuthStateNotifier.NotifyUserLogin(response.User.UserId);
+
+            var pendingSync = await JS.InvokeAsync<string?>("sessionStorage.getItem", "deckza_google_sync_pending");
+            if (string.Equals(pendingSync, "1", StringComparison.Ordinal))
+            {
+                await JS.InvokeVoidAsync("sessionStorage.removeItem", "deckza_google_sync_pending");
+                Navigation.NavigateTo("/profile?google_sync=1", forceLoad: true);
+                return;
+            }
+
+            await Motion.BeginRouteTransitionAsync();
+            await Task.Delay(180);
+            Navigation.NavigateTo("/dashboard");
+        }
+        catch (Exception ex)
+        {
+            Navigation.NavigateTo("/?message=" + Uri.EscapeDataString(ex.Message), replace: true);
+        }
+        finally
+        {
+            _isLoading = false;
+            _googleLoading = false;
+        }
+    }
+
+    private static string CreateUrlSafeToken(int byteLength)
+    {
+        var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(byteLength);
+        return Convert.ToBase64String(bytes)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+    }
+
+    private static string CreateCodeChallenge(string codeVerifier)
+    {
+        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.ASCII.GetBytes(codeVerifier));
+        return Convert.ToBase64String(bytes)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
     }
 }

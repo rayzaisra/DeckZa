@@ -27,6 +27,7 @@ public class LoginResponseDto
     public bool IsPasswordExpiry { get; set; }
     public bool RequiresPasswordChange { get; set; }
     public string PasswordWarning { get; set; } = string.Empty;
+    public string? GoogleAccessToken { get; set; }
 }
 
 public class FirstLoginPasswordDto
@@ -72,6 +73,9 @@ public class UserResponseDto
     public string? Email { get; set; }
     public string? PhoneNumber { get; set; }
     public string? GenderId { get; set; }
+    public string? ExternalProvider { get; set; }
+    public string? AvatarUrl { get; set; }
+    public DateTime? ProfileSyncedDate { get; set; }
     public DateTime LastLoginDate { get; set; }
     public DateTime? LastPasswordChangeDate { get; set; }
     public string? LastIpAddress { get; set; }

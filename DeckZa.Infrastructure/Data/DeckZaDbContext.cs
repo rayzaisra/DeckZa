@@ -79,6 +79,7 @@ public class DeckZaDbContext : DbContext
     public DbSet<rf_plan_feature> rf_plan_feature => Set<rf_plan_feature>();
     public DbSet<tb_payment_request> tb_payment_request => Set<tb_payment_request>();
     public DbSet<tb_payment_invoice> tb_payment_invoice => Set<tb_payment_invoice>();
+    public DbSet<tb_export_job> tb_export_job => Set<tb_export_job>();
 
     public override int SaveChanges()
     {
@@ -382,6 +383,11 @@ public class DeckZaDbContext : DbContext
         modelBuilder.Entity<tb_password_reset_token>().HasKey(e => e.id);
         modelBuilder.Entity<tb_password_reset_token>().HasIndex(e => e.token_hash).IsUnique();
         modelBuilder.Entity<tb_password_reset_token>().HasIndex(e => e.user_id);
+
+        modelBuilder.Entity<tb_export_job>().HasKey(e => e.job_id);
+        modelBuilder.Entity<tb_export_job>().HasIndex(e => e.user_id);
+        modelBuilder.Entity<tb_export_job>().HasIndex(e => e.file_name);
+        modelBuilder.Entity<tb_export_job>().HasIndex(e => e.expires_at);
     }
 
     private static void ConfigureReferences(ModelBuilder modelBuilder)
@@ -519,6 +525,7 @@ public class DeckZaDbContext : DbContext
         ConfigureDeckZaAuditColumns<rf_plan_feature>(modelBuilder);
         ConfigureDeckZaAuditColumns<tb_payment_request>(modelBuilder);
         ConfigureDeckZaAuditColumns<tb_payment_invoice>(modelBuilder);
+        ConfigureDeckZaAuditColumns<tb_export_job>(modelBuilder);
 
         modelBuilder.Entity<rf_plan>().HasKey(e => e.id);
         modelBuilder.Entity<rf_plan>().Property(e => e.id).ValueGeneratedNever();

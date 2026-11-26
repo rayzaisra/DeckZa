@@ -1953,6 +1953,40 @@ body:has(.app-dark) {
     margin-bottom: 28px;
 }
 
+.google-signin-btn {
+    margin-top: 8px;
+    text-transform: none !important;
+    font-weight: 600 !important;
+}
+
+.google-signin-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.login-or-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 14px 0;
+    color: var(--mud-palette-text-secondary);
+    font-size: 0.85rem;
+}
+
+.login-or-divider::before,
+.login-or-divider::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
+.neo-brutalism .login-or-divider::before,
+.neo-brutalism .login-or-divider::after {
+    border-top: 2px solid var(--neo-ink);
+}
+
 body:has(.neo-brutalism) {
     --neo-ink: #0f172a;
 }

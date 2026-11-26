@@ -11,6 +11,7 @@ using DeckZa.Api.Helpers;
 using DeckZa.Application.DTOs.Auth;
 using DeckZa.Application.Exceptions;
 using DeckZa.Application.Interfaces;
+using DeckZa.Domain.Enums;
 using DeckZa.Infrastructure.Services;
 
 namespace DeckZa.Api.Controllers;
@@ -26,6 +27,7 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
     private readonly IErrorLogService _errorLog;
+    private readonly IGoogleAuthService _googleAuth;
 
     public AuthController(
         IAuthService authService,
@@ -33,7 +35,8 @@ public class AuthController : ControllerBase
         IBackgroundJobClient backgroundJobs,
         IConfiguration configuration,
         IWebHostEnvironment environment,
-        IErrorLogService errorLog)
+        IErrorLogService errorLog,
+        IGoogleAuthService googleAuth)
     {
         _authService = authService;
         _passwordResetService = passwordResetService;
@@ -41,6 +44,7 @@ public class AuthController : ControllerBase
         _configuration = configuration;
         _environment = environment;
         _errorLog = errorLog;
+        _googleAuth = googleAuth;
     }
 
     [HttpPost("login")]
@@ -216,6 +220,81 @@ public class AuthController : ControllerBase
 
         await _authService.LogoutAsync(userId, request?.RefreshToken ?? string.Empty);
         return Ok(ApiResponseFactory.Success("Logged out successfully"));
+    }
+
+    [HttpGet("google/config")]
+    [AllowAnonymous]
+    public IActionResult GetGoogleConfig()
+    {
+        var config = _googleAuth.GetConfig();
+        if (!config.Enabled)
+        {
+            return NotFound();
+        }
+
+        return Ok(ApiResponseFactory.Success(config, "Google authentication is enabled."));
+    }
+
+    [HttpPost("google")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SignInWithGoogle([FromBody] GoogleSignInRequestDto request)
+    {
+        var result = await _googleAuth.SignInAsync(request, HttpContext.RequestAborted);
+        if (!result.Success)
+        {
+            if (result.Code == "404" || result.Code == Const.DATA_NOT_FOUND_CODE)
+            {
+                return NotFound();
+            }
+
+            if (result.Code == "409")
+            {
+                return Conflict(ApiResponseFactory.Error<LoginResponseDto>(result.Message, result.Code ?? "409"));
+            }
+
+            if (result.Code == "401")
+            {
+                return Unauthorized(ApiResponseFactory.Error<LoginResponseDto>(result.Message, "401"));
+            }
+
+            return BadRequest(ApiResponseFactory.Error<LoginResponseDto>(result.Message, result.Code ?? Const.ERROR_CODE));
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("google/sync")]
+    [Authorize]
+    public async Task<IActionResult> SyncGoogleProfile([FromBody] GoogleSyncRequestDto request)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _googleAuth.SyncProfileAsync(userId, request, HttpContext.RequestAborted);
+        if (!result.Success)
+        {
+            if (result.Code == "404" || result.Code == Const.DATA_NOT_FOUND_CODE)
+            {
+                return NotFound(ApiResponseFactory.NotFound<UserResponseDto>(result.Message));
+            }
+
+            if (result.Code == "401")
+            {
+                return Unauthorized(ApiResponseFactory.Error<UserResponseDto>(result.Message, "401"));
+            }
+
+            if (result.Code == "409")
+            {
+                return Conflict(ApiResponseFactory.Error<UserResponseDto>(result.Message, "409"));
+            }
+
+            return BadRequest(ApiResponseFactory.Error<UserResponseDto>(result.Message, result.Code ?? Const.ERROR_CODE));
+        }
+
+        return Ok(result);
     }
 
     [HttpGet("me")]

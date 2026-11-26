@@ -16,6 +16,16 @@ public class UmUserAppRepository : IUmUserAppRepository
     public Task<um_user_app?> GetByIdAsync(string userId)
         => _context.um_user_app.FirstOrDefaultAsync(e => e.user_id == userId);
 
+    public Task<um_user_app?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+        => _context.um_user_app.FirstOrDefaultAsync(
+            e => e.email != null && e.email == email,
+            cancellationToken);
+
+    public Task<um_user_app?> GetByExternalProviderIdAsync(string provider, string providerId, CancellationToken cancellationToken = default)
+        => _context.um_user_app.FirstOrDefaultAsync(
+            e => e.external_provider == provider && e.external_provider_id == providerId,
+            cancellationToken);
+
     public Task<um_user_app?> FindByIdOrEmailAsync(
         string identifier,
         CancellationToken cancellationToken = default)
@@ -36,8 +46,8 @@ public class UmUserAppRepository : IUmUserAppRepository
             e => e.user_id == userId && e.isDeleted != true,
             cancellationToken);
 
-    public Task AddAsync(um_user_app entity)
-        => _context.um_user_app.AddAsync(entity).AsTask();
+    public Task AddAsync(um_user_app entity, CancellationToken cancellationToken = default)
+        => _context.um_user_app.AddAsync(entity, cancellationToken).AsTask();
 
     public Task UpdateAsync(um_user_app entity)
     {

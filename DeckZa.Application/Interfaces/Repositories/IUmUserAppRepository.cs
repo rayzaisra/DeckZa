@@ -6,9 +6,11 @@ public interface IUmUserAppRepository
 {
     Task<um_user_app?> GetByIdAsync(string userId);
     Task<um_user_app?> FindByIdOrEmailAsync(string identifier, CancellationToken cancellationToken = default);
+    Task<um_user_app?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+    Task<um_user_app?> GetByExternalProviderIdAsync(string provider, string providerId, CancellationToken cancellationToken = default);
     Task<um_user_app?> GetActiveByIdAsync(string userId, CancellationToken cancellationToken = default);
     Task<bool> ExistsAnyAsync(string userId, CancellationToken cancellationToken = default);
     Task<bool> ExistsActiveAsync(string userId, CancellationToken cancellationToken = default);
-    Task AddAsync(um_user_app entity);
+    Task AddAsync(um_user_app entity, CancellationToken cancellationToken = default);
     Task UpdateAsync(um_user_app entity);
 }
