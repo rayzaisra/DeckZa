@@ -1,0 +1,343 @@
+@page "/dashboard/task-parameter/application"
+@page "/dashboard/task-parameter/task-type"
+@page "/dashboard/task-parameter/priority"
+@page "/dashboard/task-parameter/status"
+@layout AuthenticatedLayout
+@attribute [Authorize]
+@using DeckZa.Application.DTOs.MasterData
+@inject MasterDataApiService MasterDataApi
+@inject PlanApiService PlanApi
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject ExportApiService ExportApi
+@inject NavigationManager Navigation
+
+<MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
+
+<div class="page-heading">
+    <div>
+        <div class="dashboard-kicker">Task Parameter</div>
+        <h1>@Heading</h1>
+        <p>@Subtitle</p>
+        @if (_maxRows.HasValue)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default" Class="mt-2">
+                Plan limit: @_maxRows rows per table
+            </MudChip>
+        }
+    </div>
+    <PermissionGate Action="PermissionAction.AddEdit">
+        <div class="d-flex gap-2">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(_ => OpenAddAsync())">
+                Add @Label
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.FileDownload"
+                       Class="@("ryz-busy-button" + (_isExporting ? " is-busy" : string.Empty))"
+                       Disabled="@_isExporting"
+                       OnClick="@(_ => ExportExcelAsync())">
+                @(_isExporting ? "Exporting..." : "Export Excel")
+            </MudButton>
+        </div>
+    </PermissionGate>
+</div>
+
+<MudPaper Elevation="0" Class="dashboard-card">
+    <MudTable T="MasterItemDto"
+              @ref="_table"
+              ServerData="LoadServerData"
+              Hover="true"
+              Dense="false"
+              Breakpoint="Breakpoint.Sm"
+              Elevation="0">
+        <ToolBarContent>
+            <MudSpacer />
+            <MudTextField @bind-Value="_search"
+                          @bind-Value:after="OnSearchChanged"
+                          Label="Search"
+                          Placeholder="Search by name..."
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          Class="master-search" />
+        </ToolBarContent>
+        <HeaderContent>
+            <PermissionGate AnyOf="PermissionSets.EditDelete">
+                <MudTh Style="text-align:center; width:120px;">Actions</MudTh>
+            </PermissionGate>
+            <MudTh><MudTableSortLabel T="MasterItemDto" SortLabel="orderseq">Order</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="MasterItemDto" SortLabel="description">Name</MudTableSortLabel></MudTh>
+            @if (IsStatus)
+            {
+                <MudTh>Default</MudTh>
+                <MudTh>Completed</MudTh>
+            }
+            <MudTh><MudTableSortLabel T="MasterItemDto" SortLabel="isactive">Status</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="MasterItemDto" SortLabel="statusapproval">Approval</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <PermissionGate AnyOf="PermissionSets.EditDelete">
+                <MudTd DataLabel="Actions" Style="text-align:center; white-space:nowrap;">
+                    <PermissionGate Action="PermissionAction.Edit">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       Color="Color.Primary"
+                                       OnClick="@(_ => OpenEditAsync(context))" />
+                    </PermissionGate>
+                    <PermissionGate Action="PermissionAction.Delete">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                        OnClick="@(_ => DeleteAsync(context))" />
+                    </PermissionGate>
+                </MudTd>
+            </PermissionGate>
+            <MudTd DataLabel="Order">@context.OrderSeq</MudTd>
+            <MudTd DataLabel="Name">@context.Description</MudTd>
+            @if (IsStatus)
+            {
+                <MudTd DataLabel="Default">
+                    @if (context.IsInitialStatus)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Size="Size.Small" />
+                    }
+                </MudTd>
+                <MudTd DataLabel="Completed">
+                    @if (context.IsCompletedStatus)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                    }
+                </MudTd>
+            }
+            <MudTd DataLabel="Status">
+                @if (context.IsActive)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default">Inactive</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="Approval">
+                @if (context.StatusApproval == 8)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Error">Deleted</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success">Approved</MudChip>
+                }
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>No @Label.ToLowerInvariant() found. Add your first row to start using this list in tasks.</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudProgressLinear Indeterminate="true" />
+        </LoadingContent>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private const string ApplicationTable = "rf_application";
+    private const string TaskTypeTable = "rf_task_type";
+    private const string PriorityTable = "rf_task_priority";
+    private const string StatusTable = "rf_status";
+
+    [Parameter]
+    public string? TableName { get; set; }
+
+    private MudTable<MasterItemDto>? _table;
+    private string? _search;
+    private bool _isExporting;
+    private int? _maxRows;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var plan = await PlanApi.GetMyPlanAsync();
+            _maxRows = plan?.MaxMasterRowsPerTable;
+        }
+        catch
+        {
+            _maxRows = null;
+        }
+    }
+
+    private string Table => (TableName ?? string.Empty).ToLowerInvariant() switch
+    {
+        ApplicationTable => ApplicationTable,
+        TaskTypeTable => TaskTypeTable,
+        PriorityTable => PriorityTable,
+        StatusTable => StatusTable,
+        _ => ResolveTableFromUrl(),
+    };
+
+    private string ResolveTableFromUrl()
+    {
+        var uri = new Uri(Navigation.Uri);
+        return uri.AbsolutePath.TrimEnd('/').ToLowerInvariant() switch
+        {
+            "/dashboard/task-parameter/application" => ApplicationTable,
+            "/dashboard/task-parameter/task-type" => TaskTypeTable,
+            "/dashboard/task-parameter/priority" => PriorityTable,
+            "/dashboard/task-parameter/status" => StatusTable,
+            _ => ApplicationTable,
+        };
+    }
+
+    private bool IsStatus => string.Equals(Table, StatusTable, StringComparison.OrdinalIgnoreCase);
+
+    private string Label => Table switch
+    {
+        ApplicationTable => "Application",
+        TaskTypeTable => "Task Type",
+        PriorityTable => "Priority",
+        _ => "Status",
+    };
+
+    private string Heading => Label + " List";
+
+    private string Subtitle => Table switch
+    {
+        ApplicationTable => "Applications you can pick when creating a task.",
+        TaskTypeTable => "Kinds of work you use to classify a task.",
+        PriorityTable => "Urgency levels you assign to a task.",
+        _ => "Stages a task moves through. Mark one Default and one Completed.",
+    };
+
+    private List<BreadcrumbItem> _breadcrumbs => new()
+    {
+        new BreadcrumbItem("Dashboard", "/dashboard"),
+        new BreadcrumbItem("Task Parameter", null, disabled: true),
+        new BreadcrumbItem(Label, null, disabled: true),
+    };
+
+    private async Task<TableData<MasterItemDto>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        var response = await MasterDataApi.GetListAsync(Table, new DataTableRequestDto
+        {
+            PageNumber = state.Page + 1,
+            PageSize = state.PageSize,
+            SearchTerm = _search,
+            SortColumn = state.SortLabel,
+            SortDirection = state.SortDirection == SortDirection.Descending ? "desc" : "asc",
+        });
+
+        return new TableData<MasterItemDto>
+        {
+            Items = response.Data,
+            TotalItems = response.TotalCount,
+        };
+    }
+
+    private async Task OnSearchChanged()
+    {
+        if (_table != null)
+        {
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task ReloadAsync()
+    {
+        if (_table != null)
+        {
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task OpenAddAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            ["Table"] = Table,
+            ["Label"] = Label,
+        };
+
+        var dialog = await DialogService.ShowAsync<AddEditMasterDataDialog>("Add " + Label, parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private async Task OpenEditAsync(MasterItemDto item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Table"] = Table,
+            ["Label"] = Label,
+            ["Item"] = item,
+        };
+
+        var dialog = await DialogService.ShowAsync<AddEditMasterDataDialog>("Edit " + Label, parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(MasterItemDto item)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Title"] = "Delete " + Label,
+            ["Message"] = $"Delete {item.Description}? The row is soft deleted: it disappears from this list and from task dropdowns. Rows still used by tasks are only deactivated.",
+            ["ConfirmText"] = "Delete",
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete " + Label, parameters);
+        var result = await dialog.Result;
+        if (result is not { Canceled: false })
+        {
+            return;
+        }
+
+        var response = await MasterDataApi.DeleteAsync(Table, item.Id);
+        Snackbar.Add(response.Message ?? "Delete failed.", response.Success ? Severity.Success : Severity.Error);
+        await ReloadAsync();
+    }
+
+    private async Task ExportExcelAsync()
+    {
+        if (_isExporting)
+        {
+            return;
+        }
+
+        _isExporting = true;
+        try
+        {
+            var url = await ExportApi.ExportManagementAsync("api/export/master-data", _search, Table);
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                Snackbar.Add("Export failed. Please try again.", Severity.Error);
+                return;
+            }
+
+            Navigation.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isExporting = false;
+        }
+    }
+}

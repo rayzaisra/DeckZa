@@ -23,10 +23,12 @@ public static class DbInitializer
             await MenuSeeder.SeedAsync(context, cancellationToken);
             await ParameterSeeder.SeedAsync(context, cancellationToken);
             await NotificationSeeder.SeedAsync(context, cancellationToken);
-            await DeckZaSeeder.SeedAsync(context, cancellationToken);
+            await DeckZaSeeder.SeedAsync(context, cancellationToken, "rayza");
             await PlanSeeder.SeedAsync(context, cancellationToken);
             await EmailTemplateSeeder.SeedAsync(context, cancellationToken);
             await MenuSeeder.EnsureDocumentationMenuAsync(context, cancellationToken);
+            await MenuSeeder.EnsurePaymentMenusAsync(context, cancellationToken);
+            await MenuSeeder.EnsureTaskParameterMenusAsync(context, cancellationToken);
             return;
         }
 
@@ -100,9 +102,11 @@ public static class DbInitializer
         await MenuSeeder.SeedAsync(context, cancellationToken);
         await ParameterSeeder.SeedAsync(context, cancellationToken);
         await NotificationSeeder.SeedAsync(context, cancellationToken);
-        await DeckZaSeeder.SeedAsync(context, cancellationToken);
+        await DeckZaSeeder.SeedAsync(context, cancellationToken, "rayza");
         await PlanSeeder.SeedAsync(context, cancellationToken);
         await EmailTemplateSeeder.SeedAsync(context, cancellationToken);
         await MenuSeeder.EnsureDocumentationMenuAsync(context, cancellationToken);
+        await MenuSeeder.EnsurePaymentMenusAsync(context, cancellationToken);
+        await MenuSeeder.EnsureTaskParameterMenusAsync(context, cancellationToken);
     }
 }

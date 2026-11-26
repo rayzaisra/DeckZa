@@ -38,6 +38,7 @@ public class EmailDispatchService : IEmailDispatchService
         string bodyText,
         string referenceType,
         string? referenceId = null,
+        EmailAttachmentDto? attachment = null,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(recipient))
@@ -64,6 +65,9 @@ public class EmailDispatchService : IEmailDispatchService
             body_text = bodyText,
             reference_type = referenceType,
             reference_id = referenceId,
+            attachment_file_name = string.IsNullOrWhiteSpace(attachment?.FileName) ? null : attachment!.FileName,
+            attachment_content_type = string.IsNullOrWhiteSpace(attachment?.ContentType) ? null : attachment!.ContentType,
+            attachment_storage_path = string.IsNullOrWhiteSpace(attachment?.StoredPath) ? null : attachment!.StoredPath,
             status = canEmail ? "Pending" : "AdminFallback",
             next_attempt_at = canEmail ? DateTime.UtcNow : null,
             created_date = DateTime.Now,

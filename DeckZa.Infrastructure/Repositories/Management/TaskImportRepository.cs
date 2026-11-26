@@ -22,34 +22,34 @@ public class TaskImportRepository : ITaskImportRepository
                  && e.isDeleted != true,
             cancellationToken);
 
-    public Task<List<rf_application>> GetActiveApplicationsAsync(CancellationToken cancellationToken = default)
+    public Task<List<rf_application>> GetActiveApplicationsAsync(string ownerUserId, CancellationToken cancellationToken = default)
         => _context.rf_application
             .AsNoTracking()
-            .Where(e => e.isActive == true && e.isDeleted == false)
+            .Where(e => e.owner_user_id == ownerUserId && e.isActive == true && e.isDeleted == false)
             .OrderBy(e => e.order_seq)
             .ThenBy(e => e.description)
             .ToListAsync(cancellationToken);
 
-    public Task<List<rf_status>> GetActiveStatusesAsync(CancellationToken cancellationToken = default)
+    public Task<List<rf_status>> GetActiveStatusesAsync(string ownerUserId, CancellationToken cancellationToken = default)
         => _context.rf_status
             .AsNoTracking()
-            .Where(e => e.isActive == true && e.isDeleted == false)
+            .Where(e => e.owner_user_id == ownerUserId && e.isActive == true && e.isDeleted == false)
             .OrderBy(e => e.order_seq)
             .ThenBy(e => e.description)
             .ToListAsync(cancellationToken);
 
-    public Task<List<rf_task_type>> GetActiveTaskTypesAsync(CancellationToken cancellationToken = default)
+    public Task<List<rf_task_type>> GetActiveTaskTypesAsync(string ownerUserId, CancellationToken cancellationToken = default)
         => _context.rf_task_type
             .AsNoTracking()
-            .Where(e => e.isActive == true && e.isDeleted == false)
+            .Where(e => e.owner_user_id == ownerUserId && e.isActive == true && e.isDeleted == false)
             .OrderBy(e => e.order_seq)
             .ThenBy(e => e.description)
             .ToListAsync(cancellationToken);
 
-    public Task<List<rf_task_priority>> GetActiveTaskPrioritiesAsync(CancellationToken cancellationToken = default)
+    public Task<List<rf_task_priority>> GetActiveTaskPrioritiesAsync(string ownerUserId, CancellationToken cancellationToken = default)
         => _context.rf_task_priority
             .AsNoTracking()
-            .Where(e => e.isActive == true && e.isDeleted == false)
+            .Where(e => e.owner_user_id == ownerUserId && e.isActive == true && e.isDeleted == false)
             .OrderBy(e => e.order_seq)
             .ThenBy(e => e.description)
             .ToListAsync(cancellationToken);

@@ -43,6 +43,7 @@ builder.Services.AddScoped<DashboardApiService>();
 builder.Services.AddScoped<SettingApiService>();
 builder.Services.AddScoped<TaskApiService>();
 builder.Services.AddScoped<PlanApiService>();
+builder.Services.AddScoped<MasterDataApiService>();
 builder.Services.AddScoped<PaymentApiService>();
 builder.Services.AddScoped<ReportApiService>();
 builder.Services.AddScoped<ApprovalApiService>();

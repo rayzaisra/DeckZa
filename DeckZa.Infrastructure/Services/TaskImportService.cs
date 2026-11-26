@@ -18,7 +18,6 @@ public class TaskImportService : ITaskImportService
     private const long MaxFileSize = 1024 * 1024;
     private const string TransactionSheetName = "Transaksi";
     private const string ReferenceSheetName = "Master Referensi";
-    private const string DoneStatusId = "STS005";
 
     private static readonly string[] DateFormats =
     {
@@ -50,10 +49,11 @@ public class TaskImportService : ITaskImportService
 
     public async Task<TaskImportTemplateDto> BuildTemplateAsync(CancellationToken cancellationToken = default)
     {
-        var applications = await _unitOfWork.TaskImports.GetActiveApplicationsAsync(cancellationToken);
-        var statuses = await _unitOfWork.TaskImports.GetActiveStatusesAsync(cancellationToken);
-        var taskTypes = await _unitOfWork.TaskImports.GetActiveTaskTypesAsync(cancellationToken);
-        var priorities = await _unitOfWork.TaskImports.GetActiveTaskPrioritiesAsync(cancellationToken);
+        var userId = _currentUser.UserId ?? string.Empty;
+        var applications = await _unitOfWork.TaskImports.GetActiveApplicationsAsync(userId, cancellationToken);
+        var statuses = await _unitOfWork.TaskImports.GetActiveStatusesAsync(userId, cancellationToken);
+        var taskTypes = await _unitOfWork.TaskImports.GetActiveTaskTypesAsync(userId, cancellationToken);
+        var priorities = await _unitOfWork.TaskImports.GetActiveTaskPrioritiesAsync(userId, cancellationToken);
 
         using var workbook = new XLWorkbook();
         var sheet = workbook.Worksheets.Add(TransactionSheetName);
@@ -197,10 +197,10 @@ public class TaskImportService : ITaskImportService
             var sheet = workbook.Worksheets.FirstOrDefault(item => item.Name == TransactionSheetName)
                         ?? workbook.Worksheets.First();
 
-            var applications = await _unitOfWork.TaskImports.GetActiveApplicationsAsync(cancellationToken);
-            var statuses = await _unitOfWork.TaskImports.GetActiveStatusesAsync(cancellationToken);
-            var taskTypes = await _unitOfWork.TaskImports.GetActiveTaskTypesAsync(cancellationToken);
-            var priorities = await _unitOfWork.TaskImports.GetActiveTaskPrioritiesAsync(cancellationToken);
+            var applications = await _unitOfWork.TaskImports.GetActiveApplicationsAsync(userId, cancellationToken);
+            var statuses = await _unitOfWork.TaskImports.GetActiveStatusesAsync(userId, cancellationToken);
+            var taskTypes = await _unitOfWork.TaskImports.GetActiveTaskTypesAsync(userId, cancellationToken);
+            var priorities = await _unitOfWork.TaskImports.GetActiveTaskPrioritiesAsync(userId, cancellationToken);
 
             var applicationMap = BuildLookup(
                 applications.Select(item => (item.application_id, item.description)));
@@ -259,9 +259,10 @@ public class TaskImportService : ITaskImportService
                 TryReadDate(sheet, rowNumber, 6, required: false, "due_date", errors, out var dueDate);
                 TryReadDate(sheet, rowNumber, 7, required: false, "completed_date", errors, out var completedDate);
 
-                if (completedDate.HasValue && statusId != DoneStatusId)
+                var completedStatus = statuses.FirstOrDefault(e => e.status_id == statusId)?.is_completed_status == true;
+                if (completedDate.HasValue && !completedStatus)
                 {
-                    errors.Add("completed_date is only allowed for status Done.");
+                    errors.Add("completed_date is only allowed for a Completed status.");
                 }
 
                 if (errors.Count > 0)
@@ -274,6 +275,7 @@ public class TaskImportService : ITaskImportService
                     continue;
                 }
 
+                var isCompleted = statuses.FirstOrDefault(e => e.status_id == statusId)?.is_completed_status == true;
                 tasks.Add(new tb_task
                 {
                     id = Guid.NewGuid(),
@@ -283,7 +285,7 @@ public class TaskImportService : ITaskImportService
                     request_by = requestBy!,
                     request_date = requestDate!.Value,
                     due_date = dueDate,
-                    completed_date = statusId == DoneStatusId ? completedDate : null,
+                    completed_date = isCompleted ? completedDate : null,
                     status_id = statusId,
                     task_type_id = taskTypeId,
                     task_priority_id = priorityId,

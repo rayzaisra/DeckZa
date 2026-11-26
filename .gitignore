@@ -9,3 +9,7 @@
 
 # Docker deployment artifacts
 *.tar
+ 
+# Runtime generated files 
+DeckZa.Api/invoices/ 
+DeckZa.Api/payments/

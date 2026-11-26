@@ -10,5 +10,6 @@ public sealed class EffectivePlanDto
     public bool AllowsCalendar { get; set; }
     public bool AllowsExcelImport { get; set; }
     public bool AllowsSupervisorMode { get; set; }
+    public int? MaxMasterRowsPerTable { get; set; }
     public int? ActiveTaskCount { get; set; }
 }

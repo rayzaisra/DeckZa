@@ -2,7 +2,6 @@
 @layout AuthenticatedLayout
 @attribute [Authorize]
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject MotionService Motion
 
 <AuthorizeView Roles="99">
     <Authorized>
@@ -14,7 +13,7 @@
                 <MemberDashboard />
             </Authorized>
             <NotAuthorized Context="memberContext">
-                <MudContainer MaxWidth="MaxWidth.False" Class="pa-0">
+                <MudContainer MaxWidth="MaxWidth.False" Class="pa-0 dashboard-page">
                     <MudPaper Elevation="0" Class="dashboard-hero">
                         <div>
                             <div class="dashboard-kicker">Personal Task and Report Management</div>
@@ -40,15 +39,5 @@
         {
             _displayName = name;
         }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
-            return;
-        }
-
-        await Motion.PlayDashboardAsync();
     }
 }

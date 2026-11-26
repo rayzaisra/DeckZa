@@ -17,6 +17,7 @@ public static class PlanSeeder
         bool AllowsCalendar,
         bool AllowsExcelImport,
         bool AllowsSupervisorMode,
+        int? MaxMasterRowsPerTable,
         string UpgradeGroupId,
         int Order,
         string[] Features)[] Plans =
@@ -31,6 +32,7 @@ public static class PlanSeeder
             false,
             false,
             false,
+            3,
             Const.DEFAULT_GROUP_ID_GUEST_CODE,
             1,
             new[] { "Task management up to 50 task", "Report performance per bulan today" }
@@ -45,6 +47,7 @@ public static class PlanSeeder
             true,
             true,
             true,
+            null,
             Const.DEFAULT_GROUP_ID_MEMBER_CODE,
             2,
             new[]
@@ -79,6 +82,7 @@ public static class PlanSeeder
                     allows_calendar = item.AllowsCalendar,
                     allows_excel_import = item.AllowsExcelImport,
                     allows_supervisor_mode = item.AllowsSupervisorMode,
+                    max_master_rows_per_table = item.MaxMasterRowsPerTable,
                     upgrade_group_id = item.UpgradeGroupId,
                     order_seq = item.Order,
                     statusApproval = Const.StatusApproval.APPROVED,

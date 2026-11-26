@@ -403,24 +403,34 @@ public class DeckZaDbContext : DbContext
         ConfigureDeckZaAuditColumns<tb_task_history>(modelBuilder);
 
         modelBuilder.Entity<rf_application>().HasKey(e => e.application_id);
-        modelBuilder.Entity<rf_application>().HasIndex(e => e.description).IsUnique();
+        modelBuilder.Entity<rf_application>().HasIndex(e => new { e.owner_user_id, e.description }).IsUnique().HasFilter("[is_deleted] = 0");
+        modelBuilder.Entity<rf_application>().HasIndex(e => e.owner_user_id);
         modelBuilder.Entity<rf_application>().Property(e => e.application_id).ValueGeneratedNever();
         modelBuilder.Entity<rf_application>().Property(e => e.order_seq).HasDefaultValue(0);
+        modelBuilder.Entity<rf_application>().Property(e => e.owner_user_id).HasDefaultValue(string.Empty);
 
         modelBuilder.Entity<rf_status>().HasKey(e => e.status_id);
-        modelBuilder.Entity<rf_status>().HasIndex(e => e.description).IsUnique();
+        modelBuilder.Entity<rf_status>().HasIndex(e => new { e.owner_user_id, e.description }).IsUnique().HasFilter("[is_deleted] = 0");
+        modelBuilder.Entity<rf_status>().HasIndex(e => e.owner_user_id);
         modelBuilder.Entity<rf_status>().Property(e => e.status_id).ValueGeneratedNever();
         modelBuilder.Entity<rf_status>().Property(e => e.order_seq).HasDefaultValue(0);
+        modelBuilder.Entity<rf_status>().Property(e => e.owner_user_id).HasDefaultValue(string.Empty);
+        modelBuilder.Entity<rf_status>().Property(e => e.is_initial_status).HasDefaultValue(false);
+        modelBuilder.Entity<rf_status>().Property(e => e.is_completed_status).HasDefaultValue(false);
 
         modelBuilder.Entity<rf_task_type>().HasKey(e => e.task_type_id);
-        modelBuilder.Entity<rf_task_type>().HasIndex(e => e.description).IsUnique();
+        modelBuilder.Entity<rf_task_type>().HasIndex(e => new { e.owner_user_id, e.description }).IsUnique().HasFilter("[is_deleted] = 0");
+        modelBuilder.Entity<rf_task_type>().HasIndex(e => e.owner_user_id);
         modelBuilder.Entity<rf_task_type>().Property(e => e.task_type_id).ValueGeneratedNever();
         modelBuilder.Entity<rf_task_type>().Property(e => e.order_seq).HasDefaultValue(0);
+        modelBuilder.Entity<rf_task_type>().Property(e => e.owner_user_id).HasDefaultValue(string.Empty);
 
         modelBuilder.Entity<rf_task_priority>().HasKey(e => e.task_priority_id);
-        modelBuilder.Entity<rf_task_priority>().HasIndex(e => e.description).IsUnique();
+        modelBuilder.Entity<rf_task_priority>().HasIndex(e => new { e.owner_user_id, e.description }).IsUnique().HasFilter("[is_deleted] = 0");
+        modelBuilder.Entity<rf_task_priority>().HasIndex(e => e.owner_user_id);
         modelBuilder.Entity<rf_task_priority>().Property(e => e.task_priority_id).ValueGeneratedNever();
         modelBuilder.Entity<rf_task_priority>().Property(e => e.order_seq).HasDefaultValue(0);
+        modelBuilder.Entity<rf_task_priority>().Property(e => e.owner_user_id).HasDefaultValue(string.Empty);
 
         modelBuilder.Entity<tb_import_batch>().HasKey(e => e.import_batch_id);
         modelBuilder.Entity<tb_import_batch>()

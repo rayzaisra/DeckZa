@@ -577,6 +577,7 @@ public class AuthService : IAuthService
             bodyText,
             "REGISTRATION",
             userId,
+            null,
             cancellationToken);
     }
 
@@ -610,6 +611,7 @@ public class AuthService : IAuthService
             bodyText,
             "NOTIFICATION",
             NotificationTypeIds.UserRegistration,
+            null,
             cancellationToken);
     }
 

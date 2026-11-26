@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 using DeckZa.Application.Interfaces;
 using DeckZa.Domain.Entities;
@@ -17,12 +18,18 @@ public class EmailOutboxProcessor
     private readonly IUnitOfWork _unitOfWork;
     private readonly IErrorLogService _errorLog;
     private readonly IConfiguration _configuration;
+    private readonly IHostEnvironment _environment;
 
-    public EmailOutboxProcessor(IUnitOfWork unitOfWork, IErrorLogService errorLog, IConfiguration configuration)
+    public EmailOutboxProcessor(
+        IUnitOfWork unitOfWork,
+        IErrorLogService errorLog,
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         _unitOfWork = unitOfWork;
         _errorLog = errorLog;
         _configuration = configuration;
+        _environment = environment;
     }
 
     public async Task ProcessPendingAsync()
@@ -50,15 +57,17 @@ public class EmailOutboxProcessor
                 continue;
             }
 
+            var attachmentPath = ResolveAttachmentPath(message, out var attachmentWarning);
+
             try
             {
                 if (string.Equals(provider.provider_type, "SMTP", StringComparison.OrdinalIgnoreCase))
                 {
-                    await SendSmtpAsync(provider, message, GetPassPhrase());
+                    await SendSmtpAsync(provider, message, GetPassPhrase(), attachmentPath);
                 }
                 else if (string.Equals(provider.provider_type, "GMAIL", StringComparison.OrdinalIgnoreCase))
                 {
-                    await SendGmailAsync(provider, message, GetPassPhrase());
+                    await SendGmailAsync(provider, message, GetPassPhrase(), attachmentPath);
                 }
                 else
                 {
@@ -67,7 +76,7 @@ public class EmailOutboxProcessor
 
                 message.status = "Sent";
                 message.sent_at = DateTime.UtcNow;
-                message.last_error = null;
+                message.last_error = attachmentWarning;
             }
             catch (Exception ex)
             {
@@ -82,7 +91,38 @@ public class EmailOutboxProcessor
         await _unitOfWork.SaveChangesAsync();
     }
 
-    internal static async Task SendSmtpAsync(rf_email_provider provider, tb_email_outbox message, string? passPhrase = null)
+    /// <summary>
+    /// Menentukan path absolut lampiran. Bila file hilang, email tetap dikirim tanpa
+    /// lampiran dan alasannya dicatat pada <c>last_error</c>.
+    /// </summary>
+    private string? ResolveAttachmentPath(tb_email_outbox message, out string? warning)
+    {
+        warning = null;
+
+        if (string.IsNullOrWhiteSpace(message.attachment_storage_path))
+        {
+            return null;
+        }
+
+        var storedPath = message.attachment_storage_path!;
+        var absolutePath = Path.IsPathRooted(storedPath)
+            ? storedPath
+            : Path.Combine(_environment.ContentRootPath, storedPath.Replace('/', Path.DirectorySeparatorChar));
+
+        if (!File.Exists(absolutePath))
+        {
+            warning = $"Attachment file not found: {storedPath}. Email sent without attachment.";
+            return null;
+        }
+
+        return absolutePath;
+    }
+
+    internal static async Task SendSmtpAsync(
+        rf_email_provider provider,
+        tb_email_outbox message,
+        string? passPhrase = null,
+        string? attachmentPath = null)
     {
         using var config = JsonDocument.Parse(provider.configuration_json ?? "{}");
         var root = config.RootElement;
@@ -112,10 +152,20 @@ public class EmailOutboxProcessor
             IsBodyHtml = !string.IsNullOrWhiteSpace(message.body_html),
         };
         mail.To.Add(message.recipient);
+
+        if (!string.IsNullOrWhiteSpace(attachmentPath))
+        {
+            mail.Attachments.Add(new Attachment(attachmentPath));
+        }
+
         await client.SendMailAsync(mail);
     }
 
-    internal static async Task SendGmailAsync(rf_email_provider provider, tb_email_outbox message, string? passPhrase = null)
+    internal static async Task SendGmailAsync(
+        rf_email_provider provider,
+        tb_email_outbox message,
+        string? passPhrase = null,
+        string? attachmentPath = null)
     {
         using var config = JsonDocument.Parse(provider.configuration_json ?? "{}");
         var root = config.RootElement;
@@ -153,12 +203,7 @@ public class EmailOutboxProcessor
             throw new InvalidOperationException("Gmail access token is empty.");
         }
 
-        var rawMessage = $"From: {fromEmail}\r\n"
-                         + $"To: {message.recipient}\r\n"
-                         + $"Subject: {message.subject}\r\n"
-                         + "MIME-Version: 1.0\r\n"
-                         + "Content-Type: text/html; charset=UTF-8\r\n\r\n"
-                         + (message.body_html ?? message.body_text ?? string.Empty);
+        var rawMessage = BuildGmailRawMessage(fromEmail, message, attachmentPath);
         var raw = Convert.ToBase64String(Encoding.UTF8.GetBytes(rawMessage))
             .TrimEnd('=')
             .Replace('+', '-')
@@ -174,6 +219,67 @@ public class EmailOutboxProcessor
         {
             throw new InvalidOperationException($"Gmail send failed: {await response.Content.ReadAsStringAsync()}");
         }
+    }
+
+    /// <summary>
+    /// Menyusun raw message MIME Gmail.
+    /// Tanpa lampiran, format lama (text/html tunggal) dipertahankan agar perilaku
+    /// email yang sudah berjalan tidak berubah.
+    /// </summary>
+    private static string BuildGmailRawMessage(string fromEmail, tb_email_outbox message, string? attachmentPath)
+    {
+        var body = message.body_html ?? message.body_text ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(attachmentPath))
+        {
+            return $"From: {fromEmail}\r\n"
+                   + $"To: {message.recipient}\r\n"
+                   + $"Subject: {message.subject}\r\n"
+                   + "MIME-Version: 1.0\r\n"
+                   + "Content-Type: text/html; charset=UTF-8\r\n\r\n"
+                   + body;
+        }
+
+        var boundary = $"deckza-{Guid.NewGuid():N}";
+        var fileName = string.IsNullOrWhiteSpace(message.attachment_file_name)
+            ? Path.GetFileName(attachmentPath)
+            : message.attachment_file_name;
+        var contentType = string.IsNullOrWhiteSpace(message.attachment_content_type)
+            ? "application/octet-stream"
+            : message.attachment_content_type;
+
+        var bodyBase64 = ToBase64Lines(Encoding.UTF8.GetBytes(body));
+        var fileBase64 = ToBase64Lines(File.ReadAllBytes(attachmentPath));
+
+        return $"From: {fromEmail}\r\n"
+               + $"To: {message.recipient}\r\n"
+               + $"Subject: {message.subject}\r\n"
+               + "MIME-Version: 1.0\r\n"
+               + $"Content-Type: multipart/mixed; boundary=\"{boundary}\"\r\n\r\n"
+               + $"--{boundary}\r\n"
+               + "Content-Type: text/html; charset=UTF-8\r\n"
+               + "Content-Transfer-Encoding: base64\r\n\r\n"
+               + bodyBase64
+               + $"--{boundary}\r\n"
+               + $"Content-Type: {contentType}; name=\"{fileName}\"\r\n"
+               + "Content-Transfer-Encoding: base64\r\n"
+               + $"Content-Disposition: attachment; filename=\"{fileName}\"\r\n\r\n"
+               + fileBase64
+               + $"--{boundary}--";
+    }
+
+    /// <summary>Base64 dengan pemenggalan baris 76 karakter (aturan MIME).</summary>
+    private static string ToBase64Lines(byte[] data)
+    {
+        var base64 = Convert.ToBase64String(data);
+        var builder = new StringBuilder(base64.Length + (base64.Length / 76) * 2);
+
+        for (var i = 0; i < base64.Length; i += 76)
+        {
+            builder.Append(base64, i, Math.Min(76, base64.Length - i)).Append("\r\n");
+        }
+
+        return builder.ToString();
     }
 
     private string? GetPassPhrase() => _configuration["Encryption:PassPhrase"];

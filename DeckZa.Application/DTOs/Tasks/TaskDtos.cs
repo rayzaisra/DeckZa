@@ -16,6 +16,8 @@ public class TaskListItemDto
     public string StatusId { get; set; } = string.Empty;
     public string? StatusName { get; set; }
     public int? StatusOrderSeq { get; set; }
+    public bool IsInitialStatus { get; set; }
+    public bool IsCompletedStatus { get; set; }
     public string RequestBy { get; set; } = string.Empty;
     public DateTime RequestDate { get; set; }
     public DateTime? DueDate { get; set; }

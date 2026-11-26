@@ -33,6 +33,7 @@ public class PlanQueryService : IPlanQueryService
                 AllowsCalendar = e.allows_calendar,
                 AllowsExcelImport = e.allows_excel_import,
                 AllowsSupervisorMode = e.allows_supervisor_mode,
+                MaxMasterRowsPerTable = e.max_master_rows_per_table,
                 UpgradeGroupId = e.upgrade_group_id,
                 OrderSeq = e.order_seq,
             })

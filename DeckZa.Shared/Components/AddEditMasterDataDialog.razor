@@ -1,0 +1,116 @@
+@using DeckZa.Application.DTOs.MasterData
+@inject MasterDataApiService MasterDataApi
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudNumericField T="int"
+                                     @bind-Value="_model.OrderSeq"
+                                     Label="Order"
+                                     Variant="Variant.Outlined"
+                                     Min="0" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Description"
+                                  Label="@Label"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  MaxLength="255" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="_model.IsActive" Label="Is Active?" Color="Color.Primary" />
+                </MudItem>
+                @if (IsStatus)
+                {
+                    <MudItem xs="12">
+                        <MudSwitch T="bool" @bind-Value="_model.IsInitialStatus" Label="Default Status" Color="Color.Primary" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudSwitch T="bool" @bind-Value="_model.IsCompletedStatus" Label="Completed Status" Color="Color.Success" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))"
+                   Disabled="@_saving"
+                   OnClick="@(_ => SubmitAsync())">
+            @(_saving ? "Saving..." : "Save")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public string Table { get; set; } = "rf_application";
+    [Parameter] public string Label { get; set; } = "Name";
+    [Parameter] public MasterItemDto? Item { get; set; }
+
+    private MudForm? _form;
+    private MasterItemDto _model = new();
+    private bool _saving;
+
+    private bool IsEdit => !string.IsNullOrWhiteSpace(Item?.Id);
+    private bool IsStatus => string.Equals(Table, "rf_status", StringComparison.OrdinalIgnoreCase);
+    private string Title => (IsEdit ? "Edit " : "Add ") + Label;
+
+    protected override void OnInitialized()
+    {
+        _model = Item == null
+            ? new MasterItemDto { IsActive = true }
+            : new MasterItemDto
+            {
+                Id = Item.Id,
+                Description = Item.Description,
+                OrderSeq = Item.OrderSeq,
+                IsActive = Item.IsActive,
+                IsInitialStatus = Item.IsInitialStatus,
+                IsCompletedStatus = Item.IsCompletedStatus,
+                StatusApproval = Item.StatusApproval,
+            };
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_saving)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_model.Description))
+        {
+            Snackbar.Add("Name is required.", Severity.Warning);
+            return;
+        }
+
+        _saving = true;
+        try
+        {
+            var result = await MasterDataApi.SaveAsync(Table, _model);
+            if (result.Success)
+            {
+                Snackbar.Add(result.Message ?? "Saved.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            Snackbar.Add(result.Message ?? "Save failed.", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

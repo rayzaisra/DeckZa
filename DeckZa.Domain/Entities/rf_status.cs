@@ -13,5 +13,13 @@ public partial class rf_status : BaseEntity
     [StringLength(255)]
     public string description { get; set; } = string.Empty;
 
+    [Column(TypeName = "varchar(100)")]
+    [StringLength(100)]
+    public string owner_user_id { get; set; } = string.Empty;
+
+    public bool is_initial_status { get; set; }
+
+    public bool is_completed_status { get; set; }
+
     public int order_seq { get; set; }
 }

@@ -124,6 +124,23 @@ public class ExportController : ControllerBase
         return Queued(jobId, fileName);
     }
 
+    [HttpPost("master-data/{tableName}")]
+    [RequireMenuAccess(PermissionAction.Export, "TSKP-APP", "TSKP-TYP", "TSKP-PRI", "TSKP-STA")]
+    public IActionResult QueueMasterData(string tableName, [FromBody] DataTableRequestDto request)
+    {
+        var userId = CurrentUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var jobId = Guid.NewGuid().ToString("N");
+        var fileName = $"master_data_{jobId}.xlsx";
+        _jobs.Enqueue<ManagementExportJob>(job =>
+            job.ExportMasterDataAsync(tableName, request.SearchTerm, userId, jobId, fileName));
+        return Queued(jobId, fileName);
+    }
+
     [HttpPost("report-performance")]
     [RequireMenuAccess(PermissionAction.Export, "TSK-RPT")]
     public IActionResult QueueReportPerformance([FromBody] ReportFilterDto filter)

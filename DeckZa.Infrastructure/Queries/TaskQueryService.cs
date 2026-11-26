@@ -219,6 +219,8 @@ public class TaskQueryService : ITaskQueryService
                    StatusId = task.status_id,
                    StatusName = status != null ? status.description : null,
                    StatusOrderSeq = status != null ? status.order_seq : null,
+                   IsInitialStatus = status != null && status.is_initial_status,
+                   IsCompletedStatus = status != null && status.is_completed_status,
                    RequestBy = task.request_by,
                    RequestDate = task.request_date,
                    DueDate = task.due_date,
@@ -227,7 +229,8 @@ public class TaskQueryService : ITaskQueryService
                    CreatedDate = task.createdDate,
                    IsOverdue = task.due_date != null
                                && task.due_date < now
-                               && task.status_id != "STS005",
+                               && status != null
+                               && !status.is_completed_status,
                };
     }
 

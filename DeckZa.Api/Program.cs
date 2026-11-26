@@ -99,7 +99,10 @@ builder.Services.AddScoped<IUserSessionNotifier, UserSessionNotifier>();
 builder.Services.AddScoped<IErrorLogService, ErrorLogService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<IPlanQueryService, PlanQueryService>();
+builder.Services.AddScoped<IMasterDataService, MasterDataService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IInvoiceRenderer, InvoicePdfRenderer>();
 builder.Services.Configure<ApiActivityLogOptions>(
     builder.Configuration.GetSection(ApiActivityLogOptions.SectionName));
 builder.Services.AddSingleton<ApiActivityLogQueue>();

@@ -37,27 +37,29 @@ public static class EmailTemplateSeeder
             EmailTemplateKeys.PaymentReceived,
             "Payment request received",
             "<p>Hello {{full_name}},</p>"
-            + "<p>Your payment request has been received and is awaiting administrator approval.</p>"
-            + "<p>Amount: {{long_text}}</p>"
+            + "<p>Your payment request ({{request_no}}) for plan {{plan_name}} has been received and is awaiting administrator approval.</p>"
+            + "<p>Amount: {{amount}}</p>"
             + "<p>You will receive another email once your request is approved or rejected.</p>",
-            "Hello {{full_name}},\n\nYour payment request has been received and is awaiting administrator approval.\n\nAmount: {{long_text}}\n\nYou will receive another email once your request is approved or rejected."
+            "Hello {{full_name}},\n\nYour payment request ({{request_no}}) for plan {{plan_name}} has been received and is awaiting administrator approval.\n\nAmount: {{amount}}\n\nYou will receive another email once your request is approved or rejected."
         ),
         (
             EmailTemplateKeys.PaymentApproved,
             "Plan upgrade approved",
             "<p>Hello {{full_name}},</p>"
-            + "<p>Your plan upgrade has been approved. {{long_text}}</p>"
-            + "<p>Invoice: {{link}}</p>"
-            + "<p>Please sign in again for your new access to take effect.</p>",
-            "Hello {{full_name}},\n\nYour plan upgrade has been approved. {{long_text}}\n\nInvoice: {{link}}\n\nPlease sign in again for your new access to take effect."
+            + "<p>Your plan upgrade to {{plan_name}} has been approved. Amount: {{amount}}.</p>"
+            + "<p>Invoice No. {{invoice_no}}. The invoice PDF is attached to this email and is also available on your Billing page.</p>"
+            + "<p><a href=\"{{link}}\">Open DeckZa Billing</a></p>",
+            "Hello {{full_name}},\n\nYour plan upgrade to {{plan_name}} has been approved. Amount: {{amount}}.\n\nInvoice No. {{invoice_no}}. The invoice PDF is attached to this email and is also available on your Billing page.\n\nOpen DeckZa Billing: {{link}}"
         ),
         (
             EmailTemplateKeys.PaymentRejected,
             "Plan upgrade rejected",
             "<p>Hello {{full_name}},</p>"
-            + "<p>Your plan upgrade has been rejected. {{long_text}}</p>"
-            + "<p>Please review your payment details and submit the request again.</p>",
-            "Hello {{full_name}},\n\nYour plan upgrade has been rejected. {{long_text}}\n\nPlease review your payment details and submit the request again."
+            + "<p>Your plan upgrade request ({{request_no}}) for plan {{plan_name}} has been rejected. Amount: {{amount}}.</p>"
+            + "<p>{{long_text}}</p>"
+            + "<p>Please review your payment details and submit the request again.</p>"
+            + "<p><a href=\"{{link}}\">Open DeckZa Billing</a></p>",
+            "Hello {{full_name}},\n\nYour plan upgrade request ({{request_no}}) for plan {{plan_name}} has been rejected. Amount: {{amount}}.\n\n{{long_text}}\n\nPlease review your payment details and submit the request again.\n\nOpen DeckZa Billing: {{link}}"
         ),
         (
             EmailTemplateKeys.Notification,

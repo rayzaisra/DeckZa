@@ -5,6 +5,7 @@
 @inject PaymentApiService PaymentApi
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
@@ -12,7 +13,7 @@
     <div>
         <div class="dashboard-kicker">Workspace</div>
         <h1>Billing</h1>
-        <p>Ajukan upgrade plan dengan mengunggah bukti pembayaran.</p>
+        <p>Review your subscription and payment details</p>
     </div>
 </div>
 
@@ -26,115 +27,112 @@ else if (_loadError is not null)
 }
 else
 {
-    <div class="billing-grid">
-        <MudPaper Elevation="0" Class="dashboard-card billing-card">
-            <h2 class="billing-section-title">Ringkasan Plan</h2>
-            @if (_selectedPlan == null)
-            {
-                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
-                    Pilih plan dari halaman Upgrade Plan.
-                </MudAlert>
-            }
-            else
-            {
-                <div class="billing-summary-row"><span class="billing-label">Plan</span><span class="billing-value">@_selectedPlan.PlanName</span></div>
-                <div class="billing-summary-row"><span class="billing-label">Harga</span><span class="billing-value">@FormatPrice(_selectedPlan.PriceAmount, _selectedPlan.PriceCurrency)</span></div>
-                <div class="billing-summary-row"><span class="billing-label">Periode</span><span class="billing-value">@FormatPeriod(_selectedPlan)</span></div>
-                <div class="billing-summary-row"><span class="billing-label">Status akun</span><span class="billing-value">@(_myPlan?.PlanName ?? "-")</span></div>
-                @if (!IsUpgradeTarget)
+    @if (ShowSubmissionCards)
+    {
+        <div class="billing-grid">
+            <MudPaper Elevation="0" Class="dashboard-card billing-card">
+                <h2 class="billing-section-title">Ringkasan Plan</h2>
+                @if (_selectedPlan == null)
                 {
-                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-3">
-                        @UpgradeBlockReason
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                        Pilih plan dari halaman Upgrade Plan.
                     </MudAlert>
                 }
-            }
-        </MudPaper>
+                else
+                {
+                    <div class="billing-summary-row"><span class="billing-label">Plan</span><span class="billing-value">@_selectedPlan.PlanName</span></div>
+                    <div class="billing-summary-row"><span class="billing-label">Harga</span><span class="billing-value">@FormatPrice(_selectedPlan.PriceAmount, _selectedPlan.PriceCurrency)</span></div>
+                    <div class="billing-summary-row"><span class="billing-label">Periode</span><span class="billing-value">@FormatPeriod(_selectedPlan)</span></div>
+                    <div class="billing-summary-row"><span class="billing-label">Status akun</span><span class="billing-value">@(_myPlan?.PlanName ?? "-")</span></div>
+                }
+            </MudPaper>
 
-        <MudPaper Elevation="0" Class="dashboard-card billing-card">
-            <h2 class="billing-section-title">Instruksi Pembayaran</h2>
-            <div class="billing-summary-row"><span class="billing-label">Bank</span><span class="billing-value">@(_instructions?.BankName ?? "-")</span></div>
-            <div class="billing-summary-row">
-                <span class="billing-label">No. Rekening</span>
-                <span class="billing-value billing-account">
-                    @(_instructions?.AccountNumber ?? "-")
-                    @if (!string.IsNullOrWhiteSpace(_instructions?.AccountNumber))
-                    {
-                        <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
-                                       Size="Size.Small"
-                                       aria-label="Salin nomor rekening"
-                                       OnClick="@(_ => CopyAccountAsync())" />
-                    }
-                </span>
-            </div>
-            <div class="billing-summary-row"><span class="billing-label">Atas Nama</span><span class="billing-value">@(_instructions?.AccountHolder ?? "-")</span></div>
-            <div class="billing-summary-row"><span class="billing-label">Nominal</span><span class="billing-value">@FormatPrice(_selectedPlan?.PriceAmount ?? 0, _selectedPlan?.PriceCurrency ?? "IDR")</span></div>
-            @if (!string.IsNullOrWhiteSpace(_instructions?.Instructions))
+            <MudPaper Elevation="0" Class="dashboard-card billing-card">
+                <h2 class="billing-section-title">Instruksi Pembayaran</h2>
+                <div class="billing-summary-row"><span class="billing-label">Bank</span><span class="billing-value">@(_instructions?.BankName ?? "-")</span></div>
+                <div class="billing-summary-row">
+                    <span class="billing-label">No. Rekening</span>
+                    <span class="billing-value billing-account">
+                        @(_instructions?.AccountNumber ?? "-")
+                        @if (!string.IsNullOrWhiteSpace(_instructions?.AccountNumber))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
+                                           Size="Size.Small"
+                                           aria-label="Salin nomor rekening"
+                                           OnClick="@(_ => CopyAccountAsync())" />
+                        }
+                    </span>
+                </div>
+                <div class="billing-summary-row"><span class="billing-label">Atas Nama</span><span class="billing-value">@(_instructions?.AccountHolder ?? "-")</span></div>
+                <div class="billing-summary-row"><span class="billing-label">Nominal</span><span class="billing-value">@FormatPrice(_selectedPlan?.PriceAmount ?? 0, _selectedPlan?.PriceCurrency ?? "IDR")</span></div>
+                @if (!string.IsNullOrWhiteSpace(_instructions?.Instructions))
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-3">
+                        @_instructions.Instructions
+                    </MudAlert>
+                }
+            </MudPaper>
+        </div>
+
+        <MudPaper Elevation="0" Class="dashboard-card billing-card mb-4">
+            <h2 class="billing-section-title">Bukti Pembayaran</h2>
+
+            @if (HasPendingRequest)
             {
-                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-3">
-                    @_instructions.Instructions
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+                    Pengajuan pembayaran Anda sedang ditinjau. Form dinonaktifkan sampai ada keputusan.
                 </MudAlert>
             }
-        </MudPaper>
-    </div>
 
-    <MudPaper Elevation="0" Class="dashboard-card billing-card mb-4">
-        <h2 class="billing-section-title">Bukti Pembayaran</h2>
+            <MudForm @ref="_form">
+                <MudTextField @bind-Value="_transferReference"
+                              Label="Berita transfer / nomor referensi"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Disabled="@(HasPendingRequest || _submitting)"
+                              MaxLength="100"
+                              Class="mb-4" />
 
-        @if (HasPendingRequest)
-        {
-            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
-                Pengajuan pembayaran Anda sedang ditinjau. Form dinonaktifkan sampai ada keputusan.
-            </MudAlert>
-        }
+                <MudFileUpload T="IBrowserFile"
+                               Accept=".jpg,.jpeg,.png,.pdf"
+                               Disabled="@(HasPendingRequest || _submitting)"
+                               FilesChanged="OnFileChanged">
+                    <CustomContent>
+                        <div class="billing-dropzone" @onclick="@context.OpenFilePickerAsync">
+                            <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Color="Color.Primary" />
+                            <div><strong>Pilih file bukti</strong></div>
+                            <div class="billing-dropzone-hint">JPG, PNG, atau PDF — maksimum 2 MB</div>
+                        </div>
+                    </CustomContent>
+                </MudFileUpload>
 
-        <MudForm @ref="_form">
-            <MudTextField @bind-Value="_transferReference"
-                          Label="Berita transfer / nomor referensi"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Disabled="@(HasPendingRequest || _submitting)"
-                          MaxLength="100"
-                          Class="mb-4" />
-
-            <MudFileUpload T="IBrowserFile"
-                           Accept=".jpg,.jpeg,.png,.pdf"
-                           Disabled="@(HasPendingRequest || _submitting)"
-                           FilesChanged="OnFileChanged">
-                <CustomContent>
-                    <div class="billing-dropzone" @onclick="@context.OpenFilePickerAsync">
-                        <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Color="Color.Primary" />
-                        <div><strong>Pilih file bukti</strong></div>
-                        <div class="billing-dropzone-hint">JPG, PNG, atau PDF — maksimum 2 MB</div>
+                @if (_proofFile != null)
+                {
+                    <div class="billing-file-pill">
+                        <MudIcon Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" />
+                        <span class="billing-file-name">@_proofFile.Name</span>
+                        <span class="billing-file-meta">@FormatFileSize(_proofFile.Size)</span>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                       Disabled="@_submitting"
+                                       aria-label="Hapus file"
+                                       OnClick="@(_ => ClearFile())" />
                     </div>
-                </CustomContent>
-            </MudFileUpload>
+                }
 
-            @if (_proofFile != null)
-            {
-                <div class="billing-file-pill">
-                    <MudIcon Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" />
-                    <span class="billing-file-name">@_proofFile.Name</span>
-                    <span class="billing-file-meta">@FormatFileSize(_proofFile.Size)</span>
-                    <MudIconButton Icon="@Icons.Material.Filled.Close"
-                                   Size="Size.Small"
-                                   Color="Color.Error"
-                                   Disabled="@_submitting"
-                                   aria-label="Hapus file"
-                                   OnClick="@(_ => ClearFile())" />
+                <div class="d-flex justify-end mt-4">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="@(HasPendingRequest || _submitting || _selectedPlan == null || !IsUpgradeTarget)"
+                               Class="@("ryz-busy-button" + (_submitting ? " is-busy" : string.Empty))"
+                               OnClick="@(_ => SubmitAsync())">
+                        @(_submitting ? "Mengajukan..." : "Ajukan Pembayaran")
+                    </MudButton>
                 </div>
-            }
-
-            <div class="d-flex justify-end mt-4">
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           Disabled="@(HasPendingRequest || _submitting || _selectedPlan == null || !IsUpgradeTarget)"
-                           Class="@("ryz-busy-button" + (_submitting ? " is-busy" : string.Empty))"
-                           OnClick="@(_ => SubmitAsync())">
-                    @(_submitting ? "Mengajukan..." : "Ajukan Pembayaran")
-                </MudButton>
-            </div>
-        </MudForm>
-    </MudPaper>
+            </MudForm>
+        </MudPaper>
+    }
 
     <MudPaper Elevation="0" Class="dashboard-card billing-card mb-4">
         <h2 class="billing-section-title">Riwayat Pengajuan</h2>
@@ -155,6 +153,7 @@ else
                         <th>Nominal</th>
                         <th>Status</th>
                         <th>Catatan</th>
+                        <th>Bukti</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -167,6 +166,65 @@ else
                             <td>@FormatPrice(request.Amount, request.Currency)</td>
                             <td><MudChip T="string" Size="Size.Small" Color="@StatusColor(request.Status)" Variant="Variant.Outlined">@StatusLabel(request.Status)</MudChip></td>
                             <td>@(string.IsNullOrWhiteSpace(request.ReviewNote) ? "-" : request.ReviewNote)</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(request.ProofFileName))
+                                {
+                                    <MudButton Variant="Variant.Text"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Visibility"
+                                               OnClick="@(_ => ShowProofAsync(request))">
+                                        Lihat
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="dashboard-card billing-card mb-4">
+        <h2 class="billing-section-title">Invoice</h2>
+        @if (_invoices.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                Belum ada invoice. Invoice diterbitkan setelah pembayaran disetujui.
+            </MudAlert>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Hover="true">
+                <thead>
+                    <tr>
+                        <th>No. Invoice</th>
+                        <th>Tanggal</th>
+                        <th>Plan</th>
+                        <th>Nominal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var invoice in _invoices)
+                    {
+                        <tr>
+                            <td>@invoice.InvoiceNo</td>
+                            <td>@invoice.InvoiceDate.ToString("dd MMM yyyy")</td>
+                            <td>@invoice.PlanName</td>
+                            <td>@FormatPrice(invoice.Amount, invoice.Currency)</td>
+                            <td>
+                                <MudButton Variant="Variant.Text"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Download"
+                                           Disabled="@(_downloadingInvoiceId == invoice.Id)"
+                                           OnClick="@(_ => DownloadInvoiceAsync(invoice))">
+                                    @(_downloadingInvoiceId == invoice.Id ? "Mengunduh..." : "PDF")
+                                </MudButton>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -190,6 +248,7 @@ else
     private MudForm? _form;
     private List<PlanDto> _plans = new();
     private List<PaymentRequestDto> _requests = new();
+    private List<PaymentInvoiceDto> _invoices = new();
     private PaymentInstructionDto? _instructions;
     private EffectivePlanDto? _myPlan;
     private PlanDto? _selectedPlan;
@@ -197,9 +256,14 @@ else
     private string? _transferReference;
     private bool _loading = true;
     private bool _submitting;
+    private long? _downloadingInvoiceId;
     private string? _loadError;
 
     private bool HasPendingRequest => _requests.Any(e => string.Equals(e.Status, "PENDING", StringComparison.OrdinalIgnoreCase));
+
+    private bool HasPaymentSubmissionIntent => !string.IsNullOrWhiteSpace(PlanId);
+
+    private bool ShowSubmissionCards => HasPendingRequest || (HasPaymentSubmissionIntent && IsUpgradeTarget);
 
     private bool IsUpgradeTarget
         => _selectedPlan is not null
@@ -220,11 +284,6 @@ else
             if (string.Equals(_selectedPlan.Id, _myPlan.Id, StringComparison.OrdinalIgnoreCase))
             {
                 return "Anda sudah berada di plan ini.";
-            }
-
-            if (_selectedPlan.OrderSeq < _myPlan.OrderSeq)
-            {
-                return "Penurunan plan tidak dapat diajukan lewat halaman ini. Hubungi administrator bila memang diperlukan.";
             }
 
             if (_selectedPlan.PriceAmount <= 0)
@@ -251,12 +310,14 @@ else
             var myPlanTask = PlanApi.GetMyPlanAsync();
             var instructionsTask = PaymentApi.GetInstructionsAsync();
             var requestsTask = PaymentApi.GetMyRequestsAsync();
-            await Task.WhenAll(plansTask, myPlanTask, instructionsTask, requestsTask);
+            var invoicesTask = PaymentApi.GetMyInvoicesAsync();
+            await Task.WhenAll(plansTask, myPlanTask, instructionsTask, requestsTask, invoicesTask);
 
             _plans = await plansTask;
             _myPlan = await myPlanTask;
             _instructions = await instructionsTask;
             _requests = await requestsTask;
+            _invoices = await invoicesTask ?? new List<PaymentInvoiceDto>();
 
             ResolveSelectedPlan();
         }
@@ -371,6 +432,47 @@ else
         finally
         {
             _submitting = false;
+        }
+    }
+
+    private async Task ShowProofAsync(PaymentRequestDto request)
+    {
+        var parameters = new DialogParameters<PaymentProofDialog>
+        {
+            { x => x.RequestId, request.Id },
+            { x => x.FileName, request.ProofFileName },
+            { x => x.ContentType, request.ProofContentType ?? string.Empty },
+        };
+
+        await DialogService.ShowAsync<PaymentProofDialog>("Bukti Pembayaran", parameters);
+    }
+
+    private async Task DownloadInvoiceAsync(PaymentInvoiceDto invoice)
+    {
+        if (_downloadingInvoiceId.HasValue)
+        {
+            return;
+        }
+
+        _downloadingInvoiceId = invoice.Id;
+        try
+        {
+            var url = await PaymentApi.GetInvoiceDownloadUrlAsync(invoice.Id);
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                Snackbar.Add("Gagal menyiapkan unduhan invoice.", Severity.Error);
+                return;
+            }
+
+            Navigation.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception exception)
+        {
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+        finally
+        {
+            _downloadingInvoiceId = null;
         }
     }
 

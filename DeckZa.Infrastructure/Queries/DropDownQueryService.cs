@@ -52,33 +52,33 @@ public class DropDownQueryService : IDropDownService
             })
             .ToListAsync();
 
-    public Task<List<DropdownItemDto>> GetTaskApplicationsAsync()
+    public Task<List<DropdownItemDto>> GetTaskApplicationsAsync(string userId)
         => _context.rf_application
-            .Where(e => e.isActive == true && e.isDeleted == false)
+            .Where(e => e.owner_user_id == userId && e.isActive == true && e.isDeleted == false)
             .OrderBy(e => e.order_seq)
             .ThenBy(e => e.description)
             .Select(e => new DropdownItemDto { Value = e.application_id, Text = e.description })
             .ToListAsync();
 
-    public Task<List<DropdownItemDto>> GetTaskTypesAsync()
+    public Task<List<DropdownItemDto>> GetTaskTypesAsync(string userId)
         => _context.rf_task_type
-            .Where(e => e.isActive == true && e.isDeleted == false)
+            .Where(e => e.owner_user_id == userId && e.isActive == true && e.isDeleted == false)
             .OrderBy(e => e.order_seq)
             .ThenBy(e => e.description)
             .Select(e => new DropdownItemDto { Value = e.task_type_id, Text = e.description })
             .ToListAsync();
 
-    public Task<List<DropdownItemDto>> GetTaskPrioritiesAsync()
+    public Task<List<DropdownItemDto>> GetTaskPrioritiesAsync(string userId)
         => _context.rf_task_priority
-            .Where(e => e.isActive == true && e.isDeleted == false)
+            .Where(e => e.owner_user_id == userId && e.isActive == true && e.isDeleted == false)
             .OrderBy(e => e.order_seq)
             .ThenBy(e => e.description)
             .Select(e => new DropdownItemDto { Value = e.task_priority_id, Text = e.description })
             .ToListAsync();
 
-    public Task<List<DropdownItemDto>> GetTaskStatusesAsync()
+    public Task<List<DropdownItemDto>> GetTaskStatusesAsync(string userId)
         => _context.rf_status
-            .Where(e => e.isActive == true && e.isDeleted == false)
+            .Where(e => e.owner_user_id == userId && e.isActive == true && e.isDeleted == false)
             .OrderBy(e => e.order_seq)
             .ThenBy(e => e.description)
             .Select(e => new DropdownItemDto { Value = e.status_id, Text = e.description })

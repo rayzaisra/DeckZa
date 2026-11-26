@@ -193,6 +193,44 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
 html, body {
     font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif !important;
     background: var(--app-bg, #f9f9ff);
+    color: var(--app-text, #263143);
+}
+
+.ryz-skip-link {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 3000;
+    padding: 10px 14px;
+    border: 2px solid var(--neo-ink, #0f172a);
+    border-radius: 4px;
+    background: var(--app-surface, #ffffff);
+    color: var(--app-text-strong, #111c2d);
+    font-weight: 700;
+    text-decoration: none;
+    transform: translateY(-180%);
+    transition: transform 160ms var(--ryz-ease-out);
+}
+
+.ryz-skip-link:focus,
+.ryz-skip-link:focus-visible {
+    transform: translateY(0);
+}
+
+:where(a, button, [tabindex]):focus-visible,
+.mud-button-root:focus-visible,
+.mud-tab:focus-visible {
+    outline: 3px solid var(--ryz-focus) !important;
+    outline-offset: 2px;
+}
+
+.mud-input-control:focus-within .mud-input-outlined-border {
+    border-color: var(--mud-palette-primary) !important;
+}
+
+.ryz-main-content {
+    min-width: 0;
+    outline: none;
 }
 
 .login-page {
@@ -233,17 +271,16 @@ html, body {
 
 .login-brand-visual {
     display: flex;
-    flex: 1;
     align-items: center;
     justify-content: center;
     min-height: 0;
-    padding: 18px 0 8px;
+    padding: 24px 0 16px;
 }
 
 .login-brand-visual img {
     display: block;
-    width: min(100%, 640px);
-    max-height: calc(100vh - 210px);
+    width: min(100%, 560px);
+    max-height: min(42vh, 420px);
     object-fit: contain;
 }
 
@@ -285,40 +322,49 @@ html, body {
     text-transform: uppercase;
 }
 
+.login-brand-copy {
+    margin-top: auto;
+    max-width: 680px;
+    padding-top: 20px;
+}
+
 .login-brand-copy h1 {
-    color: var(--app-text-strong, #111c2d);
-    font-size: 40px;
-    line-height: 1.15;
-    font-weight: 800;
     margin: 0 0 16px;
+    color: var(--app-text-strong, #111c2d);
+    font-size: clamp(2rem, 3.6vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -.04em;
+    font-weight: 800;
+    max-width: 11ch;
+    text-wrap: balance;
 }
 
 .login-brand-copy p {
-    color: #414751;
-    font-size: 17px;
-    line-height: 1.6;
-    max-width: 480px;
-}
-
-.login-brand-features {
-    display: grid;
-    gap: 12px;
+    margin: 0;
+    max-width: 62ch;
     color: var(--app-text, #263143);
-    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.75;
 }
 
-.login-brand-features div {
+.login-brand-proof {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 10px;
+    margin-top: 24px;
 }
 
-.login-brand-footer {
-    color: #727782;
+.login-brand-proof-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border: 1px solid color-mix(in srgb, var(--app-accent, #004481) 22%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--app-surface, #ffffff) 72%, transparent);
+    color: var(--app-text-strong, #111c2d);
     font-size: 12px;
-    font-weight: 600;
-    letter-spacing: .04em;
-    text-transform: uppercase;
+    font-weight: 700;
+    line-height: 1;
 }
 
 .login-form-panel {
@@ -333,14 +379,18 @@ html, body {
 
 .login-form-header h2 {
     color: var(--app-text-strong, #111c2d);
-    font-size: 30px;
-    font-weight: 700;
-    margin: 0 0 8px;
+    font-size: clamp(2rem, 3vw, 2.85rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -.03em;
+    margin: 0 0 12px;
 }
 
 .login-form-header p {
-    color: #414751;
+    color: var(--app-muted, #5b6472);
     margin: 0 0 28px;
+    max-width: 42ch;
+    line-height: 1.7;
 }
 
 .login-form-fields {
@@ -362,7 +412,10 @@ html, body {
     background: transparent;
     color: var(--app-accent, #004481);
     font: inherit;
+    font-weight: 600;
     text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
     cursor: pointer;
 }
 
@@ -372,6 +425,7 @@ html, body {
     align-items: center;
     line-height: 1.2;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .login-form-fields > .login-text-link {
@@ -380,6 +434,42 @@ html, body {
 
 .login-text-link:hover {
     color: #002f5b;
+}
+
+.ryz-error-page {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+}
+
+.ryz-error-card {
+    width: 100%;
+    padding: 40px;
+    border-radius: 20px !important;
+    border: 1px solid color-mix(in srgb, var(--app-accent) 16%, #e2e8f0);
+    background: linear-gradient(180deg, var(--mud-palette-surface), color-mix(in srgb, var(--app-soft) 40%, var(--mud-palette-surface))) !important;
+}
+
+.ryz-error-card h1 {
+    margin: 0 0 12px;
+    color: var(--mud-palette-text-primary);
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: -.04em;
+}
+
+.ryz-error-copy {
+    max-width: 58ch;
+    margin: 0;
+    color: var(--mud-palette-text-secondary);
+    line-height: 1.75;
+}
+
+.ryz-error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
 }
 
 .maui-auth-shell {
@@ -1740,8 +1830,20 @@ body:has(.app-dark) {
     border-radius: 2px !important;
 }
 
+.neo-brutalism .mud-input.mud-input-outlined:focus-within > .mud-input-outlined-border,
+.neo-brutalism .mud-input.mud-input-outlined:focus-within .mud-shrink > .mud-input-outlined-border {
+    border-color: var(--mud-palette-primary) !important;
+}
+
 .neo-brutalism .mud-input-outlined {
     border-radius: 2px !important;
+}
+
+.neo-brutalism .login-brand-proof-chip {
+    border: 2px solid var(--neo-ink);
+    border-radius: 3px;
+    box-shadow: 2px 2px 0 var(--neo-ink);
+    background: var(--mud-palette-surface);
 }
 
 .neo-brutalism .mud-table-container {
@@ -2179,11 +2281,28 @@ body:has(.neo-brutalism) .mud-dialog .mud-switch-thumb {
     }
 }
 
+@media (max-width: 900px) {
+    .login-brand-copy h1,
+    .login-form-header h2 {
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-form-options {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+}
+
 :root {
     --ryz-motion-fast: 160ms;
     --ryz-motion-standard: 220ms;
     --ryz-motion-enter: 420ms;
     --ryz-ease-out: cubic-bezier(.2, .8, .2, 1);
+    --ryz-ease-snap: cubic-bezier(.16, 1, .3, 1);
+    --ryz-focus: color-mix(in srgb, var(--app-accent, #004481) 72%, #ffffff);
 }
 
 .maui-dashboard-page,
@@ -2697,6 +2816,21 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
 .approval-radios .mud-radio .mud-typography {
     font-size: .8125rem;
     line-height: 1.2;
+}
+
+/* Pratinjau bukti bayar pada dialog */
+.payment-proof-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+.payment-proof-frame {
+    width: 100%;
+    height: 60vh;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 4px;
 }
 
 .neo-brutalism .approval-radios .mud-button-root.mud-icon-button {
@@ -4134,6 +4268,7 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
 
 /* Login form entrance is CSS-first so it starts before the first paint. */
 .login-shell .login-brand-top,
+.login-shell .login-brand-copy > *,
 .login-shell .login-form-panel,
 .login-shell .login-form-header,
 .login-shell .login-form-fields > *:not(.mud-button-root),
@@ -4147,6 +4282,19 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
 
 .login-shell .login-brand-top {
     animation-duration: 360ms;
+}
+
+.login-shell .login-brand-copy > * {
+    animation-duration: 300ms;
+    animation-delay: 180ms;
+}
+
+.login-shell .login-brand-copy > *:nth-child(2) {
+    animation-delay: 230ms;
+}
+
+.login-shell .login-brand-copy > *:nth-child(3) {
+    animation-delay: 280ms;
 }
 
 .login-shell .login-form-panel {
@@ -4216,9 +4364,15 @@ html[data-palette="wellness"][data-theme-mode="dark"] {
     animation-delay: 400ms;
 }
 
+.ryz-tab-panel {
+    min-width: 0;
+}
+
 .enterprise-tabs .mud-tab-panel.is-active,
+.ryz-tab-panel.is-active,
 .ryz-tab-content.is-active {
-    animation: ryz-tab-in 300ms var(--ryz-ease-out) both;
+    animation: ryz-tab-in 320ms var(--ryz-ease-snap) both;
+    transform-origin: top left;
 }
 
 .dashboard-page .dashboard-hero,
@@ -4355,8 +4509,17 @@ html.ryz-boot-repeat .ryz-boot-card {
     letter-spacing: -.02em;
 }
 
+.ryz-boot-kicker {
+    margin-top: 8px;
+    color: var(--mud-palette-primary, #004481);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
 .ryz-boot-stage {
-    margin-top: 6px;
+    margin-top: 8px;
     color: var(--mud-palette-text-secondary, #64748b);
     font-size: .84rem;
 }
@@ -4456,6 +4619,7 @@ html.ryz-route-transition .ryz-route-overlay {
 
 @media (prefers-reduced-motion: reduce) {
     .login-shell .login-brand-top,
+    .login-shell .login-brand-copy > *,
     .login-shell .login-brand-visual img,
     .login-shell .login-form-panel,
     .login-shell .login-form-header,
@@ -4467,6 +4631,7 @@ html.ryz-route-transition .ryz-route-overlay {
     .maui-auth-shell .maui-auth-form-area .mud-input-control,
     .maui-auth-shell .maui-auth-submit,
     .enterprise-tabs .mud-tab-panel.is-active,
+    .ryz-tab-panel.is-active,
     .ryz-tab-content.is-active,
     .dashboard-page .dashboard-hero,
     .dashboard-page .dashboard-card,

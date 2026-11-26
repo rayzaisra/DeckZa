@@ -22,7 +22,7 @@
     </section>
 }
 
-<div class="bento-dashboard">
+<div class="bento-dashboard @(_loading ? "ryz-bento-skeleton" : string.Empty)">
     <section class="bento-card bento-greeting">
         <div class="bento-greeting-copy">
             <div class="dashboard-kicker">Personal Task and Report Management</div>
@@ -31,6 +31,20 @@
         </div>
         <MudIcon Icon="@Icons.Material.Filled.WavingHand" Class="bento-greeting-icon" />
     </section>
+
+    @if (_loading)
+    {
+        @for (var skeleton = 0; skeleton < 5; skeleton++)
+        {
+            <section class="bento-card" aria-hidden="true">
+                <div class="ryz-bento-skeleton-line is-title"></div>
+                <div class="ryz-bento-skeleton-line"></div>
+                <div class="ryz-bento-skeleton-line is-short"></div>
+            </section>
+        }
+    }
+    else
+    {
 
     <section class="bento-card bento-calendar">
         <header class="bento-head">
@@ -181,6 +195,7 @@
             </div>
         }
     </section>
+    }
 </div>
 
 @code {
@@ -201,6 +216,7 @@
 
     private string _displayName = "Member";
     private int _monthTaskCount;
+    private bool _loading = true;
 
     private DateTime Today => DateTime.Today;
 
@@ -219,7 +235,7 @@
             _displayName = name;
         }
 
-        await LoadAsync();
+        _ = LoadAsync();
     }
 
     private void OpenTab(string title, string componentType, string url, string icon)
@@ -229,19 +245,24 @@
     {
         try
         {
-            var report = await ReportApi.PreviewAsync(new ReportFilterDto
+            var reportTask = ReportApi.PreviewAsync(new ReportFilterDto
             {
                 DateFrom = MonthStart,
                 DateTo = MonthEndExclusive.AddDays(-1),
             });
 
+            var boardTask = TaskApi.GetBoardAsync(new TaskBoardRequestDto());
+
+            await Task.WhenAll(reportTask, boardTask);
+
+            var report = await reportTask;
             if (report != null)
             {
                 _speed = report.Speed;
                 BuildStatusSlices(report.StatusBreakdown);
             }
 
-            var board = await TaskApi.GetBoardAsync(new TaskBoardRequestDto());
+            var board = await boardTask;
 
             var monthTasks = board
                 .Where(task => task.RequestDate >= MonthStart && task.RequestDate < MonthEndExclusive)
@@ -253,7 +274,7 @@
 
             _openTasks.Clear();
             _openTasks.AddRange(board
-                .Where(task => task.StatusId != "STS005")
+                .Where(task => !task.IsCompletedStatus)
                 .OrderBy(task => task.DueDate ?? DateTime.MaxValue)
                 .ThenBy(task => task.RequestDate)
                 .Take(5));
@@ -262,6 +283,11 @@
         catch (Exception exception)
         {
             Snackbar.Add(exception.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 

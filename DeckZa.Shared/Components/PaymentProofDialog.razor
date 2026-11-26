@@ -1,0 +1,90 @@
+@inject PaymentApiService PaymentApi
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Payment Proof</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2">@FileName</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@ContentType</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" />
+                }
+                else if (_error != null)
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true">@_error</MudAlert>
+                }
+                else if (IsImage)
+                {
+                    <img src="@_previewUrl" alt="@FileName" class="payment-proof-image" />
+                }
+                else if (IsPdf)
+                {
+                    <iframe src="@_previewUrl" title="@FileName" class="payment-proof-frame"></iframe>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">This file type cannot be previewed inline. Use the download button instead.</MudAlert>
+                }
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" OnClick="DownloadAsync">Download</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public long RequestId { get; set; }
+
+    [Parameter]
+    public string FileName { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ContentType { get; set; } = string.Empty;
+
+    private string? _previewUrl;
+    private string? _error;
+    private bool _loading = true;
+
+    private bool IsImage
+        => ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsPdf
+        => ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _previewUrl = await PaymentApi.GetProofUrlAsync(RequestId);
+        _loading = false;
+
+        if (string.IsNullOrWhiteSpace(_previewUrl))
+        {
+            _error = "Proof file could not be loaded.";
+        }
+    }
+
+    private async Task DownloadAsync()
+    {
+        var url = await PaymentApi.GetProofUrlAsync(RequestId, download: true);
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            _error = "Proof file could not be loaded.";
+            return;
+        }
+
+        // Content-Disposition: attachment membuat browser mengunduh file.
+        Navigation.NavigateTo(url, forceLoad: true);
+    }
+}

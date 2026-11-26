@@ -17,6 +17,7 @@ public interface IEmailDispatchService
         string bodyText,
         string referenceType,
         string? referenceId = null,
+        EmailAttachmentDto? attachment = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> IsEmailEnabledAsync(CancellationToken cancellationToken = default);

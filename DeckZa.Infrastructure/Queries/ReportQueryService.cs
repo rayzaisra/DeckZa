@@ -11,8 +11,6 @@ namespace DeckZa.Infrastructure.Queries;
 
 public class ReportQueryService : IReportQueryService
 {
-    private const string DraftStatusId = "STS001";
-    private const string DoneStatusId = "STS005";
 
     private const string DurationValid = "Valid";
     private const string DurationNotFinished = "Belum selesai";
@@ -97,6 +95,7 @@ public class ReportQueryService : IReportQueryService
 
         var masterTaskTypes = await _context.rf_task_type
             .AsNoTracking()
+            .Where(e => e.owner_user_id == userId)
             .ToListAsync(cancellationToken);
 
         var taskTypeColumns = BuildTaskTypeColumns(masterTaskTypes, enrichedRows);
@@ -184,6 +183,8 @@ public class ReportQueryService : IReportQueryService
                StatusId = task.status_id,
                StatusName = status != null ? status.description : task.status_id,
                StatusOrder = status != null ? status.order_seq : 0,
+               IsInitialStatus = status != null && status.is_initial_status,
+               IsCompletedStatus = status != null && status.is_completed_status,
                ApplicationId = task.application_id,
                ApplicationName = application != null ? application.description : task.application_id,
                ApplicationOrder = application != null ? application.order_seq : 0,
@@ -230,8 +231,8 @@ public class ReportQueryService : IReportQueryService
 
     private static EnrichedRow Enrich(RawRow row)
     {
-        var isDraft = row.StatusId == DraftStatusId;
-        var isDone = row.StatusId == DoneStatusId;
+        var isDraft = row.IsInitialStatus;
+        var isDone = row.IsCompletedStatus;
         var isInProgress = !isDraft && !isDone;
 
         var completion = isDone ? row.CompletedDate ?? row.DueDate : null;
@@ -641,6 +642,8 @@ public class ReportQueryService : IReportQueryService
         public string StatusId { get; init; } = string.Empty;
         public string StatusName { get; init; } = string.Empty;
         public int StatusOrder { get; init; }
+        public bool IsInitialStatus { get; init; }
+        public bool IsCompletedStatus { get; init; }
         public string ApplicationId { get; init; } = string.Empty;
         public string ApplicationName { get; init; } = string.Empty;
         public int ApplicationOrder { get; init; }

@@ -116,7 +116,26 @@ else
         <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4">@_loadError</MudAlert>
     }
 
-    @if (_viewMode == "month")
+    @if (HasCalendarPlaceholder)
+    {
+        <div class="calendar-month" aria-hidden="true">
+            <div class="calendar-weekdays">
+                @foreach (var day in WeekdayLabels)
+                {
+                    <div class="calendar-weekday">@day</div>
+                }
+            </div>
+            <div class="calendar-grid">
+                @for (var cell = 0; cell < 42; cell++)
+                {
+                    <div class="calendar-cell">
+                        <span class="ryz-skeleton-line" style="width:18px;margin:0;"></span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (_viewMode == "month")
     {
         <div class="calendar-month">
             <div class="calendar-weekdays">
@@ -277,7 +296,7 @@ else
     private string _filterStatusId = string.Empty;
     private DateTime _cursor = DateTime.Today;
     private DateTime? _selectedDate;
-    private bool _loading;
+    private bool _loading = true;
     private bool _calendarUnavailable;
     private string? _loadError;
     private int _slideDirection;
@@ -295,25 +314,41 @@ else
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
+    {
+        _ = LoadInitialAsync();
+    }
+
+    private async Task LoadInitialAsync()
     {
         try
         {
-            var plan = await PlanApi.GetMyPlanAsync();
-            if (plan != null && !plan.AllowsCalendar)
+            try
             {
-                _calendarUnavailable = true;
-                return;
+                var plan = await PlanApi.GetMyPlanAsync();
+                if (plan != null && !plan.AllowsCalendar)
+                {
+                    _calendarUnavailable = true;
+                    return;
+                }
             }
-        }
-        catch (Exception exception)
-        {
-            Snackbar.Add(exception.Message, Severity.Error);
-        }
+            catch (Exception exception)
+            {
+                Snackbar.Add(exception.Message, Severity.Error);
+            }
 
-        await LoadReferenceDataAsync();
-        await ReloadAsync();
+            await LoadReferenceDataAsync();
+            _loading = false;
+            await ReloadAsync();
+        }
+        finally
+        {
+            _loading = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
+
+    private bool HasCalendarPlaceholder => _loading && _monthCells.Count == 0 && _yearMonths.Count == 0;
 
     private async Task LoadReferenceDataAsync()
     {

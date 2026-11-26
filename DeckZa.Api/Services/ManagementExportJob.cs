@@ -18,6 +18,7 @@ public class ManagementExportJob
     private readonly IRoleManagementService _roleService;
     private readonly IMenuManagementService _menuService;
     private readonly IParameterEngineService _parameterService;
+    private readonly IMasterDataService _masterDataService;
     private readonly INotificationService _notificationService;
     private readonly IErrorLogService _errorLog;
     private readonly IWebHostEnvironment _environment;
@@ -29,6 +30,7 @@ public class ManagementExportJob
         IRoleManagementService roleService,
         IMenuManagementService menuService,
         IParameterEngineService parameterService,
+        IMasterDataService masterDataService,
         INotificationService notificationService,
         IErrorLogService errorLog,
         IWebHostEnvironment environment,
@@ -39,10 +41,49 @@ public class ManagementExportJob
         _roleService = roleService;
         _menuService = menuService;
         _parameterService = parameterService;
+        _masterDataService = masterDataService;
         _notificationService = notificationService;
         _errorLog = errorLog;
         _environment = environment;
         _logger = logger;
+    }
+
+    public async Task ExportMasterDataAsync(string tableName, string? search, string userId, string jobId, string fileName)
+    {
+        try
+        {
+            var items = await _masterDataService.GetAllAsync(tableName, userId, search);
+            var isStatus = string.Equals(tableName, "rf_status", StringComparison.OrdinalIgnoreCase);
+
+            var headers = isStatus
+                ? new[] { "Order", "Name", "Default", "Completed", "Active", "Status Approval" }
+                : new[] { "Order", "Name", "Active", "Status Approval" };
+
+            var rows = items.Select(item => isStatus
+                ? new object?[]
+                {
+                    item.OrderSeq,
+                    item.Description,
+                    item.IsInitialStatus ? "Yes" : "No",
+                    item.IsCompletedStatus ? "Yes" : "No",
+                    item.IsActive ? "Active" : "Inactive",
+                    item.StatusApproval,
+                }
+                : new object?[]
+                {
+                    item.OrderSeq,
+                    item.Description,
+                    item.IsActive ? "Active" : "Inactive",
+                    item.StatusApproval,
+                });
+
+            WriteWorkbook(fileName, "Master Data", headers, rows);
+            await NotifyReadyAsync(userId, "Master data export is ready to download.", jobId);
+        }
+        catch (Exception ex)
+        {
+            await LogFailureAsync("ExportMasterData", userId, ex);
+        }
     }
 
     public async Task ExportUsersAsync(string? search, string userId, string jobId, string fileName)

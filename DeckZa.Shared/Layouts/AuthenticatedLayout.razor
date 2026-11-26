@@ -200,6 +200,7 @@
                 <MudMenuItem OnClick="@(_ => OpenProfile())">Profile</MudMenuItem>
                 <MudDivider />
                 <MudMenuItem OnClick="@(_ => OpenUpgradePlan())">Upgrade Plan</MudMenuItem>
+                <MudMenuItem OnClick="@(_ => OpenBilling())">Billing</MudMenuItem>
                 <MudDivider />
                 <MudMenuItem OnClick="@(_ => LogoutAsync())">Logout</MudMenuItem>
             </ChildContent>
@@ -229,12 +230,24 @@
 
                 <MudDivider Class="my-3" />
 
-                @foreach (var item in _menuItems)
+                @if (_menusLoading)
                 {
-                    <RecursiveMenuItem Item="item"
-                                       OnOpen="OpenMenu"
-                                       ActiveUrl="@ActiveUrl"
-                                       Expanded="@(_expandedParentUnique == item.MenuUnique)" />
+                    <div class="ryz-sidebar-skeleton" aria-hidden="true">
+                        @for (var row = 0; row < 7; row++)
+                        {
+                            <div class="ryz-sidebar-skeleton-row"></div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    @foreach (var item in _menuItems)
+                    {
+                        <RecursiveMenuItem Item="item"
+                                           OnOpen="OpenMenu"
+                                           ActiveUrl="@ActiveUrl"
+                                           Expanded="@(_expandedParentUnique == item.MenuUnique)" />
+                    }
                 }
             }
             else
@@ -244,17 +257,29 @@
                 </div>
                 <MudDivider Class="my-2" />
                 <div class="sidebar-rail">
-                    @for (var index = 0; index < _menuItems.Count; index++)
+                    @if (_menusLoading)
                     {
-                        var item = _menuItems[index];
-                        <button type="button"
-                                class="sidebar-rail-item"
-                                style="animation-delay:@(index * 25)ms"
-                                title="@item.MenuName"
-                                aria-label="@item.MenuName"
-                                @onclick="@(() => ExpandFromRail(item))">
-                            <MudIcon Icon="@MenuIconResolver.GetIcon(item.MenuIcon)" />
-                        </button>
+                        <div class="ryz-sidebar-rail-skeleton" aria-hidden="true">
+                            @for (var row = 0; row < 6; row++)
+                            {
+                                <span></span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        @for (var index = 0; index < _menuItems.Count; index++)
+                        {
+                            var item = _menuItems[index];
+                            <button type="button"
+                                    class="sidebar-rail-item"
+                                    style="animation-delay:@(index * 25)ms"
+                                    title="@item.MenuName"
+                                    aria-label="@item.MenuName"
+                                    @onclick="@(() => ExpandFromRail(item))">
+                                <MudIcon Icon="@MenuIconResolver.GetIcon(item.MenuIcon)" />
+                            </button>
+                        }
                     }
                 </div>
             }
@@ -262,7 +287,9 @@
     </MudDrawer>
 
     <MudMainContent>
+        <a href="#ryz-main-content" class="ryz-skip-link">Skip to main content</a>
         <MudContainer MaxWidth="MaxWidth.False" Class="app-main-container">
+            <main id="ryz-main-content" class="ryz-main-content" tabindex="-1">
             @if (TabService.Tabs.Count > 0)
             {
                 <MudTabs @bind-ActivePanelIndex="_selectedTabIndex"
@@ -281,9 +308,11 @@
                                     <span class="tab-header-actions" @onclick:stopPropagation="true">
                                         <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                                                        Size="Size.Small"
+                                                       aria-label="@($"Refresh {tab.Title}")"
                                                        OnClick="@(_ => RefreshTab(tab))" />
                                         <MudIconButton Icon="@Icons.Material.Filled.Close"
                                                        Size="Size.Small"
+                                                       aria-label="@($"Close {tab.Title}")"
                                                        OnClick="@(_ => CloseTab(tab))" />
                                     </span>
                                 </div>
@@ -293,14 +322,16 @@
                                     var componentType = GetComponentType(tab);
                                 }
 
-                                @if (componentType != null)
-                                {
-                                    <DynamicComponent Type="componentType" Parameters="tab.Parameters" @key="tab.RefreshKey" />
-                                }
-                                else
-                                {
-                                    <MudAlert Severity="Severity.Info" Class="mt-4">This module is not implemented yet.</MudAlert>
-                                }
+                                <div class="ryz-tab-panel">
+                                    @if (componentType != null)
+                                    {
+                                        <DynamicComponent Type="componentType" Parameters="tab.Parameters" @key="tab.RefreshKey" />
+                                    }
+                                    else
+                                    {
+                                        <MudAlert Severity="Severity.Info" Class="mt-4">This module is not implemented yet.</MudAlert>
+                                    }
+                                </div>
                             </ChildContent>
                         </MudTabPanel>
                     }
@@ -310,6 +341,7 @@
             {
                 <MudAlert Severity="Severity.Info">Select a menu to start.</MudAlert>
             }
+            </main>
         </MudContainer>
     </MudMainContent>
 </MudLayout>
@@ -319,6 +351,7 @@
     private const string DashboardComponent = "DeckZa.Shared.Pages.Dashboard, DeckZa.Shared";
     private const string ProfileComponent = "DeckZa.Shared.Pages.Profile, DeckZa.Shared";
     private const string UpgradePlanComponent = "DeckZa.Shared.Pages.AsMember.UpgradePlan, DeckZa.Shared";
+    private const string BillingComponent = "DeckZa.Shared.Pages.AsMember.Billing, DeckZa.Shared";
     private const string NotificationsComponent = "DeckZa.Shared.Pages.Notifications, DeckZa.Shared";
 
     private readonly Guid _viewportObserverId = Guid.NewGuid();
@@ -343,6 +376,7 @@
     private bool _searchOpen;
     private List<MenuSearchResult> _filteredResults = new();
     private List<MenuItemDto> _menuItems = new();
+    private bool _menusLoading = true;
     private MenuItemDto? _docsMenu;
     private List<NotificationDto> _notifications = new();
     private HubConnection? _hub;
@@ -353,26 +387,9 @@
     protected override async Task OnInitializedAsync()
     {
         TabService.OnTabsChanged += OnTabsChanged;
-        var menus = await MenuService.GetUserMenuAsync();
-        _docsMenu = menus.FirstOrDefault(e => string.Equals(e.MenuUnique, "DOC", StringComparison.OrdinalIgnoreCase));
-        _menuItems = menus
-            .Where(e => !string.Equals(e.MenuUnique, "DOC", StringComparison.OrdinalIgnoreCase))
-            .ToList();
 
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        _userName = authState.User.Identity?.Name;
-
-        try
-        {
-            _notifications = await NotificationApi.GetRecentAsync();
-            _unreadCount = await NotificationApi.GetUnreadCountAsync();
-        }
-        catch
-        {
-            // Notifications are non-blocking; the rest of the shell remains usable.
-        }
-
-        _ = StartHubAsync();
+        await ThemeService.InitializeAsync();
+        _isDarkMode = ThemeService.IsDarkMode;
 
         if (TabService.Tabs.Count == 0)
         {
@@ -380,6 +397,54 @@
         }
 
         SyncSelectedTab();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _userName = authState.User.Identity?.Name;
+
+        _ = StartHubAsync();
+        _ = LoadShellDataAsync();
+    }
+
+    private async Task LoadShellDataAsync()
+    {
+        var menuTask = MenuService.GetUserMenuAsync();
+        var notificationsTask = LoadNotificationsAsync();
+
+        try
+        {
+            var menus = await menuTask;
+            _docsMenu = menus.FirstOrDefault(e => string.Equals(e.MenuUnique, "DOC", StringComparison.OrdinalIgnoreCase));
+            _menuItems = menus
+                .Where(e => !string.Equals(e.MenuUnique, "DOC", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        catch
+        {
+            _menuItems = new List<MenuItemDto>();
+        }
+        finally
+        {
+            _menusLoading = false;
+        }
+
+        await notificationsTask;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadNotificationsAsync()
+    {
+        try
+        {
+            var recentTask = NotificationApi.GetRecentAsync();
+            var unreadTask = NotificationApi.GetUnreadCountAsync();
+            _notifications = await recentTask;
+            _unreadCount = await unreadTask;
+        }
+        catch
+        {
+            // Notifications are non-blocking; the rest of the shell remains usable.
+        }
     }
 
     private async Task StartHubAsync()
@@ -592,9 +657,9 @@
         if (firstRender)
         {
             await ThemeService.InitializeAsync();
-            await ThemeService.SetDarkModeAsync(_isDarkMode);
+            _isDarkMode = ThemeService.IsDarkMode;
             await Motion.InitBusyIndicatorsAsync();
-            StateHasChanged();
+            await Motion.EndRouteTransitionAsync();
 
             try
             {
@@ -671,6 +736,22 @@
                 }
             }
         }
+        else if (item.ComponentType.Contains("TaskParameter", StringComparison.OrdinalIgnoreCase)
+                 && !string.IsNullOrWhiteSpace(item.MenuUrl))
+        {
+            // Tab dirender lewat DynamicComponent sehingga URL browser tidak berubah.
+            // Tabel master ditentukan dari segmen terakhir menu_url.
+            var segments = item.MenuUrl.Trim('/').Split('/');
+            var last = segments[^1];
+            parameters["TableName"] = last.ToLowerInvariant() switch
+            {
+                "application" => "rf_application",
+                "task-type" => "rf_task_type",
+                "priority" => "rf_task_priority",
+                "status" => "rf_status",
+                _ => "rf_application",
+            };
+        }
 
         TabService.OpenTab(
             item.MenuName,
@@ -696,6 +777,9 @@
 
     private void OpenUpgradePlan()
         => TabService.OpenTab("Upgrade Plan", UpgradePlanComponent, "/dashboard/upgrade-plan", icon: "WorkspacePremium");
+
+    private void OpenBilling()
+        => TabService.OpenTab("Billing", BillingComponent, "/dashboard/billing", icon: "ReceiptLong");
 
     private void RefreshTab(AppTabDto tab) => TabService.RefreshTab(tab);
 

@@ -14,6 +14,7 @@ public sealed class PlanDto
     public bool AllowsCalendar { get; set; }
     public bool AllowsExcelImport { get; set; }
     public bool AllowsSupervisorMode { get; set; }
+    public int? MaxMasterRowsPerTable { get; set; }
     public string? UpgradeGroupId { get; set; }
     public int OrderSeq { get; set; }
     public List<string> Features { get; set; } = new();

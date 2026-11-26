@@ -99,7 +99,21 @@
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="my-4" />
 }
 
-@if (_report == null && !_loading)
+@if (_report == null && _loading)
+{
+    <MudGrid Spacing="3" Class="mb-2" aria-hidden="true">
+        @for (var tile = 0; tile < 4; tile++)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="dashboard-card pa-4">
+                    <div class="ryz-skeleton-line" style="width:60%;"></div>
+                    <div class="ryz-skeleton-line is-title" style="width:35%;"></div>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+}
+else if (_report == null)
 {
     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
         Choose a period and press Preview to load the report.
@@ -196,7 +210,7 @@ else if (_report != null)
     private DateTime? _dateTo;
     private string _taskTypeId = string.Empty;
     private string _statusId = string.Empty;
-    private bool _loading;
+    private bool _loading = true;
     private bool _exporting;
     private bool _revealPending = true;
 
@@ -228,9 +242,23 @@ else if (_report != null)
         _dateFrom = new DateTime(today.Year, today.Month, 1);
         _dateTo = new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1);
 
-        await LoadPlanAsync();
-        await LoadReferenceDataAsync();
-        await PreviewAsync();
+        _ = LoadInitialAsync();
+    }
+
+    private async Task LoadInitialAsync()
+    {
+        try
+        {
+            await LoadPlanAsync();
+            await LoadReferenceDataAsync();
+            _loading = false;
+            await PreviewAsync();
+        }
+        finally
+        {
+            _loading = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task LoadPlanAsync()

@@ -38,6 +38,8 @@ public partial class rf_plan : BaseEntity
 
     public bool allows_supervisor_mode { get; set; }
 
+    public int? max_master_rows_per_table { get; set; }
+
     [Column(TypeName = "varchar(50)")]
     [StringLength(50)]
     public string? upgrade_group_id { get; set; }

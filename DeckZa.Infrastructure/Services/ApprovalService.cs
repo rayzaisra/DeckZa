@@ -264,7 +264,8 @@ public class ApprovalService : IApprovalService
                 bodyHtml,
                 bodyText,
                 "REGISTRATION",
-                pending.user_id);
+                pending.user_id,
+                null);
         }
         catch (Exception ex)
         {

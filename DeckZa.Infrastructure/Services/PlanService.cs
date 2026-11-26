@@ -69,6 +69,7 @@ public class PlanService : IPlanService
             AllowsCalendar = plan.allows_calendar,
             AllowsExcelImport = plan.allows_excel_import,
             AllowsSupervisorMode = plan.allows_supervisor_mode,
+            MaxMasterRowsPerTable = plan.max_master_rows_per_table,
         };
     }
 

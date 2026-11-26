@@ -318,6 +318,17 @@ else
                      alt="Enterprise workspace illustration"
                      loading="eager" />
             </div>
+
+            <div class="login-brand-copy">
+                <h1>Built on bedrock</h1>
+                <p>Tasks, schedules, and reports in one workspace.</p>
+                <div class="login-brand-proof" aria-label="DeckZa capabilities">
+                    <span class="login-brand-proof-chip">Tasks</span>
+                    <span class="login-brand-proof-chip">Calendar</span>
+                    <span class="login-brand-proof-chip">Reports</span>
+                    <span class="login-brand-proof-chip">Billing</span>
+                </div>
+            </div>
         </MudPaper>
     </section>
 
@@ -649,11 +660,13 @@ else
             LoginMode.Forgot => "Enter your username or email. If the account is registered, reset instructions will be sent.",
             LoginMode.Reset => "Choose a new password for your account.",
             LoginMode.SignUp => "Create your account",
-            _ => "Please enter your credentials to access your account.",
+            _ => "Enter your credentials to continue.",
         };
 
     protected override async Task OnInitializedAsync()
     {
+        await ThemeService.InitializeAsync();
+
         var path = Navigation.ToBaseRelativePath(Navigation.Uri).Split('?')[0].Trim('/');
         if (path.Equals("forgot-password", StringComparison.OrdinalIgnoreCase))
         {
@@ -706,8 +719,6 @@ else
         }
 
         await ThemeService.InitializeAsync();
-        await Motion.PlayLoginAsync();
-        StateHasChanged();
     }
 
     private void ShowForgot()
@@ -941,15 +952,20 @@ else
             await TokenStorage.SetAccessTokenAsync(response.AccessToken);
             await TokenStorage.SetRefreshTokenAsync(response.RefreshToken);
             AuthStateNotifier.NotifyUserLogin(response.User.UserId);
-            Snackbar.Add("Login successful", Severity.Success);
 
             if (response.UrlDestination == "changepassword")
             {
                 Navigation.NavigateTo("/change-password", true);
             }
+            else if (IsMauiApp)
+            {
+                Navigation.NavigateTo("/maui/dashboard");
+            }
             else
             {
-                Navigation.NavigateTo(IsMauiApp ? "/maui/dashboard" : "/dashboard", true);
+                await Motion.BeginRouteTransitionAsync();
+                await Task.Delay(180);
+                Navigation.NavigateTo("/dashboard");
             }
         }
         catch (Exception ex)

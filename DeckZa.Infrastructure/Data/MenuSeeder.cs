@@ -16,6 +16,25 @@ public static class MenuSeeder
     private const string DeckZaPageRoute = "/dashboard/documentation/deckza-flows";
     private const string DeckZaComponent = "DeckZa.Shared.Pages.Documentation.DeckZaFlows, DeckZa.Shared";
 
+    private const string PaymentRootUnique = "MNT-PAY";
+    private const string PaymentListUnique = "MNT-PAY-LST";
+    private const string PaymentApprovalUnique = "MNT-PAY-APR";
+    private const string PaymentListRoute = "/dashboard/maintenance/payment-list";
+    private const string PaymentApprovalRoute = "/dashboard/maintenance/payment-approval";
+    private const string PaymentListComponent = "DeckZa.Shared.Pages.Maintenance.PaymentList, DeckZa.Shared";
+    private const string PaymentApprovalComponent = "DeckZa.Shared.Pages.Maintenance.PaymentApproval, DeckZa.Shared";
+
+    private const string TaskParameterRootUnique = "TSKP";
+    private const string ApplicationUnique = "TSKP-APP";
+    private const string TaskTypeUnique = "TSKP-TYP";
+    private const string PriorityUnique = "TSKP-PRI";
+    private const string StatusUnique = "TSKP-STA";
+    private const string ApplicationRoute = "/dashboard/task-parameter/application";
+    private const string TaskTypeRoute = "/dashboard/task-parameter/task-type";
+    private const string PriorityRoute = "/dashboard/task-parameter/priority";
+    private const string StatusRoute = "/dashboard/task-parameter/status";
+    private const string MasterListComponent = "DeckZa.Shared.Pages.AsMember.TaskParameter, DeckZa.Shared";
+
     private static readonly (string Code, string Name)[] Icons =
     {
         ("Settings", "Settings"),
@@ -32,6 +51,7 @@ public static class MenuSeeder
         ("PinDrop", "Pin Drop"),
         ("Science", "Science"),
         ("Email", "Email"),
+        ("Payments", "Payments"),
     };
 
     private static readonly (string Unique, string Name, string? Url, string Level, string Parent, string Icon, int Order, string? Component)[] Menus =
@@ -237,6 +257,234 @@ public static class MenuSeeder
     }
 
     /// <summary>
+    /// Menu Task Parameter untuk semua grup yang di-mapping. Dipanggil terpisah
+    /// dari <see cref="SeedAsync"/> karena seeding menu utama berhenti begitu
+    /// <c>MNT</c> sudah ada di DB existing.
+    /// </summary>
+    public static async Task EnsureTaskParameterMenusAsync(
+        DeckZaDbContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.Now;
+
+        foreach (var icon in new[] { "Tune", "Apps", "Category", "Flag", "LinearScale" })
+        {
+            if (!await context.enum_menu_icon.AnyAsync(e => e.menu_icon_code == icon, cancellationToken))
+            {
+                await context.enum_menu_icon.AddAsync(new enum_menu_icon
+                {
+                    menu_icon_code = icon,
+                    menu_icon_name = icon,
+                    menu_icon_name_alternate = null,
+                }, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        // Root Task Parameter ada di level A dengan order 1; Task Workspace digeser ke 2.
+        await SyncWorkspaceOrderAsync(context, cancellationToken);
+
+        var root = await EnsureMenuAsync(
+            context,
+            new um_menu
+            {
+                menu_unique = TaskParameterRootUnique,
+                menu_name = "Task Parameter",
+                menu_url = null,
+                parent_level_id = Const.ParentLevel.FIRST_PARENT,
+                menu_unique_parent = string.Empty,
+                menu_icon = "Tune",
+                order_seq = 1,
+                statusApproval = Const.StatusApproval.APPROVED,
+                isActive = true,
+                isDeleted = false,
+                isLocked = false,
+                isDefault = false,
+                createdBy = "system",
+                createdDate = now,
+            },
+            cancellationToken);
+
+        var application = await EnsureMenuAsync(
+            context,
+            BuildChildMenu(ApplicationUnique, "Application", ApplicationRoute, "Apps", 1, now),
+            cancellationToken);
+
+        var taskType = await EnsureMenuAsync(
+            context,
+            BuildChildMenu(TaskTypeUnique, "Task Type", TaskTypeRoute, "Category", 2, now),
+            cancellationToken);
+
+        var priority = await EnsureMenuAsync(
+            context,
+            BuildChildMenu(PriorityUnique, "Priority", PriorityRoute, "Flag", 3, now),
+            cancellationToken);
+
+        var status = await EnsureMenuAsync(
+            context,
+            BuildChildMenu(StatusUnique, "Status", StatusRoute, "LinearScale", 4, now),
+            cancellationToken);
+
+        // Visibilitas mengikuti mapping menu, bukan hardcode grup. Default seed memetakan
+        // ke semua grup aktif; admin dapat mempersempit lewat Menu Mapping.
+        var groupIds = await context.um_group_app
+            .Where(e => e.isActive != false && e.isDeleted != true)
+            .Select(e => e.group_id)
+            .ToListAsync(cancellationToken);
+
+        var visibleGroupIds = groupIds
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Select(e => e!)
+            .ToList();
+
+        await EnsureGroupMenuAsync(context, root.id, visibleGroupIds, now, cancellationToken);
+        await EnsureGroupMenuAsync(context, application.id, visibleGroupIds, now, cancellationToken);
+        await EnsureGroupMenuAsync(context, taskType.id, visibleGroupIds, now, cancellationToken);
+        await EnsureGroupMenuAsync(context, priority.id, visibleGroupIds, now, cancellationToken);
+        await EnsureGroupMenuAsync(context, status.id, visibleGroupIds, now, cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static um_menu BuildChildMenu(
+        string unique,
+        string name,
+        string route,
+        string icon,
+        int order,
+        DateTime now)
+        => new()
+        {
+            menu_unique = unique,
+            menu_name = name,
+            menu_url = route,
+            parent_level_id = Const.ParentLevel.CHILD,
+            menu_unique_parent = TaskParameterRootUnique,
+            menu_icon = icon,
+            order_seq = order,
+            component_type = MasterListComponent,
+            statusApproval = Const.StatusApproval.APPROVED,
+            isActive = true,
+            isDeleted = false,
+            isLocked = false,
+            isDefault = false,
+            createdBy = "system",
+            createdDate = now,
+        };
+
+    private static async Task SyncWorkspaceOrderAsync(DeckZaDbContext context, CancellationToken cancellationToken)
+    {
+        var workspace = await context.um_menu
+            .FirstOrDefaultAsync(e => e.menu_unique == "TSK", cancellationToken);
+
+        if (workspace == null || workspace.order_seq == 2)
+        {
+            return;
+        }
+
+        workspace.order_seq = 2;
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Menu Payment untuk Administrator. Dipanggil terpisah dari <see cref="SeedAsync"/>
+    /// karena seeding menu utama berhenti begitu <c>MNT</c> sudah ada.
+    /// </summary>
+    public static async Task EnsurePaymentMenusAsync(
+        DeckZaDbContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.Now;
+
+        // Ikon harus ada di master enum_menu_icon — seeding icon utama hanya jalan
+        // saat tabel menu masih kosong.
+        if (!await context.enum_menu_icon.AnyAsync(e => e.menu_icon_code == "Payments", cancellationToken))
+        {
+            await context.enum_menu_icon.AddAsync(new enum_menu_icon
+            {
+                menu_icon_code = "Payments",
+                menu_icon_name = "Payments",
+                menu_icon_name_alternate = null,
+            }, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        var root = await EnsureMenuAsync(
+            context,
+            new um_menu
+            {
+                menu_unique = PaymentRootUnique,
+                menu_name = "Payment",
+                menu_url = null,
+                parent_level_id = Const.ParentLevel.FIRST_PARENT,
+                menu_unique_parent = string.Empty,
+                menu_icon = "Payments",
+                order_seq = 2,
+                statusApproval = Const.StatusApproval.APPROVED,
+                isActive = true,
+                isDeleted = false,
+                isLocked = false,
+                isDefault = false,
+                createdBy = "system",
+                createdDate = now,
+            },
+            cancellationToken);
+
+        var list = await EnsureMenuAsync(
+            context,
+            new um_menu
+            {
+                menu_unique = PaymentListUnique,
+                menu_name = "List",
+                menu_url = PaymentListRoute,
+                parent_level_id = Const.ParentLevel.CHILD,
+                menu_unique_parent = PaymentRootUnique,
+                menu_icon = "FormatListBulleted",
+                order_seq = 1,
+                component_type = PaymentListComponent,
+                statusApproval = Const.StatusApproval.APPROVED,
+                isActive = true,
+                isDeleted = false,
+                isLocked = false,
+                isDefault = false,
+                createdBy = "system",
+                createdDate = now,
+            },
+            cancellationToken);
+
+        var approval = await EnsureMenuAsync(
+            context,
+            new um_menu
+            {
+                menu_unique = PaymentApprovalUnique,
+                menu_name = "Approval",
+                menu_url = PaymentApprovalRoute,
+                parent_level_id = Const.ParentLevel.CHILD,
+                menu_unique_parent = PaymentRootUnique,
+                menu_icon = "Checklist",
+                order_seq = 2,
+                component_type = PaymentApprovalComponent,
+                statusApproval = Const.StatusApproval.APPROVED,
+                isActive = true,
+                isDeleted = false,
+                isLocked = false,
+                isDefault = false,
+                createdBy = "system",
+                createdDate = now,
+            },
+            cancellationToken);
+
+        // Payment hanya untuk Administrator.
+        var adminGroupIds = new[] { Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE };
+
+        await EnsureGroupMenuAsync(context, root.id, adminGroupIds, now, cancellationToken);
+        await EnsureGroupMenuAsync(context, list.id, adminGroupIds, now, cancellationToken);
+        await EnsureGroupMenuAsync(context, approval.id, adminGroupIds, now, cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
     /// Membuat menu bila belum ada, atau memperbaiki nama dan atribut tampilannya
     /// bila sudah ada. Idempoten.
     /// </summary>
@@ -272,6 +520,24 @@ public static class MenuSeeder
         if (!string.Equals(existing.component_type, desired.component_type, StringComparison.Ordinal))
         {
             existing.component_type = desired.component_type;
+            changed = true;
+        }
+
+        if (!string.Equals(existing.parent_level_id, desired.parent_level_id, StringComparison.Ordinal))
+        {
+            existing.parent_level_id = desired.parent_level_id;
+            changed = true;
+        }
+
+        if (!string.Equals(existing.menu_unique_parent ?? string.Empty, desired.menu_unique_parent ?? string.Empty, StringComparison.Ordinal))
+        {
+            existing.menu_unique_parent = desired.menu_unique_parent;
+            changed = true;
+        }
+
+        if (!string.Equals(existing.menu_icon, desired.menu_icon, StringComparison.Ordinal))
+        {
+            existing.menu_icon = desired.menu_icon;
             changed = true;
         }
 

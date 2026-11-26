@@ -9,8 +9,6 @@ namespace DeckZa.Infrastructure.Services;
 
 public class TaskService : ITaskService
 {
-    private const string DefaultStatusId = "STS001";
-    private const string DoneStatusId = "STS005";
     private const int HistoryTextMaxLength = 1000;
 
     private readonly IUnitOfWork _unitOfWork;
@@ -124,7 +122,7 @@ public class TaskService : ITaskService
             var applicationId = (dto.ApplicationId ?? string.Empty).Trim();
             var taskTypeId = (dto.TaskTypeId ?? string.Empty).Trim();
             var taskPriorityId = (dto.TaskPriorityId ?? string.Empty).Trim();
-            var statusId = string.IsNullOrWhiteSpace(dto.StatusId) ? DefaultStatusId : dto.StatusId.Trim();
+            var requestedStatusId = (dto.StatusId ?? string.Empty).Trim();
 
             if (string.IsNullOrWhiteSpace(title))
             {
@@ -141,11 +139,22 @@ public class TaskService : ITaskService
                 return Fail("Request Date is required.");
             }
 
+            var statusFlags = await _referenceQueryService.GetStatusFlagsMapAsync(userId, cancellationToken);
+            var defaultStatusId = statusFlags.Values.FirstOrDefault(e => e.IsInitialStatus)?.StatusId;
+            var statusId = string.IsNullOrWhiteSpace(requestedStatusId) ? defaultStatusId : requestedStatusId;
+
+            if (string.IsNullOrWhiteSpace(statusId))
+            {
+                return Fail("No default status found. Please set up My Master Data first.");
+            }
+
             var validationError = await ValidateReferencesAsync(
                 applicationId,
                 statusId,
                 taskTypeId,
                 taskPriorityId,
+                userId,
+                statusFlags,
                 cancellationToken);
 
             if (validationError != null)
@@ -178,7 +187,7 @@ public class TaskService : ITaskService
                 approvalTypeId = Const.ApprovalType.ADD,
             };
 
-            if (statusId == DoneStatusId)
+            if (statusFlags.TryGetValue(statusId, out var newStatusFlag) && newStatusFlag.IsCompletedStatus)
             {
                 task.completed_date = now;
                 task.due_date ??= now;
@@ -237,11 +246,14 @@ public class TaskService : ITaskService
                 return Fail("Request Date is required.");
             }
 
+            var statusFlags = await _referenceQueryService.GetStatusFlagsMapAsync(userId, cancellationToken);
             var validationError = await ValidateReferencesAsync(
                 applicationId,
                 statusId,
                 taskTypeId,
                 taskPriorityId,
+                userId,
+                statusFlags,
                 cancellationToken);
 
             if (validationError != null)
@@ -268,12 +280,15 @@ public class TaskService : ITaskService
                 var previousStatusName = await _referenceQueryService.GetStatusDescriptionAsync(previousStatusId, cancellationToken);
                 var statusName = await _referenceQueryService.GetStatusDescriptionAsync(statusId, cancellationToken);
 
-                if (statusId == DoneStatusId)
+                var nextIsCompleted = statusFlags.TryGetValue(statusId, out var nextStatusFlag) && nextStatusFlag.IsCompletedStatus;
+                var previousIsCompleted = statusFlags.TryGetValue(previousStatusId, out var prevStatusFlag) && prevStatusFlag.IsCompletedStatus;
+
+                if (nextIsCompleted)
                 {
                     task.completed_date = now;
                     task.due_date ??= now;
                 }
-                else if (previousStatusId == DoneStatusId)
+                else if (previousIsCompleted)
                 {
                     task.completed_date = null;
                 }
@@ -362,7 +377,7 @@ public class TaskService : ITaskService
                 return Fail("Status is required.");
             }
 
-            if (!await _referenceQueryService.StatusExistsAsync(statusId, cancellationToken))
+            if (!await _referenceQueryService.StatusExistsAsync(statusId, userId, cancellationToken))
             {
                 return Fail("Status is not valid or inactive.");
             }
@@ -383,13 +398,16 @@ public class TaskService : ITaskService
             var statusName = await _referenceQueryService.GetStatusDescriptionAsync(statusId, cancellationToken);
 
             var now = DateTime.Now;
+            var statusFlags = await _referenceQueryService.GetStatusFlagsMapAsync(userId, cancellationToken);
+            var nextIsCompleted = statusFlags.TryGetValue(statusId, out var nextStatusFlag) && nextStatusFlag.IsCompletedStatus;
+            var previousIsCompleted = statusFlags.TryGetValue(previousStatusId, out var prevStatusFlag) && prevStatusFlag.IsCompletedStatus;
 
-            if (statusId == DoneStatusId)
+            if (nextIsCompleted)
             {
                 task.completed_date = now;
                 task.due_date ??= now;
             }
-            else if (previousStatusId == DoneStatusId)
+            else if (previousIsCompleted)
             {
                 task.completed_date = null;
             }
@@ -466,28 +484,30 @@ public class TaskService : ITaskService
         string statusId,
         string taskTypeId,
         string taskPriorityId,
+        string ownerUserId,
+        Dictionary<string, TaskStatusFlagsDto> statusFlags,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(applicationId)
-            || !await _referenceQueryService.ApplicationExistsAsync(applicationId, cancellationToken))
+            || !await _referenceQueryService.ApplicationExistsAsync(applicationId, ownerUserId, cancellationToken))
         {
             return "Application is not valid or inactive.";
         }
 
         if (string.IsNullOrWhiteSpace(statusId)
-            || !await _referenceQueryService.StatusExistsAsync(statusId, cancellationToken))
+            || !statusFlags.ContainsKey(statusId))
         {
             return "Status is not valid or inactive.";
         }
 
         if (string.IsNullOrWhiteSpace(taskTypeId)
-            || !await _referenceQueryService.TaskTypeExistsAsync(taskTypeId, cancellationToken))
+            || !await _referenceQueryService.TaskTypeExistsAsync(taskTypeId, ownerUserId, cancellationToken))
         {
             return "Task Type is not valid or inactive.";
         }
 
         if (string.IsNullOrWhiteSpace(taskPriorityId)
-            || !await _referenceQueryService.TaskPriorityExistsAsync(taskPriorityId, cancellationToken))
+            || !await _referenceQueryService.TaskPriorityExistsAsync(taskPriorityId, ownerUserId, cancellationToken))
         {
             return "Priority is not valid or inactive.";
         }

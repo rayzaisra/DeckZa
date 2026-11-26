@@ -237,14 +237,24 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
+                    b.Property<string>("owner_user_id")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasDefaultValue("");
+
                     b.Property<int?>("statusApproval")
                         .HasColumnType("int")
                         .HasColumnName("status_approval");
 
                     b.HasKey("application_id");
 
-                    b.HasIndex("description")
-                        .IsUnique();
+                    b.HasIndex("owner_user_id");
+
+                    b.HasIndex("owner_user_id", "description")
+                        .IsUnique()
+                        .HasFilter("[is_deleted] = 0");
 
                     b.ToTable("rf_application");
                 });
@@ -873,6 +883,9 @@ namespace DeckZa.Infrastructure.Migrations.Main
                     b.Property<int?>("max_active_tasks")
                         .HasColumnType("int");
 
+                    b.Property<int?>("max_master_rows_per_table")
+                        .HasColumnType("int");
+
                     b.Property<string>("modifiedBy")
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)")
@@ -1066,6 +1079,16 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .HasColumnType("bit")
                         .HasColumnName("is_locked");
 
+                    b.Property<bool>("is_completed_status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("is_initial_status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("modifiedBy")
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)")
@@ -1080,14 +1103,24 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
+                    b.Property<string>("owner_user_id")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasDefaultValue("");
+
                     b.Property<int?>("statusApproval")
                         .HasColumnType("int")
                         .HasColumnName("status_approval");
 
                     b.HasKey("status_id");
 
-                    b.HasIndex("description")
-                        .IsUnique();
+                    b.HasIndex("owner_user_id");
+
+                    b.HasIndex("owner_user_id", "description")
+                        .IsUnique()
+                        .HasFilter("[is_deleted] = 0");
 
                     b.ToTable("rf_status");
                 });
@@ -1165,14 +1198,24 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
+                    b.Property<string>("owner_user_id")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasDefaultValue("");
+
                     b.Property<int?>("statusApproval")
                         .HasColumnType("int")
                         .HasColumnName("status_approval");
 
                     b.HasKey("task_priority_id");
 
-                    b.HasIndex("description")
-                        .IsUnique();
+                    b.HasIndex("owner_user_id");
+
+                    b.HasIndex("owner_user_id", "description")
+                        .IsUnique()
+                        .HasFilter("[is_deleted] = 0");
 
                     b.ToTable("rf_task_priority");
                 });
@@ -1250,14 +1293,24 @@ namespace DeckZa.Infrastructure.Migrations.Main
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
+                    b.Property<string>("owner_user_id")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasDefaultValue("");
+
                     b.Property<int?>("statusApproval")
                         .HasColumnType("int")
                         .HasColumnName("status_approval");
 
                     b.HasKey("task_type_id");
 
-                    b.HasIndex("description")
-                        .IsUnique();
+                    b.HasIndex("owner_user_id");
+
+                    b.HasIndex("owner_user_id", "description")
+                        .IsUnique()
+                        .HasFilter("[is_deleted] = 0");
 
                     b.ToTable("rf_task_type");
                 });

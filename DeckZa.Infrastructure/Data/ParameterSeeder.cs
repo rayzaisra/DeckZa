@@ -146,7 +146,8 @@ public static class ParameterSeeder
             Field("application_id", "Application ID", "text", key: true, mandatory: true, order: 1),
             Field("description", "Description", "text", mandatory: true, order: 2),
             Field("order_seq", "Order", "number", mandatory: true, order: 3),
-            Field("is_active", "Active", "bit", order: 4),
+            Field("owner_user_id", "Owner User ID", "text", mandatory: true, order: 4),
+            Field("is_active", "Active", "bit", order: 5),
         });
 
         await AddFieldsAsync(context, "rf_status", cancellationToken, new[]
@@ -154,7 +155,10 @@ public static class ParameterSeeder
             Field("status_id", "Status ID", "text", key: true, mandatory: true, order: 1),
             Field("description", "Description", "text", mandatory: true, order: 2),
             Field("order_seq", "Order", "number", mandatory: true, order: 3),
-            Field("is_active", "Active", "bit", order: 4),
+            Field("owner_user_id", "Owner User ID", "text", mandatory: true, order: 4),
+            Field("is_initial_status", "Default Status", "bit", order: 5),
+            Field("is_completed_status", "Completed Status", "bit", order: 6),
+            Field("is_active", "Active", "bit", order: 7),
         });
 
         await AddFieldsAsync(context, "rf_task_type", cancellationToken, new[]
@@ -162,7 +166,8 @@ public static class ParameterSeeder
             Field("task_type_id", "Task Type ID", "text", key: true, mandatory: true, order: 1),
             Field("description", "Description", "text", mandatory: true, order: 2),
             Field("order_seq", "Order", "number", mandatory: true, order: 3),
-            Field("is_active", "Active", "bit", order: 4),
+            Field("owner_user_id", "Owner User ID", "text", mandatory: true, order: 4),
+            Field("is_active", "Active", "bit", order: 5),
         });
 
         await AddFieldsAsync(context, "rf_task_priority", cancellationToken, new[]
@@ -170,7 +175,8 @@ public static class ParameterSeeder
             Field("task_priority_id", "Priority ID", "text", key: true, mandatory: true, order: 1),
             Field("description", "Description", "text", mandatory: true, order: 2),
             Field("order_seq", "Order", "number", mandatory: true, order: 3),
-            Field("is_active", "Active", "bit", order: 4),
+            Field("owner_user_id", "Owner User ID", "text", mandatory: true, order: 4),
+            Field("is_active", "Active", "bit", order: 5),
         });
 
         await AddFieldsAsync(context, "tb_parameter_system", cancellationToken, new[]
@@ -228,10 +234,11 @@ public static class ParameterSeeder
             Field("allows_calendar", "Allow Calendar", "bit", order: 10),
             Field("allows_excel_import", "Allow Excel Import", "bit", order: 11),
             Field("allows_supervisor_mode", "Allow Supervisor Mode", "bit", order: 12),
-            Field("upgrade_group_id", "Upgrade Group", "list", order: 13,
+            Field("max_master_rows_per_table", "Max Master Rows Per Table", "number", order: 13),
+            Field("upgrade_group_id", "Upgrade Group", "list", order: 14,
                 reff: "select group_id as value, group_name as text from um_group_app where is_active=1 and is_deleted=0"),
-            Field("order_seq", "Order", "number", order: 14),
-            Field("is_active", "Active", "bit", order: 15),
+            Field("order_seq", "Order", "number", order: 15),
+            Field("is_active", "Active", "bit", order: 16),
         });
 
         await AddFieldsAsync(context, "rf_plan_feature", cancellationToken, new[]

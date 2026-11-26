@@ -77,9 +77,12 @@ public static class DeckZaSeeder
     /// </summary>
     private const string AdminMenuPrefix = "MNT";
 
-    public static async Task SeedAsync(DeckZaDbContext context, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(
+        DeckZaDbContext context,
+        CancellationToken cancellationToken = default,
+        string masterOwnerUserId = "rayza")
     {
-        await SeedMasterDataAsync(context, cancellationToken);
+        await SeedMasterDataAsync(context, masterOwnerUserId, cancellationToken);
         await SeedMemberGroupAsync(context, cancellationToken);
         await RemoveObsoleteMenusAsync(context, cancellationToken);
         await SeedMenusAsync(context, cancellationToken);
@@ -107,23 +110,28 @@ public static class DeckZaSeeder
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task SeedMasterDataAsync(DeckZaDbContext context, CancellationToken cancellationToken)
+    private static async Task SeedMasterDataAsync(DeckZaDbContext context, string masterOwnerUserId, CancellationToken cancellationToken)
     {
+        var ownerUserId = string.IsNullOrWhiteSpace(masterOwnerUserId) ? "rayza" : masterOwnerUserId.Trim();
+        var ownerExists = await context.um_user_app.AnyAsync(e => e.user_id == ownerUserId, cancellationToken);
+        if (!ownerExists)
+        {
+            return;
+        }
+
         var now = DateTime.Now;
 
-        var existingApplications = await context.rf_application
-            .Select(e => e.application_id)
-            .ToHashSetAsync(cancellationToken);
         foreach (var item in Applications)
         {
-            if (existingApplications.Contains(item.Id))
-            {
-                continue;
-            }
+            var exists = await context.rf_application.AnyAsync(
+                e => e.owner_user_id == ownerUserId && e.description == item.Description,
+                cancellationToken);
+            if (exists) continue;
 
             await context.rf_application.AddAsync(new rf_application
             {
                 application_id = item.Id,
+                owner_user_id = ownerUserId,
                 description = item.Description,
                 order_seq = item.Order,
                 statusApproval = Const.StatusApproval.APPROVED,
@@ -136,21 +144,21 @@ public static class DeckZaSeeder
             }, cancellationToken);
         }
 
-        var existingStatuses = await context.rf_status
-            .Select(e => e.status_id)
-            .ToHashSetAsync(cancellationToken);
         foreach (var item in Statuses)
         {
-            if (existingStatuses.Contains(item.Id))
-            {
-                continue;
-            }
+            var exists = await context.rf_status.AnyAsync(
+                e => e.owner_user_id == ownerUserId && e.description == item.Description,
+                cancellationToken);
+            if (exists) continue;
 
             await context.rf_status.AddAsync(new rf_status
             {
                 status_id = item.Id,
+                owner_user_id = ownerUserId,
                 description = item.Description,
                 order_seq = item.Order,
+                is_initial_status = item.Id == "STS001",
+                is_completed_status = item.Id == "STS005",
                 statusApproval = Const.StatusApproval.APPROVED,
                 isActive = true,
                 isDeleted = false,
@@ -161,19 +169,17 @@ public static class DeckZaSeeder
             }, cancellationToken);
         }
 
-        var existingTaskTypes = await context.rf_task_type
-            .Select(e => e.task_type_id)
-            .ToHashSetAsync(cancellationToken);
         foreach (var item in TaskTypes)
         {
-            if (existingTaskTypes.Contains(item.Id))
-            {
-                continue;
-            }
+            var exists = await context.rf_task_type.AnyAsync(
+                e => e.owner_user_id == ownerUserId && e.description == item.Description,
+                cancellationToken);
+            if (exists) continue;
 
             await context.rf_task_type.AddAsync(new rf_task_type
             {
                 task_type_id = item.Id,
+                owner_user_id = ownerUserId,
                 description = item.Description,
                 order_seq = item.Order,
                 statusApproval = Const.StatusApproval.APPROVED,
@@ -186,19 +192,17 @@ public static class DeckZaSeeder
             }, cancellationToken);
         }
 
-        var existingPriorities = await context.rf_task_priority
-            .Select(e => e.task_priority_id)
-            .ToHashSetAsync(cancellationToken);
         foreach (var item in TaskPriorities)
         {
-            if (existingPriorities.Contains(item.Id))
-            {
-                continue;
-            }
+            var exists = await context.rf_task_priority.AnyAsync(
+                e => e.owner_user_id == ownerUserId && e.description == item.Description,
+                cancellationToken);
+            if (exists) continue;
 
             await context.rf_task_priority.AddAsync(new rf_task_priority
             {
                 task_priority_id = item.Id,
+                owner_user_id = ownerUserId,
                 description = item.Description,
                 order_seq = item.Order,
                 statusApproval = Const.StatusApproval.APPROVED,

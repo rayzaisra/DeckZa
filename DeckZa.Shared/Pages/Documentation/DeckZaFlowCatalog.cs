@@ -68,9 +68,9 @@ public static class DeckZaFlowCatalog
         },
         new Flow
         {
-            Key = "my-master-data",
-            Title = "Set Up My Master Data",
-            Tab = "My Master Data",
+            Key = "task-parameter",
+            Title = "Set Up Task Parameters",
+            Tab = "Task Parameter",
             Icon = Icons.Material.Filled.Tune,
             Summary = "Create the Application, Task Type, Priority, and Status lists that your tasks will use.",
             Audience = "Member and Guest",
@@ -84,28 +84,28 @@ public static class DeckZaFlowCatalog
             {
                 new Step
                 {
-                    Title = "Open My Master Data",
-                    Detail = "Go to /dashboard/my-master-data, or follow the prompt shown on the Task Management page when your lists are still empty.",
+                    Title = "Open Task Parameter",
+                    Detail = "Use the Task Parameter menu in the sidebar, or follow the prompt shown on the Task Management page when your lists are still empty.",
                 },
                 new Step
                 {
                     Title = "Add Applications",
-                    Detail = "Open the Application tab and add one row per application you work on, for example the name of a product or a client.",
+                    Detail = "Open the Application page and add one row per application you work on, for example the name of a product or a client.",
                 },
                 new Step
                 {
                     Title = "Add Task Types",
-                    Detail = "Open the Task Type tab and add the kinds of work you do, for example Bug Fixing, Enhancement, or Daily Routine.",
+                    Detail = "Open the Task Type page and add the kinds of work you do, for example Bug Fixing, Enhancement, or Daily Routine.",
                 },
                 new Step
                 {
                     Title = "Add Priorities",
-                    Detail = "Open the Priority tab and add the urgency levels you use. Order them from lowest to highest.",
+                    Detail = "Open the Priority page and add the urgency levels you use. Order them from lowest to highest.",
                 },
                 new Step
                 {
                     Title = "Add Statuses",
-                    Detail = "Open the Status tab and add the stages a task moves through, for example Draft, In Progress, and Done.",
+                    Detail = "Open the Status page and add the stages a task moves through, for example Draft, In Progress, and Done.",
                 },
                 new Step
                 {
@@ -123,13 +123,14 @@ public static class DeckZaFlowCatalog
                 "Every account starts with an empty list. Nothing is shared between accounts.",
                 "Guest plan allows at most 3 active rows per table — the page shows the counter, for example 2 / 3.",
                 "Only one Status can be Default and only one can be Completed at a time.",
-                "A master row that is already used by a task cannot be deleted; deactivate it instead so the task history stays intact.",
+                "A master row that is already used by a task cannot be deactivated; keep it so the task history stays intact.",
                 "The Completed status drives the report: tasks in it fill the completed date, stop counting as overdue, and leave the Next up list.",
                 "An administrator can see and edit your master rows through Parameter Engine. Changes there apply to your tasks immediately.",
             },
             Technical = new[]
             {
-                "Page: /dashboard/my-master-data",
+                "Pages: /dashboard/task-parameter/application, task-type, priority, status",
+                "Menus: TSKP (root), TSKP-APP, TSKP-TYP, TSKP-PRI, TSKP-STA",
                 "Tables: rf_application, rf_task_type, rf_task_priority, rf_status",
                 "Ownership column: owner_user_id (not null)",
                 "Status flags: is_initial_status, is_completed_status",

@@ -148,6 +148,25 @@ public class UmUserAppFlagRepository : IUmUserAppFlagRepository
         _context.um_user_app_flag.Update(entity);
         return Task.CompletedTask;
     }
+
+    public async Task<string?> RevokeSessionAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var flag = await _context.um_user_app_flag
+            .FirstOrDefaultAsync(e => e.user_id == userId, cancellationToken);
+
+        if (flag == null)
+        {
+            return null;
+        }
+
+        var revokedSessionId = flag.session_id;
+
+        flag.session_id = null;
+        flag.is_login = false;
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return string.IsNullOrWhiteSpace(revokedSessionId) ? null : revokedSessionId;
+    }
 }
 
 public class RefreshTokenRepository : IRefreshTokenRepository
