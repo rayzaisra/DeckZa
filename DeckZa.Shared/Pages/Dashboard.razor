@@ -2,6 +2,8 @@
 @layout AuthenticatedLayout
 @attribute [Authorize]
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject LanguageService L
+@implements IDisposable
 
 <AuthorizeView Roles="99">
     <Authorized>
@@ -16,9 +18,9 @@
                 <MudContainer MaxWidth="MaxWidth.False" Class="pa-0 dashboard-page">
                     <MudPaper Elevation="0" Class="dashboard-hero">
                         <div>
-                            <div class="dashboard-kicker">Personal Task and Report Management</div>
-                            <h1>Hello, @_displayName</h1>
-                            <p>Welcome back. Use the sidebar to open a module, or start building your business flow.</p>
+                            <div class="dashboard-kicker">@L["PersonalTaskAndReportManagement"]</div>
+                            <h1>@L.Format("HelloName", _displayName)</h1>
+                            <p>@L["WelcomeBackDashboard"]</p>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.WavingHand" Class="dashboard-hero-icon" />
                     </MudPaper>
@@ -31,8 +33,11 @@
 @code {
     private string _displayName = "Administrator";
 
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
     protected override async Task OnInitializedAsync()
     {
+        await L.InitializeAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var name = authState.User.Identity?.Name;
         if (!string.IsNullOrWhiteSpace(name))
@@ -40,4 +45,8 @@
             _displayName = name;
         }
     }
+
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

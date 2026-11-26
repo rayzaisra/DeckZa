@@ -1,6 +1,8 @@
 @using DeckZa.Application.DTOs.MasterData
+@implements IDisposable
 @inject MasterDataApiService MasterDataApi
 @inject ISnackbar Snackbar
+@inject LanguageService L
 
 <MudDialog>
     <TitleContent>
@@ -12,7 +14,7 @@
                 <MudItem xs="12">
                     <MudNumericField T="int"
                                      @bind-Value="_model.OrderSeq"
-                                     Label="Order"
+                                     Label="@L["Order"]"
                                      Variant="Variant.Outlined"
                                      Min="0" />
                 </MudItem>
@@ -23,29 +25,29 @@
                                   Required="true"
                                   MaxLength="255" />
                 </MudItem>
-                <MudItem xs="12">
-                    <MudSwitch T="bool" @bind-Value="_model.IsActive" Label="Is Active?" Color="Color.Primary" />
-                </MudItem>
                 @if (IsStatus)
                 {
                     <MudItem xs="12">
-                        <MudSwitch T="bool" @bind-Value="_model.IsInitialStatus" Label="Default Status" Color="Color.Primary" />
+                        <MudSwitch T="bool" @bind-Value="_model.IsInitialStatus" Label="@L["DefaultStatus"]" Color="Color.Primary" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudSwitch T="bool" @bind-Value="_model.IsCompletedStatus" Label="Completed Status" Color="Color.Success" />
+                        <MudSwitch T="bool" @bind-Value="_model.IsCompletedStatus" Label="@L["CompletedStatus"]" Color="Color.Success" />
                     </MudItem>
                 }
+                <MudItem xs="12">
+                    <MudSwitch T="bool" @bind-Value="_model.IsActive" Label="@L["IsActiveQuestion"]" Color="Color.Primary" />
+                </MudItem>
             </MudGrid>
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">@L["Cancel"]</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))"
                    Disabled="@_saving"
                    OnClick="@(_ => SubmitAsync())">
-            @(_saving ? "Saving..." : "Save")
+            @(_saving ? L["Saving"] : L["Save"])
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -64,10 +66,12 @@
 
     private bool IsEdit => !string.IsNullOrWhiteSpace(Item?.Id);
     private bool IsStatus => string.Equals(Table, "rf_status", StringComparison.OrdinalIgnoreCase);
-    private string Title => (IsEdit ? "Edit " : "Add ") + Label;
+    private string Title => L.Format(IsEdit ? "EditLabel" : "AddLabel", Label);
 
     protected override void OnInitialized()
     {
+        L.OnChange += HandleLanguageChanged;
+
         _model = Item == null
             ? new MasterItemDto { IsActive = true }
             : new MasterItemDto
@@ -82,6 +86,8 @@
             };
     }
 
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
+
     private async Task SubmitAsync()
     {
         if (_saving)
@@ -91,7 +97,7 @@
 
         if (string.IsNullOrWhiteSpace(_model.Description))
         {
-            Snackbar.Add("Name is required.", Severity.Warning);
+            Snackbar.Add(L["NameRequired"], Severity.Warning);
             return;
         }
 
@@ -101,16 +107,18 @@
             var result = await MasterDataApi.SaveAsync(Table, _model);
             if (result.Success)
             {
-                Snackbar.Add(result.Message ?? "Saved.", Severity.Success);
+                Snackbar.Add(L.Message(ApiMessageSource.From(result), "Saved"), Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
                 return;
             }
 
-            Snackbar.Add(result.Message ?? "Save failed.", Severity.Error);
+            Snackbar.Add(L.Message(ApiMessageSource.From(result), "SaveFailed"), Severity.Error);
         }
         finally
         {
             _saving = false;
         }
     }
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

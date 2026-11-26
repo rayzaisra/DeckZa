@@ -1,9 +1,11 @@
+@implements IDisposable
 @inject PaymentApiService PaymentApi
 @inject NavigationManager Navigation
+@inject LanguageService L
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">Payment Proof</MudText>
+        <MudText Typo="Typo.h6">@L["PaymentProofTitle"]</MudText>
     </TitleContent>
     <DialogContent>
         <MudGrid Spacing="2">
@@ -30,14 +32,14 @@
                 }
                 else
                 {
-                    <MudAlert Severity="Severity.Info" Dense="true">This file type cannot be previewed inline. Use the download button instead.</MudAlert>
+                    <MudAlert Severity="Severity.Info" Dense="true">@L["PreviewNotAvailableInline"]</MudAlert>
                 }
             </MudItem>
         </MudGrid>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Text" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" OnClick="DownloadAsync">Download</MudButton>
+        <MudButton Variant="Variant.Text" OnClick="@(_ => MudDialog.Cancel())">@L["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" OnClick="DownloadAsync">@L["Download"]</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -64,6 +66,8 @@
     private bool IsPdf
         => ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
 
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
     protected override async Task OnInitializedAsync()
     {
         _previewUrl = await PaymentApi.GetProofUrlAsync(RequestId);
@@ -71,20 +75,24 @@
 
         if (string.IsNullOrWhiteSpace(_previewUrl))
         {
-            _error = "Proof file could not be loaded.";
+            _error = L["ProofFileCouldNotBeLoaded"];
         }
     }
+
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
 
     private async Task DownloadAsync()
     {
         var url = await PaymentApi.GetProofUrlAsync(RequestId, download: true);
         if (string.IsNullOrWhiteSpace(url))
         {
-            _error = "Proof file could not be loaded.";
+            _error = L["ProofFileCouldNotBeLoaded"];
             return;
         }
 
         // Content-Disposition: attachment membuat browser mengunduh file.
         Navigation.NavigateTo(url, forceLoad: true);
     }
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

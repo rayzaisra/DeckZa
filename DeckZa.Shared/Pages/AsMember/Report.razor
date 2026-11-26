@@ -1,6 +1,7 @@
 @page "/dashboard/report"
 @layout AuthenticatedLayout
 @attribute [Authorize]
+@implements IDisposable
 @inject ReportApiService ReportApi
 @inject TaskApiService TaskApi
 @inject ExportApiService ExportApi
@@ -9,14 +10,16 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject MotionService Motion
+@inject LanguageService L
+@using System.Globalization
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
 <div class="page-heading">
     <div>
-        <div class="dashboard-kicker">Workspace</div>
-        <h1>Report</h1>
-        <p>Preview your performance and export it as a five-sheet Excel report.</p>
+        <div class="dashboard-kicker">@L["Workspace"]</div>
+        <h1>@L["ReportTitle"]</h1>
+        <p>@L["ReportSubtitle"]</p>
     </div>
     <div class="d-flex gap-2">
         @if (Access.Can(PermissionAction.Export))
@@ -28,7 +31,7 @@
                            Class="@("ryz-busy-button" + (_exporting ? " is-busy" : string.Empty))"
                            Disabled="@_exporting"
                            OnClick="@(_ => ExportAsync())">
-                    @(_exporting ? "Exporting..." : "Export Excel")
+                    @(_exporting ? L["Exporting"] : L["ExportExcel"])
                 </MudButton>
             </span>
         }
@@ -39,12 +42,12 @@
     @if (IsReportPeriodLocked)
     {
         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3">
-            Plan Anda hanya mendukung report bulan berjalan.
+            @L["ReportPeriodLocked"]
         </MudAlert>
     }
     <div class="kanban-toolbar-row">
         <MudDatePicker @bind-Date="_dateFrom"
-                       Label="Date From"
+                       Label="@L["DateFrom"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        MinDate="ReportMinDate"
@@ -52,7 +55,7 @@
                        ReadOnly="IsReportPeriodLocked"
                        Class="kanban-filter" />
         <MudDatePicker @bind-Date="_dateTo"
-                       Label="Date To"
+                       Label="@L["DateTo"]"
                        Variant="Variant.Outlined"
                        Margin="Margin.Dense"
                        MinDate="ReportMinDate"
@@ -61,11 +64,11 @@
                        Class="kanban-filter" />
         <MudSelect T="string"
                    @bind-Value="_taskTypeId"
-                   Label="Task Type"
+                   Label="@L["TaskType"]"
                    Variant="Variant.Outlined"
                    Margin="Margin.Dense"
                    Class="kanban-filter">
-            <MudSelectItem Value="@string.Empty">All types</MudSelectItem>
+            <MudSelectItem Value="@string.Empty">@L["AllTypes"]</MudSelectItem>
             @foreach (var item in _taskTypes)
             {
                 <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -73,11 +76,11 @@
         </MudSelect>
         <MudSelect T="string"
                    @bind-Value="_statusId"
-                   Label="Status"
+                   Label="@L["Status"]"
                    Variant="Variant.Outlined"
                    Margin="Margin.Dense"
                    Class="kanban-filter">
-            <MudSelectItem Value="@string.Empty">All statuses</MudSelectItem>
+            <MudSelectItem Value="@string.Empty">@L["AllStatuses"]</MudSelectItem>
             @foreach (var item in _statuses)
             {
                 <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -89,7 +92,7 @@
                    Class="@("ryz-busy-button" + (_loading ? " is-busy" : string.Empty))"
                    Disabled="@_loading"
                    OnClick="@(_ => PreviewAsync())">
-            Preview
+            @L["Preview"]
         </MudButton>
     </div>
 </MudPaper>
@@ -116,7 +119,7 @@
 else if (_report == null)
 {
     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-        Choose a period and press Preview to load the report.
+        @L["ChoosePeriodToPreview"]
     </MudAlert>
 }
 else if (_report != null)
@@ -124,47 +127,48 @@ else if (_report != null)
     <MudGrid Spacing="3" Class="mb-2">
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="dashboard-card pa-4">
-                <MudText Typo="Typo.body2" Class="mud-text-secondary">Task in period</MudText>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["TaskInPeriod"]</MudText>
                 <MudText Typo="Typo.h4">@_report.Summary.TotalTasks</MudText>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="dashboard-card pa-4">
-                <MudText Typo="Typo.body2" Class="mud-text-secondary">Task Done</MudText>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["TaskDone"]</MudText>
                 <MudText Typo="Typo.h4">@_report.Summary.DoneCount</MudText>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="dashboard-card pa-4">
-                <MudText Typo="Typo.body2" Class="mud-text-secondary">Completion (% Done)</MudText>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["CompletionPercentDone"]</MudText>
                 <MudText Typo="Typo.h4">@FormatPercent(_report.Summary.PercentDone)</MudText>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="dashboard-card pa-4">
-                <MudText Typo="Typo.body2" Class="mud-text-secondary">Task still In Progress</MudText>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["TaskStillInProgress"]</MudText>
                 <MudText Typo="Typo.h4">@_report.Summary.InProgressCount</MudText>
             </MudPaper>
         </MudItem>
     </MudGrid>
 
     <MudPaper Elevation="0" Class="dashboard-card pa-4 mb-4">
-        <MudText Typo="Typo.subtitle1" Class="mb-2">Temuan utama</MudText>
+        <MudText Typo="Typo.subtitle1" Class="mb-2">@L["MainFindings"]</MudText>
         @foreach (var insight in _report.Insights)
         {
-            <MudText Typo="Typo.body2" Class="mb-2">@insight.Text</MudText>
+            <MudText Typo="Typo.body2" Class="mb-2">@InsightText(insight)</MudText>
         }
     </MudPaper>
 
     <MudPaper Elevation="0" Class="dashboard-card pa-4 mb-4">
-        <MudText Typo="Typo.subtitle1" Class="mb-2">Kecepatan</MudText>
+        <MudText Typo="Typo.subtitle1" Class="mb-2">@L["Speed"]</MudText>
         <MudText Typo="Typo.body2">
-            Median: @FormatHours(_report.Speed.MedianMinutes) ·
-            Rata-rata: @FormatHours(_report.Speed.AverageMinutes) ·
-            Selesai ≤ 1 jam: @FormatPercent(_report.Speed.PercentWithinOneHour)
+            @L.Format("SpeedSummary",
+                FormatHours(_report.Speed.MedianMinutes),
+                FormatHours(_report.Speed.AverageMinutes),
+                FormatPercent(_report.Speed.PercentWithinOneHour))
         </MudText>
         <MudText Typo="Typo.body2" Class="mt-2">
-            @_report.Speed.ValidTaskCount dari @_report.Speed.DoneCount task Done memiliki durasi valid.
+            @L.Format("SpeedValidTaskCount", _report.Speed.ValidTaskCount, _report.Speed.DoneCount)
         </MudText>
     </MudPaper>
 
@@ -172,11 +176,11 @@ else if (_report != null)
         <MudSimpleTable Dense="true" Hover="true">
             <thead>
                 <tr>
-                    <th>Task Type</th>
-                    <th class="text-right">Total</th>
-                    <th class="text-right">Done</th>
-                    <th class="text-right">In Progress</th>
-                    <th class="text-right">% Done</th>
+                    <th>@L["TaskType"]</th>
+                    <th class="text-right">@L["ColTotal"]</th>
+                    <th class="text-right">@L["ColDone"]</th>
+                    <th class="text-right">@L["ColInProgress"]</th>
+                    <th class="text-right">@L["ColPercentDone"]</th>
                 </tr>
             </thead>
             <tbody>
@@ -196,10 +200,10 @@ else if (_report != null)
 }
 
 @code {
-    private readonly List<BreadcrumbItem> _breadcrumbs = new()
+    private List<BreadcrumbItem> _breadcrumbs => new()
     {
-        new BreadcrumbItem("Dashboard", "/dashboard"),
-        new BreadcrumbItem("Report", null, disabled: true),
+        new BreadcrumbItem(L["Dashboard"], "/dashboard"),
+        new BreadcrumbItem(L["ReportTitle"], null, disabled: true),
     };
 
     private ReportResultDto? _report;
@@ -234,8 +238,11 @@ else if (_report != null)
         }
     }
 
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
     protected override async Task OnInitializedAsync()
     {
+        await L.InitializeAsync();
         await Access.EnsureLoadedAsync();
 
         var today = DateTime.Today;
@@ -244,6 +251,8 @@ else if (_report != null)
 
         _ = LoadInitialAsync();
     }
+
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
 
     private async Task LoadInitialAsync()
     {
@@ -345,7 +354,7 @@ else if (_report != null)
             var url = await ExportApi.ExportReportPerformanceAsync(BuildFilter());
             if (string.IsNullOrWhiteSpace(url))
             {
-                Snackbar.Add("Export failed. Please try again.", Severity.Error);
+                Snackbar.Add(L["ExportFailed"], Severity.Error);
                 return;
             }
 
@@ -361,11 +370,31 @@ else if (_report != null)
         }
     }
 
-    private static string FormatPercent(decimal value)
-        => value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
+    private string InsightText(ReportInsightDto insight)
+    {
+        if (string.IsNullOrWhiteSpace(insight.Code))
+        {
+            return insight.Text;
+        }
 
-    private static string FormatHours(decimal? minutes)
+        var template = L[insight.Code];
+        if (string.Equals(template, insight.Code, StringComparison.Ordinal))
+        {
+            return insight.Text;
+        }
+
+        return insight.Args is { Length: > 0 } args
+            ? string.Format(template, args)
+            : template;
+    }
+
+    private static string FormatPercent(decimal value)
+        => value.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+
+    private string FormatHours(decimal? minutes)
         => minutes.HasValue
-            ? (minutes.Value / 60m).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " jam"
+            ? L.Format("DurationHours", (minutes.Value / 60m).ToString("0.0", CultureInfo.InvariantCulture))
             : "–";
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

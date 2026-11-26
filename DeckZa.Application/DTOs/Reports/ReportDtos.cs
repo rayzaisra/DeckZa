@@ -165,6 +165,17 @@ public class ReportCoverageDto
 public class ReportInsightDto
 {
     public string Text { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Kunci terjemahan insight. Klien memakai kunci ini agar teks mengikuti
+    /// bahasa aktif; <see cref="Text"/> menjadi cadangan bila kunci tidak dikenal.
+    /// </summary>
+    public string? Code { get; set; }
+
+    /// <summary>
+    /// Argumen untuk <see cref="Code"/>.
+    /// </summary>
+    public object[]? Args { get; set; }
 }
 
 public class ReportTaskDetailRowDto

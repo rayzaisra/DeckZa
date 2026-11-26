@@ -1,19 +1,22 @@
 @page "/dashboard/calendar"
 @layout AuthenticatedLayout
 @attribute [Authorize]
+@implements IDisposable
 @inject TaskApiService TaskApi
 @inject PlanApiService PlanApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject MotionService Motion
+@inject LanguageService L
+@using System.Globalization
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
 <div class="page-heading">
     <div>
-        <div class="dashboard-kicker">Workspace</div>
-        <h1>Calendar</h1>
-        <p>See every task that has a due date across the month or the whole year.</p>
+        <div class="dashboard-kicker">@L["Workspace"]</div>
+        <h1>@L["CalendarTitle"]</h1>
+        <p>@L["CalendarSubtitle"]</p>
     </div>
     @if (!_calendarUnavailable)
     {
@@ -22,15 +25,15 @@
                        Color="Color.Default"
                        StartIcon="@Icons.Material.Filled.Today"
                        OnClick="@(_ => GoToTodayAsync())">
-                Today
+                @L["Today"]
             </MudButton>
             <MudToggleGroup T="string"
                             @bind-Value="_viewMode"
                             @bind-Value:after="OnViewModeChangedAsync"
                             Size="Size.Small"
                             Color="Color.Primary">
-                <MudToggleItem Value="@("month")" Text="Month" />
-                <MudToggleItem Value="@("year")" Text="Year" />
+                <MudToggleItem Value="@("month")" Text="@L["Month"]" />
+                <MudToggleItem Value="@("year")" Text="@L["Year"]" />
             </MudToggleGroup>
         </div>
     }
@@ -39,7 +42,7 @@
 @if (_calendarUnavailable)
 {
     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-        Fitur Calendar tidak tersedia pada plan Anda saat ini. Upgrade plan untuk mengakses Calendar.
+        @L["CalendarUnavailable"]
     </MudAlert>
 }
 else
@@ -49,11 +52,11 @@ else
         <MudSelect T="string"
                    @bind-Value="_filterApplicationId"
                    @bind-Value:after="ReloadAsync"
-                   Label="Application"
+                   Label="@L["Application"]"
                    Variant="Variant.Outlined"
                    Margin="Margin.Dense"
                    Class="kanban-filter">
-            <MudSelectItem Value="@string.Empty">All applications</MudSelectItem>
+            <MudSelectItem Value="@string.Empty">@L["AllApplications"]</MudSelectItem>
             @foreach (var item in _applications)
             {
                 <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -63,11 +66,11 @@ else
         <MudSelect T="string"
                    @bind-Value="_filterTaskTypeId"
                    @bind-Value:after="ReloadAsync"
-                   Label="Task Type"
+                   Label="@L["TaskType"]"
                    Variant="Variant.Outlined"
                    Margin="Margin.Dense"
                    Class="kanban-filter">
-            <MudSelectItem Value="@string.Empty">All types</MudSelectItem>
+            <MudSelectItem Value="@string.Empty">@L["AllTypes"]</MudSelectItem>
             @foreach (var item in _taskTypes)
             {
                 <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -77,11 +80,11 @@ else
         <MudSelect T="string"
                    @bind-Value="_filterStatusId"
                    @bind-Value:after="ReloadAsync"
-                   Label="Status"
+                   Label="@L["Status"]"
                    Variant="Variant.Outlined"
                    Margin="Margin.Dense"
                    Class="kanban-filter">
-            <MudSelectItem Value="@string.Empty">All statuses</MudSelectItem>
+            <MudSelectItem Value="@string.Empty">@L["AllStatuses"]</MudSelectItem>
             @foreach (var item in _taskStatuses)
             {
                 <MudSelectItem Value="@item.Value">@item.Text</MudSelectItem>
@@ -94,7 +97,7 @@ else
     <div class="calendar-nav">
         <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
                        Color="Color.Primary"
-                       aria-label="@(_viewMode == "month" ? "Previous month" : "Previous year")"
+                       aria-label="@(_viewMode == "month" ? L["PreviousMonth"] : L["PreviousYear"])"
                        OnClick="@(_ => NavigateAsync(-1))" />
         <div class="calendar-period">
             <div class="calendar-period-main">@PeriodLabel</div>
@@ -102,7 +105,7 @@ else
         </div>
         <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
                        Color="Color.Primary"
-                       aria-label="@(_viewMode == "month" ? "Next month" : "Next year")"
+                       aria-label="@(_viewMode == "month" ? L["NextMonth"] : L["NextYear"])"
                        OnClick="@(_ => NavigateAsync(1))" />
     </div>
 
@@ -151,7 +154,7 @@ else
                 {
                     <button type="button"
                             class="calendar-cell @(cell.IsCurrentMonth ? string.Empty : "is-outside") @(cell.IsToday ? "is-today" : string.Empty) @(cell.IsSelected ? "is-selected" : string.Empty) @(cell.TaskCount > 0 ? "has-task" : string.Empty)"
-                            aria-label="@($"{cell.Date:yyyy-MM-dd}, {cell.TaskCount} task(s)")"
+                            aria-label="@L.Format("DayCellAria", cell.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), cell.TaskCount)"
                             @onclick="@(_ => SelectDateAsync(cell))">
                         <span class="calendar-day">@cell.Date.Day</span>
                         @if (cell.TaskCount > 0)
@@ -206,19 +209,19 @@ else
         <MudPaper Elevation="0" Class="dashboard-card calendar-day-modal" @onclick:stopPropagation="true">
             <div class="calendar-day-head">
                 <div>
-                    <div class="dashboard-kicker">Tasks on</div>
-                    <h3>@_selectedDate.Value.ToString("dddd, dd MMMM yyyy")</h3>
+                    <div class="dashboard-kicker">@L["TasksOn"]</div>
+                    <h3>@_selectedDate.Value.ToString("dddd, dd MMMM yyyy", Culture)</h3>
                 </div>
                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                Size="Size.Small"
-                               aria-label="Close day panel"
+                               aria-label="@L["CloseDayPanel"]"
                                OnClick="@(_ => CloseDayPanelAsync())" />
             </div>
 
             @if (_selectedTasks.Count == 0)
             {
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                    No task is due on this date.
+                    @L["NoTaskDueThisDate"]
                 </MudAlert>
             }
             else
@@ -245,20 +248,20 @@ else
                                     }
                                 </div>
                             </div>
-                            <span class="calendar-task-due">Due @task.DueDate?.ToString("HH:mm")</span>
+                            <span class="calendar-task-due">@L.Format("DueAt", task.DueDate?.ToString("HH:mm"))</span>
                             <div class="calendar-task-actions">
                                 <PermissionGate Action="PermissionAction.ViewDetail">
                                     <MudIconButton Icon="@Icons.Material.Filled.Visibility"
                                                    Size="Size.Small"
                                                    Color="Color.Primary"
-                                                   aria-label="Task detail"
+                                                   aria-label="@L["TaskDetailAria"]"
                                                    OnClick="@(_ => ShowDetailAsync(task))" />
                                 </PermissionGate>
                                 <PermissionGate Action="PermissionAction.Edit">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                    Size="Size.Small"
                                                    Color="Color.Primary"
-                                                   aria-label="Edit task"
+                                                   aria-label="@L["EditTaskAria"]"
                                                    OnClick="@(_ => OpenEditAsync(task))" />
                                 </PermissionGate>
                             </div>
@@ -272,12 +275,18 @@ else
 }
 
 @code {
-    private static readonly string[] WeekdayLabels = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-
-    private readonly List<BreadcrumbItem> _breadcrumbs = new()
+    private string[] WeekdayLabels => new[]
     {
-        new BreadcrumbItem("Dashboard", "/dashboard"),
-        new BreadcrumbItem("Calendar", "/dashboard/calendar", disabled: true),
+        L["WeekdayMon"], L["WeekdayTue"], L["WeekdayWed"], L["WeekdayThu"],
+        L["WeekdayFri"], L["WeekdaySat"], L["WeekdaySun"],
+    };
+
+    private static CultureInfo Culture => CultureInfo.CurrentCulture;
+
+    private List<BreadcrumbItem> _breadcrumbs => new()
+    {
+        new BreadcrumbItem(L["Dashboard"], "/dashboard"),
+        new BreadcrumbItem(L["CalendarTitle"], "/dashboard/calendar", disabled: true),
     };
 
     private readonly Dictionary<DateTime, List<TaskListItemDto>> _tasksByDate = new();
@@ -302,21 +311,30 @@ else
     private int _slideDirection;
 
     private string PeriodLabel => _viewMode == "month"
-        ? _cursor.ToString("MMMM yyyy")
-        : _cursor.Year.ToString();
+        ? _cursor.ToString("MMMM yyyy", Culture)
+        : _cursor.Year.ToString(Culture);
 
     private string TaskCountLabel
     {
         get
         {
             var total = _tasksByDate.Values.Sum(items => items.Count);
-            return total == 1 ? "1 task with a due date" : $"{total} tasks with a due date";
+            return total == 1 ? L["TaskWithDueDateOne"] : L.Format("TasksWithDueDateMany", total);
         }
     }
 
-    protected override void OnInitialized()
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
+    protected override async Task OnInitializedAsync()
     {
+        await L.InitializeAsync();
         _ = LoadInitialAsync();
+    }
+
+    private void HandleLanguageChanged()
+    {
+        BuildYearMonths();
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadInitialAsync()
@@ -361,7 +379,7 @@ else
         }
         catch (Exception exception)
         {
-            _loadError = "Failed to load master data. Please try again.";
+            _loadError = L["FailedLoadMasterData"];
             Snackbar.Add(exception.Message, Severity.Error);
         }
     }
@@ -412,7 +430,7 @@ else
         }
         catch (Exception exception)
         {
-            _loadError = "Failed to load the calendar. Please try again.";
+            _loadError = L["FailedLoadCalendar"];
             Snackbar.Add(exception.Message, Severity.Error);
         }
         finally
@@ -460,7 +478,7 @@ else
 
             _yearMonths.Add(new MonthSummary
             {
-                Name = start.ToString("MMM"),
+                Name = start.ToString("MMM", Culture),
                 Month = month,
                 DaysInMonth = DateTime.DaysInMonth(_cursor.Year, month),
                 IsCurrentMonth = DateTime.Today.Year == _cursor.Year && DateTime.Today.Month == month,
@@ -567,7 +585,7 @@ else
         };
 
         var dialog = await DialogService.ShowAsync<TaskEditDialog>(
-            "Task Detail",
+            L["TaskDetail"],
             parameters,
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
@@ -600,7 +618,7 @@ else
         };
 
         var dialog = await DialogService.ShowAsync<TaskEditDialog>(
-            "Edit Task",
+            L["EditTask"],
             parameters,
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
@@ -609,7 +627,7 @@ else
         {
             var response = await TaskApi.UpdateAsync(task.Id, dto);
             Snackbar.Add(
-                response.Message ?? (response.Success ? "Task updated." : "Failed to update the task."),
+                L.Message(ApiMessageSource.From(response), response.Success ? "TaskUpdated" : "FailedUpdateTask"),
                 response.Success ? Severity.Success : Severity.Error);
 
             if (response.Success)
@@ -637,4 +655,6 @@ else
         public int TaskCount { get; init; }
         public HashSet<int> TaskDays { get; init; } = new();
     }
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

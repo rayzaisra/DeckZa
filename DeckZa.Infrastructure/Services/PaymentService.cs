@@ -140,23 +140,23 @@ public class PaymentService : IPaymentService
         {
             if (string.Equals(currentPlan.id, plan.id, StringComparison.OrdinalIgnoreCase))
             {
-                return Fail("Anda sudah berada di plan ini.");
+                return FailKey("PaymentAlreadyOnPlan", "You are already on this plan.");
             }
 
             if (plan.order_seq < currentPlan.order_seq)
             {
-                return Fail("Penurunan plan tidak dapat diajukan lewat halaman ini. Hubungi administrator bila memang diperlukan.");
+                return FailKey("PaymentDowngradeNotAllowed", "Plan downgrade cannot be requested from this page. Contact an administrator if it is really required.");
             }
 
             if (plan.order_seq == currentPlan.order_seq)
             {
-                return Fail("Perubahan plan ini tidak dapat diajukan lewat halaman billing.");
+                return FailKey("PaymentChangeNotAllowed", "This plan change cannot be requested from the billing page.");
             }
         }
 
         if (plan.price_amount <= 0)
         {
-            return Fail("Plan gratis tidak memerlukan pengajuan bukti transfer.");
+            return FailKey("PaymentFreePlanNoProof", "A free plan does not require a transfer proof.");
         }
 
         var hasPending = await _context.tb_payment_request.AnyAsync(
@@ -166,7 +166,7 @@ public class PaymentService : IPaymentService
             cancellationToken);
         if (hasPending)
         {
-            return Fail("Anda masih memiliki pengajuan pembayaran yang sedang menunggu review.");
+            return FailKey("PaymentPendingRequestExists", "You still have a payment request waiting for review.");
         }
 
         var requestNo = await GenerateRequestNoAsync(cancellationToken);
@@ -448,7 +448,7 @@ public class PaymentService : IPaymentService
         await QueueOutcomeEmailAsync(request, plan, invoice, approved: true, note, cancellationToken);
         await RevokeUserSessionAsync(request.user_id, cancellationToken);
 
-        return Success($"Payment request {request.request_no} approved.");
+        return SuccessKey("PaymentApproved", new[] { request.request_no }, $"Payment request {request.request_no} approved.");
     }
 
     public async Task<BaseGeneralResponse> RejectAsync(
@@ -494,7 +494,7 @@ public class PaymentService : IPaymentService
 
         await QueueOutcomeEmailAsync(request, plan, null, approved: false, note, cancellationToken);
 
-        return Success($"Payment request {request.request_no} rejected.");
+        return SuccessKey("PaymentRejected", new[] { request.request_no }, $"Payment request {request.request_no} rejected.");
     }
 
     public async Task<PaymentProofDto?> GetProofAsync(
@@ -900,10 +900,27 @@ public class PaymentService : IPaymentService
         Message = message,
     };
 
+    private static BaseGeneralResponse SuccessKey(string messageKey, string[] args, string message) => new()
+    {
+        Success = true,
+        Code = Const.SUCCESS_CODE,
+        Message = message,
+        MessageKey = messageKey,
+        MessageArgs = args,
+    };
+
     private static BaseGeneralResponse Fail(string message) => new()
     {
         Success = false,
         Code = Const.ERROR_CODE,
         Message = message,
+    };
+
+    private static BaseGeneralResponse FailKey(string messageKey, string message) => new()
+    {
+        Success = false,
+        Code = Const.ERROR_CODE,
+        Message = message,
+        MessageKey = messageKey,
     };
 }

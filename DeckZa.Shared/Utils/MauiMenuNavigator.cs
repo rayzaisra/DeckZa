@@ -9,11 +9,12 @@ public static class MauiMenuNavigator
     public static void Open(
         NavigationManager navigation,
         MenuItemDto item,
-        ISnackbar? snackbar = null)
+        ISnackbar? snackbar = null,
+        string? notImplementedMessage = null)
     {
         if (string.IsNullOrWhiteSpace(item.MenuUrl))
         {
-            snackbar?.Add("This menu is not implemented yet.", Severity.Info);
+            snackbar?.Add(notImplementedMessage ?? "This menu is not implemented yet.", Severity.Info);
             return;
         }
 

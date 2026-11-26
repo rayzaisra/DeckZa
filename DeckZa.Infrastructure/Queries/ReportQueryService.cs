@@ -534,6 +534,7 @@ public class ReportQueryService : IReportQueryService
         {
             insights.Add(new ReportInsightDto
             {
+                Code = "InsightNoTaskInPeriod",
                 Text = "Tidak ada task yang ditugaskan pada periode yang dipilih.",
             });
         }
@@ -555,6 +556,10 @@ public class ReportQueryService : IReportQueryService
 
             insights.Add(new ReportInsightDto
             {
+                Code = monthType.Count > 0 ? "InsightTopMonthWithType" : "InsightTopMonth",
+                Args = monthType.Count > 0
+                    ? new object[] { topMonth.MonthName, topMonth.TotalTasks, monthType.Count, monthType.Name }
+                    : new object[] { topMonth.MonthName, topMonth.TotalTasks },
                 Text = monthType.Count > 0
                     ? $"{topMonth.MonthName} mencatat volume tertinggi dengan {topMonth.TotalTasks} task, termasuk {monthType.Count} {monthType.Name}."
                     : $"{topMonth.MonthName} mencatat volume tertinggi dengan {topMonth.TotalTasks} task.",
@@ -565,6 +570,7 @@ public class ReportQueryService : IReportQueryService
         {
             insights.Add(new ReportInsightDto
             {
+                Code = "InsightNoTaskPeriod",
                 Text = "Tidak ada task pada periode yang dipilih.",
             });
         }
@@ -578,12 +584,23 @@ public class ReportQueryService : IReportQueryService
 
             insights.Add(new ReportInsightDto
             {
+                Code = "InsightDominantType",
+                Args = new object[] { dominantType.TotalTasks, report.Summary.TotalTasks, dominantType.TaskTypeName },
                 Text = $"{dominantType.TotalTasks} dari {report.Summary.TotalTasks} task masuk kategori {dominantType.TaskTypeName}.",
             });
         }
 
         insights.Add(new ReportInsightDto
         {
+            Code = report.Speed.DoneCount == 0 ? "InsightNoDoneTask" : "InsightValidDuration",
+            Args = report.Speed.DoneCount == 0
+                ? null
+                : new object[]
+                {
+                    report.Speed.ValidTaskCount,
+                    report.Speed.DoneCount,
+                    report.Speed.FinishedBeforeRequestCount,
+                },
             Text = report.Speed.DoneCount == 0
                 ? "Tidak ada task Done pada periode yang dipilih."
                 : $"{report.Speed.ValidTaskCount} dari {report.Speed.DoneCount} task Done memiliki durasi valid. "

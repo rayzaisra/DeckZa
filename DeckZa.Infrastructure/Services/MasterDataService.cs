@@ -129,13 +129,13 @@ public class MasterDataService : IMasterDataService
         var name = Normalize(table);
         if (name == null)
         {
-            return Fail("Unsupported master table.");
+            return FailKey("UnsupportedMasterTable", "Unsupported master table.");
         }
 
         var description = (item.Description ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(description))
         {
-            return Fail("Description is required.");
+            return FailKey("NameRequired", "Description is required.");
         }
 
         var id = (item.Id ?? string.Empty).Trim();
@@ -157,7 +157,7 @@ public class MasterDataService : IMasterDataService
         }
         catch (DbUpdateException)
         {
-            return Fail("This master data could not be saved. The name may already exist.");
+            return FailKey("MasterSaveConflict", "This master data could not be saved. The name may already exist.");
         }
     }
 
@@ -177,7 +177,7 @@ public class MasterDataService : IMasterDataService
         var name = Normalize(table);
         if (name == null)
         {
-            return Fail("Unsupported master table.");
+            return FailKey("UnsupportedMasterTable", "Unsupported master table.");
         }
 
         try
@@ -192,7 +192,7 @@ public class MasterDataService : IMasterDataService
         }
         catch (DbUpdateException)
         {
-            return Fail("This master data could not be deactivated.");
+            return FailKey("MasterDeactivateFailed", "This master data could not be deactivated.");
         }
     }
 
@@ -377,7 +377,7 @@ public class MasterDataService : IMasterDataService
     private async Task<BaseGeneralResponse> SaveApplicationAsync(string id, bool isNew, string description, MasterItemDto item, string userId, DateTime now, int? maxRows, CancellationToken ct)
     {
         var dup = await _context.rf_application.AnyAsync(e => e.owner_user_id == userId && e.description == description && e.application_id != id && e.isDeleted == false, ct);
-        if (dup) return Fail("Application name already exists.");
+        if (dup) return FailKey("ApplicationNameExists", "Application name already exists.");
 
         rf_application entity;
         if (isNew)
@@ -400,7 +400,7 @@ public class MasterDataService : IMasterDataService
         else
         {
             var existing = await _context.rf_application.FirstOrDefaultAsync(e => e.application_id == id && e.owner_user_id == userId && e.isDeleted == false, ct);
-            if (existing == null) return Fail("Application not found.");
+            if (existing == null) return FailKey("ApplicationNotFound", "Application not found.");
             entity = existing;
             entity.modifiedBy = userId;
             entity.modifiedDate = now;
@@ -419,7 +419,7 @@ public class MasterDataService : IMasterDataService
     private async Task<BaseGeneralResponse> SaveTaskTypeAsync(string id, bool isNew, string description, MasterItemDto item, string userId, DateTime now, int? maxRows, CancellationToken ct)
     {
         var dup = await _context.rf_task_type.AnyAsync(e => e.owner_user_id == userId && e.description == description && e.task_type_id != id && e.isDeleted == false, ct);
-        if (dup) return Fail("Task type name already exists.");
+        if (dup) return FailKey("TaskTypeNameExists", "Task type name already exists.");
 
         rf_task_type entity;
         if (isNew)
@@ -442,7 +442,7 @@ public class MasterDataService : IMasterDataService
         else
         {
             var existing = await _context.rf_task_type.FirstOrDefaultAsync(e => e.task_type_id == id && e.owner_user_id == userId && e.isDeleted == false, ct);
-            if (existing == null) return Fail("Task type not found.");
+            if (existing == null) return FailKey("TaskTypeNotFound", "Task type not found.");
             entity = existing;
             entity.modifiedBy = userId;
             entity.modifiedDate = now;
@@ -461,7 +461,7 @@ public class MasterDataService : IMasterDataService
     private async Task<BaseGeneralResponse> SavePriorityAsync(string id, bool isNew, string description, MasterItemDto item, string userId, DateTime now, int? maxRows, CancellationToken ct)
     {
         var dup = await _context.rf_task_priority.AnyAsync(e => e.owner_user_id == userId && e.description == description && e.task_priority_id != id && e.isDeleted == false, ct);
-        if (dup) return Fail("Priority name already exists.");
+        if (dup) return FailKey("PriorityNameExists", "Priority name already exists.");
 
         rf_task_priority entity;
         if (isNew)
@@ -484,7 +484,7 @@ public class MasterDataService : IMasterDataService
         else
         {
             var existing = await _context.rf_task_priority.FirstOrDefaultAsync(e => e.task_priority_id == id && e.owner_user_id == userId && e.isDeleted == false, ct);
-            if (existing == null) return Fail("Priority not found.");
+            if (existing == null) return FailKey("PriorityNotFound", "Priority not found.");
             entity = existing;
             entity.modifiedBy = userId;
             entity.modifiedDate = now;
@@ -503,7 +503,7 @@ public class MasterDataService : IMasterDataService
     private async Task<BaseGeneralResponse> SaveStatusAsync(string id, bool isNew, string description, MasterItemDto item, string userId, DateTime now, int? maxRows, CancellationToken ct)
     {
         var dup = await _context.rf_status.AnyAsync(e => e.owner_user_id == userId && e.description == description && e.status_id != id && e.isDeleted == false, ct);
-        if (dup) return Fail("Status name already exists.");
+        if (dup) return FailKey("StatusNameExists", "Status name already exists.");
 
         rf_status entity;
         if (isNew)
@@ -526,7 +526,7 @@ public class MasterDataService : IMasterDataService
         else
         {
             var existing = await _context.rf_status.FirstOrDefaultAsync(e => e.status_id == id && e.owner_user_id == userId && e.isDeleted == false, ct);
-            if (existing == null) return Fail("Status not found.");
+            if (existing == null) return FailKey("StatusNotFound", "Status not found.");
             entity = existing;
             entity.modifiedBy = userId;
             entity.modifiedDate = now;
@@ -537,7 +537,7 @@ public class MasterDataService : IMasterDataService
 
         if (!item.IsActive && (targetIsInitial || targetIsCompleted))
         {
-            return Fail("A default or completed status must remain active.");
+            return FailKey("DefaultStatusMustRemain", "A default or completed status must remain active.");
         }
 
         if (targetIsInitial)
@@ -571,7 +571,7 @@ public class MasterDataService : IMasterDataService
             if (entity.is_initial_status && !targetIsInitial)
             {
                 var hasAnotherInitial = await _context.rf_status.AnyAsync(e => e.owner_user_id == userId && e.isDeleted == false && e.isActive == true && e.status_id != entity.status_id && e.is_initial_status, ct);
-                if (!hasAnotherInitial) return Fail("At least one active default status is required.");
+                if (!hasAnotherInitial) return FailKey("DefaultStatusRequired", "At least one active default status is required.");
             }
 
             if (entity.is_completed_status && !targetIsCompleted)
@@ -580,7 +580,7 @@ public class MasterDataService : IMasterDataService
                 if (!hasAnotherCompleted)
                 {
                     var hasActiveTasks = await _context.tb_task.AnyAsync(t => t.createdBy == userId && t.isActive == true && t.isDeleted == false, ct);
-                    if (hasActiveTasks) return Fail("Cannot unset the only completed status while active tasks exist.");
+                    if (hasActiveTasks) return FailKey("CompletedStatusInUse", "Cannot unset the only completed status while active tasks exist.");
                 }
             }
         }
@@ -600,7 +600,7 @@ public class MasterDataService : IMasterDataService
     private async Task<BaseGeneralResponse> DeactivateApplicationAsync(string id, string userId, CancellationToken ct)
     {
         var entity = await _context.rf_application.FirstOrDefaultAsync(e => e.application_id == id && e.owner_user_id == userId && e.isDeleted == false, ct);
-        if (entity == null) return Fail("Application not found.");
+        if (entity == null) return FailKey("ApplicationNotFound", "Application not found.");
 
         var inUse = await _context.tb_task.AnyAsync(t => t.createdBy == userId && t.application_id == id && t.isActive == true && t.isDeleted == false, ct);
         ApplyRemoval(entity, userId, inUse);
@@ -613,7 +613,7 @@ public class MasterDataService : IMasterDataService
     private async Task<BaseGeneralResponse> DeactivateTaskTypeAsync(string id, string userId, CancellationToken ct)
     {
         var entity = await _context.rf_task_type.FirstOrDefaultAsync(e => e.task_type_id == id && e.owner_user_id == userId && e.isDeleted == false, ct);
-        if (entity == null) return Fail("Task type not found.");
+        if (entity == null) return FailKey("TaskTypeNotFound", "Task type not found.");
 
         var inUse = await _context.tb_task.AnyAsync(t => t.createdBy == userId && t.task_type_id == id && t.isActive == true && t.isDeleted == false, ct);
         ApplyRemoval(entity, userId, inUse);
@@ -626,7 +626,7 @@ public class MasterDataService : IMasterDataService
     private async Task<BaseGeneralResponse> DeactivatePriorityAsync(string id, string userId, CancellationToken ct)
     {
         var entity = await _context.rf_task_priority.FirstOrDefaultAsync(e => e.task_priority_id == id && e.owner_user_id == userId && e.isDeleted == false, ct);
-        if (entity == null) return Fail("Priority not found.");
+        if (entity == null) return FailKey("PriorityNotFound", "Priority not found.");
 
         var inUse = await _context.tb_task.AnyAsync(t => t.createdBy == userId && t.task_priority_id == id && t.isActive == true && t.isDeleted == false, ct);
         ApplyRemoval(entity, userId, inUse);
@@ -639,9 +639,9 @@ public class MasterDataService : IMasterDataService
     private async Task<BaseGeneralResponse> DeactivateStatusAsync(string id, string userId, CancellationToken ct)
     {
         var entity = await _context.rf_status.FirstOrDefaultAsync(e => e.status_id == id && e.owner_user_id == userId && e.isDeleted == false, ct);
-        if (entity == null) return Fail("Status not found.");
+        if (entity == null) return FailKey("StatusNotFound", "Status not found.");
         if (entity.is_initial_status || entity.is_completed_status)
-            return Fail("Default or Completed status cannot be deleted. Assign another status first.");
+            return FailKey("ProtectedStatusCannotDelete", "Default or Completed status cannot be deleted. Assign another status first.");
 
         var inUse = await _context.tb_task.AnyAsync(t => t.createdBy == userId && t.status_id == id && t.isActive == true && t.isDeleted == false, ct);
         ApplyRemoval(entity, userId, inUse);
@@ -690,10 +690,20 @@ public class MasterDataService : IMasterDataService
     }
 
     private static BaseGeneralResponse QuotaFail(string label, int? maxRows)
-        => Fail($"You have reached the limit of {maxRows} active {label} for your plan. Upgrade to add more.");
+        => new()
+        {
+            Code = Const.ERROR_CODE,
+            Success = false,
+            Message = $"You have reached the limit of {maxRows} active {label} for your plan. Upgrade to add more.",
+            MessageKey = "MasterQuotaReached",
+            MessageArgs = new[] { maxRows?.ToString() ?? string.Empty, label },
+        };
 
     private static BaseGeneralResponse Fail(string message)
         => new() { Code = Const.ERROR_CODE, Success = false, Message = message };
+
+    private static BaseGeneralResponse FailKey(string messageKey, string message)
+        => new() { Code = Const.ERROR_CODE, Success = false, Message = message, MessageKey = messageKey };
 
     private static BaseGeneralResponse Ok(string message)
         => new() { Code = Const.SUCCESS_CODE, Success = true, Message = message };

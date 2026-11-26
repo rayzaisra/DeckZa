@@ -1,18 +1,20 @@
 @page "/dashboard/maintenance/payment-list"
 @layout AuthenticatedLayout
 @attribute [Authorize]
+@implements IDisposable
 @inject PaymentApiService PaymentApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject LanguageService L
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
 <div class="page-heading">
     <div>
-        <div class="dashboard-kicker">Payment</div>
-        <h1>Payment Requests</h1>
-        <p>Review every payment submission and its proof of transfer.</p>
+        <div class="dashboard-kicker">@L["Payment"]</div>
+        <h1>@L["PaymentRequests"]</h1>
+        <p>@L["PaymentRequestsSubtitle"]</p>
     </div>
 </div>
 
@@ -27,18 +29,18 @@
               HorizontalScrollbar="true">
         <ToolBarContent>
             <MudSpacer />
-            <MudSelect T="string" @bind-Value="_status" Label="Status" Variant="Variant.Outlined" Margin="Margin.Dense"
+            <MudSelect T="string" @bind-Value="_status" Label="@L["Status"]" Variant="Variant.Outlined" Margin="Margin.Dense"
                        Dense="true" Style="min-width:180px;" Class="mr-2"
                        SelectedValuesChanged="OnStatusChanged">
-                <MudSelectItem T="string" Value="@string.Empty">All</MudSelectItem>
-                <MudSelectItem T="string" Value="@PaymentStatusPending">Pending</MudSelectItem>
-                <MudSelectItem T="string" Value="@PaymentStatusApproved">Approved</MudSelectItem>
-                <MudSelectItem T="string" Value="@PaymentStatusRejected">Rejected</MudSelectItem>
+                <MudSelectItem T="string" Value="@string.Empty">@L["All"]</MudSelectItem>
+                <MudSelectItem T="string" Value="@PaymentStatusPending">@L["StatusPending"]</MudSelectItem>
+                <MudSelectItem T="string" Value="@PaymentStatusApproved">@L["StatusApproved"]</MudSelectItem>
+                <MudSelectItem T="string" Value="@PaymentStatusRejected">@L["StatusRejected"]</MudSelectItem>
             </MudSelect>
             <MudTextField @bind-Value="_search"
                           @bind-Value:after="OnSearchChanged"
-                          Label="Search"
-                          Placeholder="Search by request no, user..."
+                          Label="@L["Search"]"
+                          Placeholder="@L["SearchByRequestNoUser"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Adornment="Adornment.End"
@@ -47,31 +49,31 @@
                           Class="approval-search" />
         </ToolBarContent>
         <HeaderContent>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="requestno">Request No.</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="userid">User</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="planname">Plan</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="amount">Amount</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="createddate">Date</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="status">Status</MudTableSortLabel></MudTh>
-            <MudTh>Invoice</MudTh>
-            <MudTh Style="text-align:center;">Action</MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="requestno">@L["RequestNo"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="userid">@L["User"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="planname">@L["Plan"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="amount">@L["Amount"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="createddate">@L["Date"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="status">@L["Status"]</MudTableSortLabel></MudTh>
+            <MudTh>@L["Invoice"]</MudTh>
+            <MudTh Style="text-align:center;">@L["Action"]</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Request No.">@context.RequestNo</MudTd>
-            <MudTd DataLabel="User">
+            <MudTd DataLabel="@L["RequestNo"]">@context.RequestNo</MudTd>
+            <MudTd DataLabel="@L["User"]">
                 <div>@(context.UserName ?? context.UserId)</div>
                 @if (!string.IsNullOrWhiteSpace(context.UserId) && context.UserName != context.UserId)
                 {
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@context.UserId</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Plan">@(context.PlanName ?? context.PlanId)</MudTd>
-            <MudTd DataLabel="Amount">@FormatAmount(context.Amount, context.Currency)</MudTd>
-            <MudTd DataLabel="Date">@(context.CreatedDate?.ToString("dd MMM yyyy") ?? "-")</MudTd>
-            <MudTd DataLabel="Status">
-                <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Status)">@context.Status</MudChip>
+            <MudTd DataLabel="@L["Plan"]">@(context.PlanName ?? context.PlanId)</MudTd>
+            <MudTd DataLabel="@L["Amount"]">@FormatAmount(context.Amount, context.Currency)</MudTd>
+            <MudTd DataLabel="@L["Date"]">@(context.CreatedDate?.ToString("dd MMM yyyy") ?? "-")</MudTd>
+            <MudTd DataLabel="@L["Status"]">
+                <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Status)">@StatusLabel(context.Status)</MudChip>
             </MudTd>
-            <MudTd DataLabel="Invoice">
+            <MudTd DataLabel="@L["Invoice"]">
                 @if (context.InvoiceId.HasValue)
                 {
                     <MudButton Variant="Variant.Text"
@@ -80,7 +82,7 @@
                                StartIcon="@Icons.Material.Filled.Download"
                                Disabled="@(_downloadingInvoiceId == context.InvoiceId)"
                                OnClick="@(() => DownloadInvoiceAsync(context))">
-                        @(_downloadingInvoiceId == context.InvoiceId ? "Downloading..." : (context.InvoiceNo ?? "PDF"))
+                        @(_downloadingInvoiceId == context.InvoiceId ? L["DownloadingInvoice"] : (context.InvoiceNo ?? "PDF"))
                     </MudButton>
                 }
                 else
@@ -88,14 +90,14 @@
                     <MudText Typo="Typo.caption" Color="Color.Secondary">-</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Action" Style="text-align:center;">
+            <MudTd DataLabel="@L["Action"]" Style="text-align:center;">
                 <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.Visibility"
-                           OnClick="@(() => ShowProofAsync(context))">Proof</MudButton>
+                           OnClick="@(() => ShowProofAsync(context))">@L["Proof"]</MudButton>
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
-            <MudText>No payment requests found.</MudText>
+            <MudText>@L["NoPaymentRequestsFound"]</MudText>
         </NoRecordsContent>
         <LoadingContent>
             <MudProgressLinear Indeterminate="true" />
@@ -111,17 +113,21 @@
     private const string PaymentStatusApproved = "APPROVED";
     private const string PaymentStatusRejected = "REJECTED";
 
-    private readonly List<BreadcrumbItem> _breadcrumbs =
-    [
-        new("Dashboard", href: "/dashboard"),
-        new("Payment", href: null),
-        new("List", href: null, disabled: true),
-    ];
+    private List<BreadcrumbItem> _breadcrumbs => new()
+    {
+        new(L["Dashboard"], href: "/dashboard"),
+        new(L["Payment"], href: null),
+        new(L["List"], href: null, disabled: true),
+    };
 
     private MudTable<PaymentApprovalListItemDto>? _table;
     private string? _search;
     private string _status = string.Empty;
     private long? _downloadingInvoiceId;
+
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
 
     private async Task<TableData<PaymentApprovalListItemDto>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
@@ -166,7 +172,7 @@
             { x => x.ContentType, item.ProofContentType },
         };
 
-        await DialogService.ShowAsync<PaymentProofDialog>("Payment Proof", parameters);
+        await DialogService.ShowAsync<PaymentProofDialog>(L["PaymentProofTitle"], parameters);
     }
 
     private async Task DownloadInvoiceAsync(PaymentApprovalListItemDto item)
@@ -182,7 +188,7 @@
             var url = await PaymentApi.GetInvoiceDownloadUrlAsync(item.InvoiceId.Value);
             if (string.IsNullOrWhiteSpace(url))
             {
-                Snackbar.Add("Failed to prepare invoice download.", Severity.Error);
+                Snackbar.Add(L["FailedPrepareInvoiceDownload"], Severity.Error);
                 return;
             }
 
@@ -207,4 +213,14 @@
         PaymentStatusRejected => Color.Error,
         _ => Color.Warning,
     };
+
+    private string StatusLabel(string status) => status switch
+    {
+        PaymentStatusPending => L["StatusPending"],
+        PaymentStatusApproved => L["StatusApproved"],
+        PaymentStatusRejected => L["StatusRejected"],
+        _ => status,
+    };
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

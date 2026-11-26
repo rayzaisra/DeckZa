@@ -47,6 +47,14 @@ public static class DeckZaSeeder
         ("TSK-RPT", "Report", "/dashboard/report", "D", "TSK", "BarChart", 4, "DeckZa.Shared.Pages.AsMember.Report, DeckZa.Shared"),
     };
 
+    private static readonly string[] AdminExcludedWorkspaceMenuCodes =
+    {
+        "TSK",
+        "TSK-KANBAN",
+        "TSK-CAL",
+        "TSK-RPT",
+    };
+
     private static readonly string[] ObsoleteMenuCodes =
     {
         "MNT-DECKZA",
@@ -277,31 +285,21 @@ public static class DeckZaSeeder
                 await context.SaveChangesAsync(cancellationToken);
             }
 
-            var groupId = item.Unique.StartsWith("MNT", StringComparison.Ordinal)
-                ? Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE
-                : Const.DEFAULT_GROUP_ID_MEMBER_CODE;
+            var isAdminOwnedMenu = item.Unique.StartsWith("MNT", StringComparison.Ordinal);
+            var isAdminExcludedWorkspaceMenu = AdminExcludedWorkspaceMenuCodes.Contains(item.Unique, StringComparer.Ordinal);
 
-            var mapped = await context.um_group_menu.AnyAsync(
-                e => e.group_id == groupId && e.menu_id == existing.id,
-                cancellationToken);
-
-            if (!mapped)
+            if (isAdminOwnedMenu)
             {
-                await context.um_group_menu.AddAsync(new um_group_menu
-                {
-                    group_id = groupId,
-                    menu_id = existing.id,
-                    statusApproval = Const.StatusApproval.APPROVED,
-                    isActive = true,
-                    isDeleted = false,
-                    isLocked = false,
-                    isDefault = false,
-                    createdBy = "system",
-                    createdDate = now,
-                }, cancellationToken);
-
-                await context.SaveChangesAsync(cancellationToken);
+                await EnsureMenuMappedToGroupAsync(context, Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE, existing.id, now, cancellationToken);
+                continue;
             }
+
+            if (isAdminExcludedWorkspaceMenu)
+            {
+                await RemoveMenuMappingForGroupAsync(context, Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE, existing.id, cancellationToken);
+            }
+
+            await EnsureMenuMappedToGroupAsync(context, Const.DEFAULT_GROUP_ID_MEMBER_CODE, existing.id, now, cancellationToken);
         }
     }
 
@@ -403,6 +401,57 @@ public static class DeckZaSeeder
             .Where(e => e.group_id == Const.DEFAULT_GROUP_ID_GUEST_CODE
                         && e.menu_id.HasValue
                         && adminMenuIds.Contains(e.menu_id.Value))
+            .ToListAsync(cancellationToken);
+
+        if (mappings.Count == 0)
+        {
+            return;
+        }
+
+        context.um_group_menu.RemoveRange(mappings);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task EnsureMenuMappedToGroupAsync(
+        DeckZaDbContext context,
+        string groupId,
+        long menuId,
+        DateTime now,
+        CancellationToken cancellationToken)
+    {
+        var mapped = await context.um_group_menu.AnyAsync(
+            e => e.group_id == groupId && e.menu_id == menuId,
+            cancellationToken);
+
+        if (mapped)
+        {
+            return;
+        }
+
+        await context.um_group_menu.AddAsync(new um_group_menu
+        {
+            group_id = groupId,
+            menu_id = menuId,
+            statusApproval = Const.StatusApproval.APPROVED,
+            isActive = true,
+            isDeleted = false,
+            isLocked = false,
+            isDefault = false,
+            createdBy = "system",
+            createdDate = now,
+        }, cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task RemoveMenuMappingForGroupAsync(
+        DeckZaDbContext context,
+        string groupId,
+        long menuId,
+        CancellationToken cancellationToken)
+    {
+        var mappings = await context.um_group_menu
+            .Where(e => e.group_id == groupId && e.menu_id == menuId)
             .ToListAsync(cancellationToken);
 
         if (mappings.Count == 0)

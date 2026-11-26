@@ -1,4 +1,6 @@
+@implements IDisposable
 @inject ISnackbar Snackbar
+@inject LanguageService L
 
 <MudDialog>
     <TitleContent>
@@ -12,7 +14,7 @@
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_note"
-                                  Label="Note"
+                                  Label="@L["Note"]"
                                   Placeholder="@Placeholder"
                                   Variant="Variant.Outlined"
                                   Lines="3"
@@ -22,9 +24,9 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Text" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
+        <MudButton Variant="Variant.Text" OnClick="@(_ => MudDialog.Cancel())">@L["Cancel"]</MudButton>
         <MudButton Variant="Variant.Filled" Color="@ConfirmColor" Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))" Disabled="@_saving" OnClick="@(_ => ConfirmAsync())">
-            @(_saving ? "Saving..." : ConfirmText)
+            @(_saving ? L["Saving"] : ConfirmText)
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -37,13 +39,13 @@
     public string Title { get; set; } = "Confirm";
 
     [Parameter]
-    public string Message { get; set; } = "Are you sure?";
+    public string Message { get; set; } = string.Empty;
 
     [Parameter]
     public string ConfirmText { get; set; } = "Confirm";
 
     [Parameter]
-    public string Placeholder { get; set; } = "Optional note";
+    public string Placeholder { get; set; } = string.Empty;
 
     [Parameter]
     public Color ConfirmColor { get; set; } = Color.Primary;
@@ -52,10 +54,16 @@
     private string? _note;
     private bool _saving;
 
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
+
     private Task ConfirmAsync()
     {
         _saving = true;
         MudDialog.Close(DialogResult.Ok(_note?.Trim()));
         return Task.CompletedTask;
     }
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

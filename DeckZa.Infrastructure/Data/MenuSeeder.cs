@@ -257,9 +257,10 @@ public static class MenuSeeder
     }
 
     /// <summary>
-    /// Menu Task Parameter untuk semua grup yang di-mapping. Dipanggil terpisah
+    /// Menu Task Parameter untuk grup non-admin yang di-mapping. Dipanggil terpisah
     /// dari <see cref="SeedAsync"/> karena seeding menu utama berhenti begitu
-    /// <c>MNT</c> sudah ada di DB existing.
+    /// <c>MNT</c> sudah ada di DB existing. Admin tidak memiliki Task Parameter
+    /// maupun Task Workspace.
     /// </summary>
     public static async Task EnsureTaskParameterMenusAsync(
         DeckZaDbContext context,
@@ -325,8 +326,8 @@ public static class MenuSeeder
             BuildChildMenu(StatusUnique, "Status", StatusRoute, "LinearScale", 4, now),
             cancellationToken);
 
-        // Visibilitas mengikuti mapping menu, bukan hardcode grup. Default seed memetakan
-        // ke semua grup aktif; admin dapat mempersempit lewat Menu Mapping.
+        // Admin tidak punya Task Parameter maupun Task Workspace. Pemetaan default
+        // hanya untuk grup aktif non-admin; admin mapping yang sudah ada dibersihkan.
         var groupIds = await context.um_group_app
             .Where(e => e.isActive != false && e.isDeleted != true)
             .Select(e => e.group_id)
@@ -335,7 +336,10 @@ public static class MenuSeeder
         var visibleGroupIds = groupIds
             .Where(e => !string.IsNullOrWhiteSpace(e))
             .Select(e => e!)
+            .Where(e => !string.Equals(e, Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE, StringComparison.Ordinal))
             .ToList();
+
+        var adminGroupIds = new[] { Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE };
 
         await EnsureGroupMenuAsync(context, root.id, visibleGroupIds, now, cancellationToken);
         await EnsureGroupMenuAsync(context, application.id, visibleGroupIds, now, cancellationToken);
@@ -343,6 +347,45 @@ public static class MenuSeeder
         await EnsureGroupMenuAsync(context, priority.id, visibleGroupIds, now, cancellationToken);
         await EnsureGroupMenuAsync(context, status.id, visibleGroupIds, now, cancellationToken);
 
+        await RemoveGroupMenuAsync(context, root.id, adminGroupIds, cancellationToken);
+        await RemoveGroupMenuAsync(context, application.id, adminGroupIds, cancellationToken);
+        await RemoveGroupMenuAsync(context, taskType.id, adminGroupIds, cancellationToken);
+        await RemoveGroupMenuAsync(context, priority.id, adminGroupIds, cancellationToken);
+        await RemoveGroupMenuAsync(context, status.id, adminGroupIds, cancellationToken);
+
+        await RemoveAdminTaskWorkspaceMappingsAsync(context, cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task RemoveAdminTaskWorkspaceMappingsAsync(
+        DeckZaDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var workspaceMenuIds = await context.um_menu
+            .Where(e => e.menu_unique == "TSK"
+                        || e.menu_unique_parent == "TSK"
+                        || (e.menu_unique != null && e.menu_unique.StartsWith("TSK-")))
+            .Select(e => e.id)
+            .ToListAsync(cancellationToken);
+
+        if (workspaceMenuIds.Count == 0)
+        {
+            return;
+        }
+
+        var mappings = await context.um_group_menu
+            .Where(e => e.group_id == Const.DEFAULT_GROUP_ID_ADMINISTRATOR_CODE
+                        && e.menu_id.HasValue
+                        && workspaceMenuIds.Contains(e.menu_id.Value))
+            .ToListAsync(cancellationToken);
+
+        if (mappings.Count == 0)
+        {
+            return;
+        }
+
+        context.um_group_menu.RemoveRange(mappings);
         await context.SaveChangesAsync(cancellationToken);
     }
 

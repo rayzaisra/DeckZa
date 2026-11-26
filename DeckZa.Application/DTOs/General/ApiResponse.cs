@@ -42,4 +42,15 @@ public class BaseGeneralResponse
     public bool Success { get; set; }
     public string? Code { get; set; }
     public string? Message { get; set; }
+
+    /// <summary>
+    /// Kunci terjemahan untuk pesan yang tampil di UI. Bila terisi, klien
+    /// menampilkan teks terlokalisasi dan mengabaikan <see cref="Message"/>.
+    /// </summary>
+    public string? MessageKey { get; set; }
+
+    /// <summary>
+    /// Argumen untuk <see cref="MessageKey"/> (misalnya nomor pengajuan).
+    /// </summary>
+    public string[]? MessageArgs { get; set; }
 }

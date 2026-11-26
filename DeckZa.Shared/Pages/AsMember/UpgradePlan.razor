@@ -1,17 +1,19 @@
 @page "/dashboard/upgrade-plan"
 @layout AuthenticatedLayout
 @attribute [Authorize]
+@implements IDisposable
 @inject PlanApiService PlanApi
 @inject TabStateService TabService
 @inject ISnackbar Snackbar
+@inject LanguageService L
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
 <div class="page-heading">
     <div>
-        <div class="dashboard-kicker">Workspace</div>
-        <h1>Upgrade Plan</h1>
-        <p>Bandingkan plan dan tingkatkan akun Anda.</p>
+        <div class="dashboard-kicker">@L["Workspace"]</div>
+        <h1>@L["UpgradePlanTitle"]</h1>
+        <p>@L["UpgradePlanSubtitle"]</p>
     </div>
 </div>
 
@@ -55,7 +57,7 @@ else
                     @if (isCurrent)
                     {
                         <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
-                            Plan Anda saat ini
+                            @L["CurrentPlan"]
                         </MudChip>
                     }
                 </div>
@@ -81,7 +83,7 @@ else
                                    FullWidth="true"
                                    EndIcon="@Icons.Material.Filled.ArrowForward"
                                    OnClick="@(_ => OpenBilling(plan))">
-                            Upgrade ke @plan.PlanName
+                            @L.Format("UpgradeToPlan", plan.PlanName)
                         </MudButton>
                     </div>
                 }
@@ -93,10 +95,10 @@ else
 @code {
     private const string BillingComponent = "DeckZa.Shared.Pages.AsMember.Billing, DeckZa.Shared";
 
-    private readonly List<BreadcrumbItem> _breadcrumbs = new()
+    private List<BreadcrumbItem> _breadcrumbs => new()
     {
-        new BreadcrumbItem("Dashboard", "/dashboard"),
-        new BreadcrumbItem("Upgrade Plan", null, disabled: true),
+        new BreadcrumbItem(L["Dashboard"], "/dashboard"),
+        new BreadcrumbItem(L["UpgradePlanTitle"], null, disabled: true),
     };
 
     private List<PlanDto> _plans = new();
@@ -104,8 +106,11 @@ else
     private bool _loading = true;
     private string? _loadError;
 
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
     protected override async Task OnInitializedAsync()
     {
+        await L.InitializeAsync();
         try
         {
             var plansTask = PlanApi.GetPlansAsync();
@@ -125,6 +130,8 @@ else
         }
     }
 
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
+
     private bool IsCurrentPlan(PlanDto plan)
         => !string.IsNullOrWhiteSpace(_myPlan?.Id)
            && string.Equals(_myPlan.Id, plan.Id, StringComparison.OrdinalIgnoreCase);
@@ -142,7 +149,7 @@ else
         }
 
         TabService.OpenTab(
-            "Billing",
+            L["BillingTitle"],
             BillingComponent,
             "/dashboard/billing",
             icon: "ReceiptLong",
@@ -163,11 +170,11 @@ else
         return prefix + amount;
     }
 
-    private static string FormatPeriod(PlanDto plan)
+    private string FormatPeriod(PlanDto plan)
     {
         if (plan.PriceAmount <= 0)
         {
-            return "Gratis";
+            return L["Free"];
         }
 
         var period = plan.BillingPeriod?.Trim().ToUpperInvariant();
@@ -175,12 +182,13 @@ else
 
         return period switch
         {
-            "MONTHLY" when interval == 1 => "/ bulan",
-            "MONTHLY" => $"/ {interval} bulan",
-            "YEARLY" when interval == 1 => "/ tahun",
-            "YEARLY" => $"/ {interval} tahun",
-            "ONE_TIME" => "Sekali bayar",
-            _ => "Sekali bayar",
+            "MONTHLY" when interval == 1 => L["PerMonth"],
+            "MONTHLY" => L.Format("PerNMonths", interval),
+            "YEARLY" when interval == 1 => L["PerYear"],
+            "YEARLY" => L.Format("PerNYears", interval),
+            _ => L["OneTimePayment"],
         };
     }
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

@@ -1,19 +1,21 @@
 @page "/dashboard/billing"
 @layout AuthenticatedLayout
 @attribute [Authorize]
+@implements IDisposable
 @inject PlanApiService PlanApi
 @inject PaymentApiService PaymentApi
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
+@inject LanguageService L
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
 <div class="page-heading">
     <div>
-        <div class="dashboard-kicker">Workspace</div>
-        <h1>Billing</h1>
-        <p>Review your subscription and payment details</p>
+        <div class="dashboard-kicker">@L["Workspace"]</div>
+        <h1>@L["BillingTitle"]</h1>
+        <p>@L["BillingSubtitle"]</p>
     </div>
 </div>
 
@@ -31,40 +33,40 @@ else
     {
         <div class="billing-grid">
             <MudPaper Elevation="0" Class="dashboard-card billing-card">
-                <h2 class="billing-section-title">Ringkasan Plan</h2>
+                <h2 class="billing-section-title">@L["PlanSummary"]</h2>
                 @if (_selectedPlan == null)
                 {
                     <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
-                        Pilih plan dari halaman Upgrade Plan.
+                        @L["ChoosePlanFromUpgrade"]
                     </MudAlert>
                 }
                 else
                 {
-                    <div class="billing-summary-row"><span class="billing-label">Plan</span><span class="billing-value">@_selectedPlan.PlanName</span></div>
-                    <div class="billing-summary-row"><span class="billing-label">Harga</span><span class="billing-value">@FormatPrice(_selectedPlan.PriceAmount, _selectedPlan.PriceCurrency)</span></div>
-                    <div class="billing-summary-row"><span class="billing-label">Periode</span><span class="billing-value">@FormatPeriod(_selectedPlan)</span></div>
-                    <div class="billing-summary-row"><span class="billing-label">Status akun</span><span class="billing-value">@(_myPlan?.PlanName ?? "-")</span></div>
+                    <div class="billing-summary-row"><span class="billing-label">@L["Plan"]</span><span class="billing-value">@_selectedPlan.PlanName</span></div>
+                    <div class="billing-summary-row"><span class="billing-label">@L["Price"]</span><span class="billing-value">@FormatPrice(_selectedPlan.PriceAmount, _selectedPlan.PriceCurrency)</span></div>
+                    <div class="billing-summary-row"><span class="billing-label">@L["Period"]</span><span class="billing-value">@FormatPeriod(_selectedPlan)</span></div>
+                    <div class="billing-summary-row"><span class="billing-label">@L["AccountStatus"]</span><span class="billing-value">@(_myPlan?.PlanName ?? "-")</span></div>
                 }
             </MudPaper>
 
             <MudPaper Elevation="0" Class="dashboard-card billing-card">
-                <h2 class="billing-section-title">Instruksi Pembayaran</h2>
-                <div class="billing-summary-row"><span class="billing-label">Bank</span><span class="billing-value">@(_instructions?.BankName ?? "-")</span></div>
+                <h2 class="billing-section-title">@L["PaymentInstructions"]</h2>
+                <div class="billing-summary-row"><span class="billing-label">@L["Bank"]</span><span class="billing-value">@(_instructions?.BankName ?? "-")</span></div>
                 <div class="billing-summary-row">
-                    <span class="billing-label">No. Rekening</span>
+                    <span class="billing-label">@L["AccountNumber"]</span>
                     <span class="billing-value billing-account">
                         @(_instructions?.AccountNumber ?? "-")
                         @if (!string.IsNullOrWhiteSpace(_instructions?.AccountNumber))
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
                                            Size="Size.Small"
-                                           aria-label="Salin nomor rekening"
+                                           aria-label="@L["CopyAccountNumber"]"
                                            OnClick="@(_ => CopyAccountAsync())" />
                         }
                     </span>
                 </div>
-                <div class="billing-summary-row"><span class="billing-label">Atas Nama</span><span class="billing-value">@(_instructions?.AccountHolder ?? "-")</span></div>
-                <div class="billing-summary-row"><span class="billing-label">Nominal</span><span class="billing-value">@FormatPrice(_selectedPlan?.PriceAmount ?? 0, _selectedPlan?.PriceCurrency ?? "IDR")</span></div>
+                <div class="billing-summary-row"><span class="billing-label">@L["AccountHolder"]</span><span class="billing-value">@(_instructions?.AccountHolder ?? "-")</span></div>
+                <div class="billing-summary-row"><span class="billing-label">@L["Amount"]</span><span class="billing-value">@FormatPrice(_selectedPlan?.PriceAmount ?? 0, _selectedPlan?.PriceCurrency ?? "IDR")</span></div>
                 @if (!string.IsNullOrWhiteSpace(_instructions?.Instructions))
                 {
                     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-3">
@@ -75,18 +77,18 @@ else
         </div>
 
         <MudPaper Elevation="0" Class="dashboard-card billing-card mb-4">
-            <h2 class="billing-section-title">Bukti Pembayaran</h2>
+            <h2 class="billing-section-title">@L["PaymentProofTitle"]</h2>
 
             @if (HasPendingRequest)
             {
                 <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
-                    Pengajuan pembayaran Anda sedang ditinjau. Form dinonaktifkan sampai ada keputusan.
+                    @L["PendingReviewNotice"]
                 </MudAlert>
             }
 
             <MudForm @ref="_form">
                 <MudTextField @bind-Value="_transferReference"
-                              Label="Berita transfer / nomor referensi"
+                              Label="@L["TransferReference"]"
                               Variant="Variant.Outlined"
                               Margin="Margin.Dense"
                               Disabled="@(HasPendingRequest || _submitting)"
@@ -100,8 +102,8 @@ else
                     <CustomContent>
                         <div class="billing-dropzone" @onclick="@context.OpenFilePickerAsync">
                             <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Color="Color.Primary" />
-                            <div><strong>Pilih file bukti</strong></div>
-                            <div class="billing-dropzone-hint">JPG, PNG, atau PDF — maksimum 2 MB</div>
+                            <div><strong>@L["ChooseProofFile"]</strong></div>
+                            <div class="billing-dropzone-hint">@L["ProofFileHint"]</div>
                         </div>
                     </CustomContent>
                 </MudFileUpload>
@@ -116,7 +118,7 @@ else
                                        Size="Size.Small"
                                        Color="Color.Error"
                                        Disabled="@_submitting"
-                                       aria-label="Hapus file"
+                                       aria-label="@L["RemoveFile"]"
                                        OnClick="@(_ => ClearFile())" />
                     </div>
                 }
@@ -127,7 +129,7 @@ else
                                Disabled="@(HasPendingRequest || _submitting || _selectedPlan == null || !IsUpgradeTarget)"
                                Class="@("ryz-busy-button" + (_submitting ? " is-busy" : string.Empty))"
                                OnClick="@(_ => SubmitAsync())">
-                        @(_submitting ? "Mengajukan..." : "Ajukan Pembayaran")
+                        @(_submitting ? L["SubmittingPayment"] : L["SubmitPayment"])
                     </MudButton>
                 </div>
             </MudForm>
@@ -135,11 +137,11 @@ else
     }
 
     <MudPaper Elevation="0" Class="dashboard-card billing-card mb-4">
-        <h2 class="billing-section-title">Riwayat Pengajuan</h2>
+        <h2 class="billing-section-title">@L["SubmissionHistory"]</h2>
         @if (_requests.Count == 0)
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
-                Belum ada pengajuan pembayaran.
+                @L["NoPaymentRequests"]
             </MudAlert>
         }
         else
@@ -147,13 +149,13 @@ else
             <MudSimpleTable Dense="true" Hover="true">
                 <thead>
                     <tr>
-                        <th>No. Pengajuan</th>
-                        <th>Tanggal</th>
-                        <th>Plan</th>
-                        <th>Nominal</th>
-                        <th>Status</th>
-                        <th>Catatan</th>
-                        <th>Bukti</th>
+                        <th>@L["RequestNo"]</th>
+                        <th>@L["Date"]</th>
+                        <th>@L["Plan"]</th>
+                        <th>@L["Amount"]</th>
+                        <th>@L["Status"]</th>
+                        <th>@L["Note"]</th>
+                        <th>@L["Proof"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -173,7 +175,7 @@ else
                                                Size="Size.Small"
                                                StartIcon="@Icons.Material.Filled.Visibility"
                                                OnClick="@(_ => ShowProofAsync(request))">
-                                        Lihat
+                                        @L["View"]
                                     </MudButton>
                                 }
                                 else
@@ -189,11 +191,11 @@ else
     </MudPaper>
 
     <MudPaper Elevation="0" Class="dashboard-card billing-card mb-4">
-        <h2 class="billing-section-title">Invoice</h2>
+        <h2 class="billing-section-title">@L["Invoice"]</h2>
         @if (_invoices.Count == 0)
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
-                Belum ada invoice. Invoice diterbitkan setelah pembayaran disetujui.
+                @L["NoInvoicesYet"]
             </MudAlert>
         }
         else
@@ -201,11 +203,11 @@ else
             <MudSimpleTable Dense="true" Hover="true">
                 <thead>
                     <tr>
-                        <th>No. Invoice</th>
-                        <th>Tanggal</th>
-                        <th>Plan</th>
-                        <th>Nominal</th>
-                        <th>Aksi</th>
+                        <th>@L["InvoiceNo"]</th>
+                        <th>@L["Date"]</th>
+                        <th>@L["Plan"]</th>
+                        <th>@L["Amount"]</th>
+                        <th>@L["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -222,7 +224,7 @@ else
                                            StartIcon="@Icons.Material.Filled.Download"
                                            Disabled="@(_downloadingInvoiceId == invoice.Id)"
                                            OnClick="@(_ => DownloadInvoiceAsync(invoice))">
-                                    @(_downloadingInvoiceId == invoice.Id ? "Mengunduh..." : "PDF")
+                                    @(_downloadingInvoiceId == invoice.Id ? L["DownloadingInvoice"] : "PDF")
                                 </MudButton>
                             </td>
                         </tr>
@@ -238,11 +240,11 @@ else
     [SupplyParameterFromQuery]
     public string? PlanId { get; set; }
 
-    private readonly List<BreadcrumbItem> _breadcrumbs = new()
+    private List<BreadcrumbItem> _breadcrumbs => new()
     {
-        new BreadcrumbItem("Dashboard", "/dashboard"),
-        new BreadcrumbItem("Upgrade Plan", "/dashboard/upgrade-plan"),
-        new BreadcrumbItem("Billing", null, disabled: true),
+        new BreadcrumbItem(L["Dashboard"], "/dashboard"),
+        new BreadcrumbItem(L["UpgradePlanTitle"], "/dashboard/upgrade-plan"),
+        new BreadcrumbItem(L["BillingTitle"], null, disabled: true),
     };
 
     private MudForm? _form;
@@ -278,27 +280,32 @@ else
         {
             if (_selectedPlan is null || _myPlan is null)
             {
-                return "Pilih plan upgrade dari halaman Upgrade Plan.";
+                return L["UpgradeBlockChoosePlan"];
             }
 
             if (string.Equals(_selectedPlan.Id, _myPlan.Id, StringComparison.OrdinalIgnoreCase))
             {
-                return "Anda sudah berada di plan ini.";
+                return L["AlreadyOnThisPlan"];
             }
 
             if (_selectedPlan.PriceAmount <= 0)
             {
-                return "Plan gratis tidak memerlukan pengajuan bukti transfer.";
+                return L["FreePlanNoProof"];
             }
 
-            return "Plan ini tidak dapat diajukan dari halaman billing.";
+            return L["PlanCannotBeSubmittedFromBilling"];
         }
     }
 
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
     protected override async Task OnInitializedAsync()
     {
+        await L.InitializeAsync();
         await LoadAsync();
     }
+
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
 
     private async Task LoadAsync()
     {
@@ -369,13 +376,13 @@ else
         var allowed = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
         if (!allowed.Contains(extension, StringComparer.OrdinalIgnoreCase))
         {
-            Snackbar.Add("Tipe file tidak didukung. Gunakan JPG, PNG, atau PDF.", Severity.Error);
+            Snackbar.Add(L["FileTypeNotSupported"], Severity.Error);
             return;
         }
 
         if (file.Size > 2 * 1024 * 1024)
         {
-            Snackbar.Add("Ukuran file maksimum 2 MB.", Severity.Error);
+            Snackbar.Add(L["MaxFileSize2Mb"], Severity.Error);
             return;
         }
 
@@ -388,7 +395,7 @@ else
     {
         if (_selectedPlan == null)
         {
-            Snackbar.Add("Pilih plan terlebih dahulu.", Severity.Warning);
+            Snackbar.Add(L["ChoosePlanFirst"], Severity.Warning);
             return;
         }
 
@@ -400,13 +407,13 @@ else
 
         if (_proofFile == null)
         {
-            Snackbar.Add("Unggah bukti pembayaran terlebih dahulu.", Severity.Warning);
+            Snackbar.Add(L["UploadProofFirst"], Severity.Warning);
             return;
         }
 
         if (HasPendingRequest)
         {
-            Snackbar.Add("Masih ada pengajuan yang menunggu review.", Severity.Warning);
+            Snackbar.Add(L["PendingRequestExists"], Severity.Warning);
             return;
         }
 
@@ -416,11 +423,11 @@ else
             var response = await PaymentApi.SubmitAsync(_selectedPlan.Id, _transferReference, _proofFile);
             if (!response.Success)
             {
-                Snackbar.Add(response.Message ?? "Gagal mengajukan pembayaran.", Severity.Error);
+                Snackbar.Add(L.Message(ApiMessageSource.From(response), "SubmitPaymentFailed"), Severity.Error);
                 return;
             }
 
-            Snackbar.Add(response.Message ?? "Pengajuan pembayaran berhasil dikirim.", Severity.Success);
+            Snackbar.Add(L.Message(ApiMessageSource.From(response), "SubmitPaymentSuccess"), Severity.Success);
             _proofFile = null;
             _transferReference = null;
             _requests = await PaymentApi.GetMyRequestsAsync();
@@ -444,7 +451,7 @@ else
             { x => x.ContentType, request.ProofContentType ?? string.Empty },
         };
 
-        await DialogService.ShowAsync<PaymentProofDialog>("Bukti Pembayaran", parameters);
+        await DialogService.ShowAsync<PaymentProofDialog>(L["PaymentProofTitle"], parameters);
     }
 
     private async Task DownloadInvoiceAsync(PaymentInvoiceDto invoice)
@@ -460,7 +467,7 @@ else
             var url = await PaymentApi.GetInvoiceDownloadUrlAsync(invoice.Id);
             if (string.IsNullOrWhiteSpace(url))
             {
-                Snackbar.Add("Gagal menyiapkan unduhan invoice.", Severity.Error);
+                Snackbar.Add(L["FailedPrepareInvoiceDownload"], Severity.Error);
                 return;
             }
 
@@ -484,7 +491,7 @@ else
         }
 
         await JS.InvokeVoidAsync("navigator.clipboard.writeText", _instructions.AccountNumber);
-        Snackbar.Add("Nomor rekening disalin.", Severity.Success);
+        Snackbar.Add(L["AccountNumberCopied"], Severity.Success);
     }
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -500,18 +507,23 @@ else
         return prefix + amount.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("id-ID"));
     }
 
-    private static string FormatPeriod(PlanDto plan)
+    private string FormatPeriod(PlanDto plan)
     {
-        if (plan.PriceAmount <= 0) return "Gratis";
+        if (plan.PriceAmount <= 0)
+        {
+            return L["Free"];
+        }
+
         var period = plan.BillingPeriod?.Trim().ToUpperInvariant();
         var interval = plan.BillingIntervalCount <= 0 ? 1 : plan.BillingIntervalCount;
+
         return period switch
         {
-            "MONTHLY" when interval == 1 => "/ bulan",
-            "MONTHLY" => $"/ {interval} bulan",
-            "YEARLY" when interval == 1 => "/ tahun",
-            "YEARLY" => $"/ {interval} tahun",
-            _ => "Sekali bayar",
+            "MONTHLY" when interval == 1 => L["PerMonth"],
+            "MONTHLY" => L.Format("PerNMonths", interval),
+            "YEARLY" when interval == 1 => L["PerYear"],
+            "YEARLY" => L.Format("PerNYears", interval),
+            _ => L["OneTimePayment"],
         };
     }
 
@@ -530,11 +542,13 @@ else
         _ => Color.Default,
     };
 
-    private static string StatusLabel(string? status) => (status ?? string.Empty).ToUpperInvariant() switch
+    private string StatusLabel(string? status) => (status ?? string.Empty).ToUpperInvariant() switch
     {
-        "PENDING" => "Menunggu",
-        "APPROVED" => "Disetujui",
-        "REJECTED" => "Ditolak",
+        "PENDING" => L["StatusPending"],
+        "APPROVED" => L["StatusApproved"],
+        "REJECTED" => L["StatusRejected"],
         _ => status ?? "-",
     };
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

@@ -25,6 +25,8 @@
                 if (savedStyle) style = savedStyle;
                 var savedMode = localStorage.getItem("enterprise-ui-theme-mode");
                 if (savedMode) mode = savedMode;
+                var savedLang = localStorage.getItem("enterprise-ui-language");
+                if (savedLang) document.documentElement.setAttribute("data-language", savedLang);
                 repeat = sessionStorage.getItem("ryz-boot-seen") === "1";
                 sessionStorage.setItem("ryz-boot-seen", "1");
             } catch (e) { }
@@ -32,6 +34,7 @@
             document.documentElement.setAttribute("data-palette", palette);
             document.documentElement.setAttribute("data-style", style);
             document.documentElement.setAttribute("data-theme-mode", mode);
+            if (!document.documentElement.getAttribute("data-language")) document.documentElement.setAttribute("data-language", "en");
             if (repeat) document.documentElement.classList.add("ryz-boot-repeat");
         })();
     </script>
@@ -49,8 +52,14 @@
         <div class="ryz-boot-card">
             <img src="images/branding/app-logo.png" alt="" />
             <div class="ryz-boot-brand">DeckZa</div>
-            <div class="ryz-boot-kicker">Personal Task and Report Management</div>
-            <div class="ryz-boot-stage">Loading workspace</div>
+            <div class="ryz-boot-kicker">
+                <span class="ryz-boot-i18n" data-lang="en">Personal Task and Report Management</span>
+                <span class="ryz-boot-i18n" data-lang="id">Manajemen Tugas dan Laporan Pribadi</span>
+            </div>
+            <div class="ryz-boot-stage">
+                <span class="ryz-boot-i18n" data-lang="en">Loading workspace</span>
+                <span class="ryz-boot-i18n" data-lang="id">Memuat ruang kerja</span>
+            </div>
             <div class="ryz-boot-track">
                 <div class="ryz-boot-bar" data-ryz-boot-bar></div>
             </div>

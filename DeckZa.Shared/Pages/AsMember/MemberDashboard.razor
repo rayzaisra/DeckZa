@@ -1,23 +1,26 @@
 ﻿@using DeckZa.Application.DTOs.Tasks
+@implements IDisposable
 @inject ReportApiService ReportApi
 @inject TaskApiService TaskApi
 @inject TabStateService TabService
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject LanguageService L
+@using System.Globalization
 
 @if (ShowUpgradeBanner)
 {
     <section class="bento-upgrade-banner">
         <div class="bento-upgrade-banner-copy">
-            <div class="dashboard-kicker">Plan Guest</div>
-            <h3>Tingkatkan ke Member</h3>
-            <p>Task unlimited, report tanpa batas periode, dan Calendar task.</p>
+            <div class="dashboard-kicker">@L["GuestPlan"]</div>
+            <h3>@L["UpgradeToMember"]</h3>
+            <p>@L["UpgradeBannerBenefits"]</p>
         </div>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    EndIcon="@Icons.Material.Filled.ArrowForward"
-                   OnClick="@(_ => OpenTab("Upgrade Plan", UpgradePlanComponent, "/dashboard/upgrade-plan", "WorkspacePremium"))">
-            Upgrade Plan
+                   OnClick="@(_ => OpenTab("UpgradePlanTitle", UpgradePlanComponent, "/dashboard/upgrade-plan", "WorkspacePremium"))">
+            @L["UpgradePlanTitle"]
         </MudButton>
     </section>
 }
@@ -25,9 +28,9 @@
 <div class="bento-dashboard @(_loading ? "ryz-bento-skeleton" : string.Empty)">
     <section class="bento-card bento-greeting">
         <div class="bento-greeting-copy">
-            <div class="dashboard-kicker">Personal Task and Report Management</div>
-            <h1>Hello, @_displayName</h1>
-            <p>Welcome back. Here is your workload for @CurrentMonthLabel.</p>
+            <div class="dashboard-kicker">@L["PersonalTaskAndReportManagement"]</div>
+            <h1>@L.Format("HelloName", _displayName)</h1>
+            <p>@L.Format("DashboardWelcomeBack", CurrentMonthLabel)</p>
         </div>
         <MudIcon Icon="@Icons.Material.Filled.WavingHand" Class="bento-greeting-icon" />
     </section>
@@ -49,15 +52,15 @@
     <section class="bento-card bento-calendar">
         <header class="bento-head">
             <div>
-                <div class="dashboard-kicker">Calendar</div>
+                <div class="dashboard-kicker">@L["CalendarTitle"]</div>
                 <h3>@CurrentMonthLabel</h3>
             </div>
             <MudButton Variant="Variant.Text"
                        Color="Color.Primary"
                        Size="Size.Small"
                        EndIcon="@Icons.Material.Filled.ArrowForward"
-                       OnClick="@(_ => OpenTab("Calendar", CalendarComponent, "/dashboard/calendar", "CalendarToday"))">
-                Detail
+                       OnClick="@(_ => OpenTab("CalendarTitle", CalendarComponent, "/dashboard/calendar", "CalendarToday"))">
+                @L["Detail"]
             </MudButton>
         </header>
 
@@ -84,62 +87,62 @@
     <section class="bento-card bento-total">
         <header class="bento-head">
             <div>
-                <div class="dashboard-kicker">Total Task</div>
+                <div class="dashboard-kicker">@L["TotalTask"]</div>
                 <h2>@_monthTaskCount</h2>
             </div>
             <span class="bento-hint">@CurrentMonthLabel</span>
         </header>
-        <BentoBarChart Bars="_dailyBars" AriaLabel="@($"Task per day in {CurrentMonthLabel}")" />
+        <BentoBarChart Bars="_dailyBars" AriaLabel="@L.Format("TaskPerDayAria", CurrentMonthLabel)" />
     </section>
 
     <section class="bento-card bento-status">
         <header class="bento-head">
             <div>
-                <div class="dashboard-kicker">Status</div>
+                <div class="dashboard-kicker">@L["Status"]</div>
             </div>
-            <span class="bento-hint">total @_monthTaskCount</span>
+            <span class="bento-hint">@L.Format("TotalLower", _monthTaskCount)</span>
         </header>
         @if (_statusSlices.Count == 0)
         {
-            <div class="bento-empty">No status data in this month.</div>
+            <div class="bento-empty">@L["NoStatusDataThisMonth"]</div>
         }
         else
         {
             <BentoPieChart Slices="_statusSlices"
                            Total="_monthTaskCount"
-                           AriaLabel="@($"Status breakdown for {CurrentMonthLabel}")"
-                           EmptyText="No status data in this month." />
+                           AriaLabel="@L.Format("StatusBreakdownAria", CurrentMonthLabel)"
+                           EmptyText="@L["NoStatusDataThisMonth"]" />
         }
     </section>
 
     <section class="bento-card bento-speed">
         <header class="bento-head">
             <div>
-                <div class="dashboard-kicker">Kecepatan</div>
+                <div class="dashboard-kicker">@L["Speed"]</div>
             </div>
             <MudButton Variant="Variant.Text"
                        Color="Color.Primary"
                        Size="Size.Small"
                        EndIcon="@Icons.Material.Filled.ArrowForward"
-                       OnClick="@(_ => OpenTab("Report", ReportComponent, "/dashboard/report", "BarChart"))">
-                Analisis lanjutan
+                       OnClick="@(_ => OpenTab("ReportTitle", ReportComponent, "/dashboard/report", "BarChart"))">
+                @L["AdvancedAnalysis"]
             </MudButton>
         </header>
         <div class="bento-speed-list">
             <div class="bento-speed-row">
-                <span class="dashboard-kicker">Median</span>
+                <span class="dashboard-kicker">@L["SpeedMedian"]</span>
                 <span class="bento-speed-value">@FormatHours(_speed.MedianMinutes)</span>
             </div>
             <div class="bento-speed-row">
-                <span class="dashboard-kicker">Average</span>
+                <span class="dashboard-kicker">@L["SpeedAverage"]</span>
                 <span class="bento-speed-value">@FormatHours(_speed.AverageMinutes)</span>
             </div>
             <div class="bento-speed-row">
-                <span class="dashboard-kicker">â‰¤ 1 hour</span>
+                <span class="dashboard-kicker">@L["SpeedWithinOneHour"]</span>
                 <span class="bento-speed-value">@FormatPercent(_speed.PercentWithinOneHour)</span>
             </div>
             <div class="bento-speed-row">
-                <span class="dashboard-kicker">Valid duration</span>
+                <span class="dashboard-kicker">@L["SpeedValidDuration"]</span>
                 <span class="bento-speed-value">@_speed.ValidTaskCount / @_speed.DoneCount</span>
             </div>
         </div>
@@ -148,21 +151,21 @@
     <section class="bento-card bento-tasks">
         <header class="bento-head">
             <div>
-                <div class="dashboard-kicker">Task</div>
-                <h3>Next up</h3>
+                <div class="dashboard-kicker">@L["Task"]</div>
+                <h3>@L["NextUp"]</h3>
             </div>
             <MudButton Variant="Variant.Text"
                        Color="Color.Primary"
                        Size="Size.Small"
                        EndIcon="@Icons.Material.Filled.ArrowForward"
-                       OnClick="@(_ => OpenTab("Task Management", KanbanComponent, "/dashboard/task-management", "Checklist"))">
-                Task management
+                       OnClick="@(_ => OpenTab("Menu.TSK-KANBAN", KanbanComponent, "/dashboard/task-management", "Checklist"))">
+                @L["TaskManagementLink"]
             </MudButton>
         </header>
 
         @if (_openTasks.Count == 0)
         {
-            <div class="bento-empty">No open task right now.</div>
+            <div class="bento-empty">@L["NoOpenTaskRightNow"]</div>
         }
         else
         {
@@ -187,7 +190,7 @@
                             }
                             @if (task.DueDate.HasValue)
                             {
-                                <span class="bento-task-due @(task.IsOverdue ? "is-overdue" : string.Empty)">Due @task.DueDate.Value.ToString("dd MMM HH:mm")</span>
+                                <span class="bento-task-due @(task.IsOverdue ? "is-overdue" : string.Empty)">@L.Format("DueAt", task.DueDate.Value.ToString("dd MMM HH:mm"))</span>
                             }
                         </div>
                     </article>
@@ -201,7 +204,11 @@
 @code {
     [Parameter] public bool ShowUpgradeBanner { get; set; }
 
-    private static readonly string[] WeekdayLabels = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+    private string[] WeekdayLabels => new[]
+    {
+        L["WeekdayMon"], L["WeekdayTue"], L["WeekdayWed"], L["WeekdayThu"],
+        L["WeekdayFri"], L["WeekdaySat"], L["WeekdaySun"],
+    };
 
     private const string KanbanComponent = "DeckZa.Shared.Pages.AsMember.Kanban, DeckZa.Shared";
     private const string CalendarComponent = "DeckZa.Shared.Pages.AsMember.Calendar, DeckZa.Shared";
@@ -224,10 +231,14 @@
 
     private DateTime MonthEndExclusive => MonthStart.AddMonths(1);
 
-    private string CurrentMonthLabel => MonthStart.ToString("MMMM yyyy");
+    private string CurrentMonthLabel => MonthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
+
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
 
     protected override async Task OnInitializedAsync()
     {
+        await L.InitializeAsync();
+
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var name = authState.User.Identity?.Name;
         if (!string.IsNullOrWhiteSpace(name))
@@ -238,8 +249,10 @@
         _ = LoadAsync();
     }
 
-    private void OpenTab(string title, string componentType, string url, string icon)
-        => TabService.OpenTab(title, componentType, url, icon: icon);
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
+
+    private void OpenTab(string titleKey, string componentType, string url, string icon)
+        => TabService.OpenTab(L[titleKey], componentType, url, icon: icon, titleKey: titleKey);
 
     private async Task LoadAsync()
     {
@@ -367,12 +380,12 @@
     }
 
     private static string FormatPercent(decimal value)
-        => value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
+        => value.ToString("0.0", CultureInfo.InvariantCulture) + "%";
 
-    private static string FormatHours(decimal? minutes)
+    private string FormatHours(decimal? minutes)
         => minutes.HasValue
-            ? (minutes.Value / 60m).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " jam"
-            : "â€“";
+            ? L.Format("DurationHours", (minutes.Value / 60m).ToString("0.0", CultureInfo.InvariantCulture))
+            : "–";
 
     private sealed class BentoMonthCell
     {
@@ -381,4 +394,6 @@
         public bool IsToday { get; init; }
         public int TaskCount { get; init; }
     }
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

@@ -1,63 +1,63 @@
 using MudBlazor;
+using DeckZa.Shared.Services;
 
 namespace DeckZa.Shared.Pages.Documentation;
 
 /// <summary>
 /// Katalog alur pemakaian aplikasi DeckZa sebagai task management.
-/// Berbeda dari <see cref="FrameworkFlowCatalog"/> yang menjelaskan framework
-/// (user, grup, role, menu, parameter), katalog ini menjelaskan cara memakai
-/// fitur DeckZa sehari-hari beserta batasan tiap plan.
+/// Seluruh teks diambil dari <see cref="LanguageService"/> agar halaman
+/// DeckZa Flows mengikuti bahasa aktif tanpa teks campuran.
 /// </summary>
 public static class DeckZaFlowCatalog
 {
-    public static IReadOnlyList<Flow> Flows { get; } = new[]
+    public static IReadOnlyList<Flow> GetFlows(LanguageService L) => new[]
     {
         new Flow
         {
             Key = "getting-started",
-            Title = "Getting Started",
-            Tab = "Getting Started",
+            Title = L["DzGettingStartedTitle"],
+            Tab = L["DzGettingStartedTitle"],
             Icon = Icons.Material.Filled.Dashboard,
-            Summary = "Sign in, understand the workspace, and prepare the data every task needs.",
-            Audience = "All users",
-            Approval = "No approval",
+            Summary = L["DzGettingStartedSummary"],
+            Audience = L["DzGettingStartedAudience"],
+            Approval = L["DzGettingStartedApproval"],
             Prerequisites = new[]
             {
-                "An active account that has already been approved.",
-                "Your account has a group assigned (Guest 99, Member 01, or Administrator 00).",
+                L["DzGettingStartedPre1"],
+                L["DzGettingStartedPre2"],
             },
             Steps = new[]
             {
                 new Step
                 {
-                    Title = "Sign in",
-                    Detail = "Open the login page and sign in with your User ID and password. After an administrator resets your password, you must change it at the first login.",
+                    Title = L["DzGettingStartedStep1Title"],
+                    Detail = L["DzGettingStartedStep1Detail"],
                 },
                 new Step
                 {
-                    Title = "Read the dashboard",
-                    Detail = "The dashboard summarises active tasks, due dates, and recent activity. Each block links to the page that holds the detail.",
+                    Title = L["DzGettingStartedStep2Title"],
+                    Detail = L["DzGettingStartedStep2Detail"],
                 },
                 new Step
                 {
-                    Title = "Open pages as tabs",
-                    Detail = "Dashboard blocks and the sidebar open a page as a workspace tab instead of a full page reload. Use the tab bar to switch, and the sidebar to open another.",
+                    Title = L["DzGettingStartedStep3Title"],
+                    Detail = L["DzGettingStartedStep3Detail"],
                 },
                 new Step
                 {
-                    Title = "Create your master data first",
-                    Detail = "A task needs an Application, a Task Type, a Priority, and a Status. Those lists belong to your own account and start empty, so set them up in My Master Data before creating a task.",
+                    Title = L["DzGettingStartedStep4Title"],
+                    Detail = L["DzGettingStartedStep4Detail"],
                 },
                 new Step
                 {
-                    Title = "Start using the task pages",
-                    Detail = "Task Management holds the Kanban board, Calendar shows the due dates on a month grid, and Report turns finished work into totals and an Excel file.",
+                    Title = L["DzGettingStartedStep5Title"],
+                    Detail = L["DzGettingStartedStep5Detail"],
                 },
             },
             Warnings = new[]
             {
-                "Without master data you cannot save a task — the form has nothing to pick from.",
-                "Each account sees only its own tasks and its own master data.",
+                L["DzGettingStartedWarn1"],
+                L["DzGettingStartedWarn2"],
             },
             Technical = new[]
             {
@@ -69,63 +69,63 @@ public static class DeckZaFlowCatalog
         new Flow
         {
             Key = "task-parameter",
-            Title = "Set Up Task Parameters",
-            Tab = "Task Parameter",
+            Title = L["DzTaskParameterTitle"],
+            Tab = L["DzTaskParameterTitle"],
             Icon = Icons.Material.Filled.Tune,
-            Summary = "Create the Application, Task Type, Priority, and Status lists that your tasks will use.",
-            Audience = "Member and Guest",
-            Approval = "No approval",
+            Summary = L["DzTaskParameterSummary"],
+            Audience = L["DzTaskParameterAudience"],
+            Approval = L["DzTaskParameterApproval"],
             Prerequisites = new[]
             {
-                "You are signed in.",
-                "You know how you want to group your work — otherwise start with the minimal setup below.",
+                L["DzTaskParameterPre1"],
+                L["DzTaskParameterPre2"],
             },
             Steps = new[]
             {
                 new Step
                 {
-                    Title = "Open Task Parameter",
-                    Detail = "Use the Task Parameter menu in the sidebar, or follow the prompt shown on the Task Management page when your lists are still empty.",
+                    Title = L["DzTaskParameterStep1Title"],
+                    Detail = L["DzTaskParameterStep1Detail"],
                 },
                 new Step
                 {
-                    Title = "Add Applications",
-                    Detail = "Open the Application page and add one row per application you work on, for example the name of a product or a client.",
+                    Title = L["DzTaskParameterStep2Title"],
+                    Detail = L["DzTaskParameterStep2Detail"],
                 },
                 new Step
                 {
-                    Title = "Add Task Types",
-                    Detail = "Open the Task Type page and add the kinds of work you do, for example Bug Fixing, Enhancement, or Daily Routine.",
+                    Title = L["DzTaskParameterStep3Title"],
+                    Detail = L["DzTaskParameterStep3Detail"],
                 },
                 new Step
                 {
-                    Title = "Add Priorities",
-                    Detail = "Open the Priority page and add the urgency levels you use. Order them from lowest to highest.",
+                    Title = L["DzTaskParameterStep4Title"],
+                    Detail = L["DzTaskParameterStep4Detail"],
                 },
                 new Step
                 {
-                    Title = "Add Statuses",
-                    Detail = "Open the Status page and add the stages a task moves through, for example Draft, In Progress, and Done.",
+                    Title = L["DzTaskParameterStep5Title"],
+                    Detail = L["DzTaskParameterStep5Detail"],
                 },
                 new Step
                 {
-                    Title = "Mark one Default and one Completed status",
-                    Detail = "Switch on Default for the status a new task should start in, and switch on Completed for the status that means the work is finished. Marking a new one releases the mark from the previous status.",
+                    Title = L["DzTaskParameterStep6Title"],
+                    Detail = L["DzTaskParameterStep6Detail"],
                 },
                 new Step
                 {
-                    Title = "Go back to Task Management",
-                    Detail = "The dropdowns are filled now, so you can create your first task.",
+                    Title = L["DzTaskParameterStep7Title"],
+                    Detail = L["DzTaskParameterStep7Detail"],
                 },
             },
             Warnings = new[]
             {
-                "Every account starts with an empty list. Nothing is shared between accounts.",
-                "Guest plan allows at most 3 active rows per table — the page shows the counter, for example 2 / 3.",
-                "Only one Status can be Default and only one can be Completed at a time.",
-                "A master row that is already used by a task cannot be deactivated; keep it so the task history stays intact.",
-                "The Completed status drives the report: tasks in it fill the completed date, stop counting as overdue, and leave the Next up list.",
-                "An administrator can see and edit your master rows through Parameter Engine. Changes there apply to your tasks immediately.",
+                L["DzTaskParameterWarn1"],
+                L["DzTaskParameterWarn2"],
+                L["DzTaskParameterWarn3"],
+                L["DzTaskParameterWarn4"],
+                L["DzTaskParameterWarn5"],
+                L["DzTaskParameterWarn6"],
             },
             Technical = new[]
             {
@@ -141,56 +141,56 @@ public static class DeckZaFlowCatalog
         new Flow
         {
             Key = "task-management",
-            Title = "Manage Tasks",
-            Tab = "Task Management",
+            Title = L["DzTaskManagementTitle"],
+            Tab = L["DzTaskManagementTitle"],
             Icon = Icons.Material.Filled.ViewKanban,
-            Summary = "Create tasks on the Kanban board, move them between statuses, and keep the history correct.",
-            Audience = "Member and Guest",
-            Approval = "No approval",
+            Summary = L["DzTaskManagementSummary"],
+            Audience = L["DzTaskManagementAudience"],
+            Approval = L["DzTaskManagementApproval"],
             Prerequisites = new[]
             {
-                "My Master Data already has at least one Application, Task Type, Priority, and Status.",
-                "A Default status is marked, so a new task knows where to start.",
+                L["DzTaskManagementPre1"],
+                L["DzTaskManagementPre2"],
             },
             Steps = new[]
             {
                 new Step
                 {
-                    Title = "Open the board",
-                    Detail = "Go to Task Management. Each column is one Status, and each card is one task.",
+                    Title = L["DzTaskManagementStep1Title"],
+                    Detail = L["DzTaskManagementStep1Detail"],
                 },
                 new Step
                 {
-                    Title = "Create a task",
-                    Detail = "Press New Task, then fill in the title, the Application, Task Type, Priority, request date, and due date.",
+                    Title = L["DzTaskManagementStep2Title"],
+                    Detail = L["DzTaskManagementStep2Detail"],
                 },
                 new Step
                 {
-                    Title = "Move a task",
-                    Detail = "Drag the card to another column. The status changes immediately and the move is written to the task history.",
+                    Title = L["DzTaskManagementStep3Title"],
+                    Detail = L["DzTaskManagementStep3Detail"],
                 },
                 new Step
                 {
-                    Title = "Edit a task",
-                    Detail = "Open the card to change the title, description, dates, priority, or status. Every change is recorded in the history with who changed it and when.",
+                    Title = L["DzTaskManagementStep4Title"],
+                    Detail = L["DzTaskManagementStep4Detail"],
                 },
                 new Step
                 {
-                    Title = "Complete a task",
-                    Detail = "Move the card to the status marked Completed. The completed date is filled in automatically, the task stops counting as overdue, and it leaves the Next up list.",
+                    Title = L["DzTaskManagementStep5Title"],
+                    Detail = L["DzTaskManagementStep5Detail"],
                 },
                 new Step
                 {
-                    Title = "Delete a task",
-                    Detail = "Deleting marks the row as inactive and deleted instead of removing it, so the history and the report totals stay correct.",
+                    Title = L["DzTaskManagementStep6Title"],
+                    Detail = L["DzTaskManagementStep6Detail"],
                 },
             },
             Warnings = new[]
             {
-                "Guest plan allows at most 50 active tasks. The counter appears next to the board title; deleting a task frees a slot.",
-                "Excel import and the import template are not available on the Guest plan.",
-                "A task can only use master data owned by the same account.",
-                "Editing a completed task does not reopen it — move it back to another status first.",
+                L["DzTaskManagementWarn1"],
+                L["DzTaskManagementWarn2"],
+                L["DzTaskManagementWarn3"],
+                L["DzTaskManagementWarn4"],
             },
             Technical = new[]
             {
@@ -203,45 +203,45 @@ public static class DeckZaFlowCatalog
         new Flow
         {
             Key = "calendar",
-            Title = "Read the Calendar",
-            Tab = "Calendar",
+            Title = L["DzCalendarTitle"],
+            Tab = L["DzCalendarTitle"],
             Icon = Icons.Material.Filled.CalendarMonth,
-            Summary = "See tasks on a month grid by due date and open the task from the day cell.",
-            Audience = "Member and Administrator",
-            Approval = "No approval",
+            Summary = L["DzCalendarSummary"],
+            Audience = L["DzCalendarAudience"],
+            Approval = L["DzCalendarApproval"],
             Prerequisites = new[]
             {
-                "You have at least one task with a due date.",
-                "Your plan includes the Calendar — the Guest plan does not.",
+                L["DzCalendarPre1"],
+                L["DzCalendarPre2"],
             },
             Steps = new[]
             {
                 new Step
                 {
-                    Title = "Open the Calendar",
-                    Detail = "Go to Calendar from the sidebar. The current month is shown.",
+                    Title = L["DzCalendarStep1Title"],
+                    Detail = L["DzCalendarStep1Detail"],
                 },
                 new Step
                 {
-                    Title = "Move between months",
-                    Detail = "Use the previous and next arrows to change the month.",
+                    Title = L["DzCalendarStep2Title"],
+                    Detail = L["DzCalendarStep2Detail"],
                 },
                 new Step
                 {
-                    Title = "Open a task",
-                    Detail = "Click the entry in a day cell to open the task detail.",
+                    Title = L["DzCalendarStep3Title"],
+                    Detail = L["DzCalendarStep3Detail"],
                 },
                 new Step
                 {
-                    Title = "Read the colours",
-                    Detail = "Each status has its own tone, so the board and the calendar stay consistent.",
+                    Title = L["DzCalendarStep4Title"],
+                    Detail = L["DzCalendarStep4Detail"],
                 },
             },
             Warnings = new[]
             {
-                "The Guest plan does not include the Calendar. Opening the page directly shows a notice instead of data.",
-                "A task without a due date does not appear on the calendar.",
-                "The calendar only shows tasks owned by the signed-in account.",
+                L["DzCalendarWarn1"],
+                L["DzCalendarWarn2"],
+                L["DzCalendarWarn3"],
             },
             Technical = new[]
             {
@@ -253,46 +253,46 @@ public static class DeckZaFlowCatalog
         new Flow
         {
             Key = "report",
-            Title = "Read the Report",
-            Tab = "Report",
+            Title = L["DzReportTitle"],
+            Tab = L["DzReportTitle"],
             Icon = Icons.Material.Filled.BarChart,
-            Summary = "Filter by period, read the totals, and export the result to Excel.",
-            Audience = "Member and Guest",
-            Approval = "No approval",
+            Summary = L["DzReportSummary"],
+            Audience = L["DzReportAudience"],
+            Approval = L["DzReportApproval"],
             Prerequisites = new[]
             {
-                "You have tasks in the period you want to look at.",
-                "A Status is marked Completed, so finished work can be counted.",
+                L["DzReportPre1"],
+                L["DzReportPre2"],
             },
             Steps = new[]
             {
                 new Step
                 {
-                    Title = "Pick a period",
-                    Detail = "Set Date From and Date To, then choose the Application, Task Type, Priority, or Status filters you need.",
+                    Title = L["DzReportStep1Title"],
+                    Detail = L["DzReportStep1Detail"],
                 },
                 new Step
                 {
-                    Title = "Preview",
-                    Detail = "Press Preview. The page shows task totals, completed work, duration, and a breakdown per task type and per month.",
+                    Title = L["DzReportStep2Title"],
+                    Detail = L["DzReportStep2Detail"],
                 },
                 new Step
                 {
-                    Title = "Read the sections",
-                    Detail = "Section 6.13 reconciles the numbers: total tasks equals completed plus unfinished, and the per-month sheet follows the same period filter.",
+                    Title = L["DzReportStep3Title"],
+                    Detail = L["DzReportStep3Detail"],
                 },
                 new Step
                 {
-                    Title = "Export to Excel",
-                    Detail = "Press Export Excel. The file is generated in the background and downloaded when ready, with the same filters you used for the preview.",
+                    Title = L["DzReportStep4Title"],
+                    Detail = L["DzReportStep4Detail"],
                 },
             },
             Warnings = new[]
             {
-                "Guest plan only allows the current calendar month. The date pickers are limited to it and the server clamps any other range.",
-                "Durations are calculated in minutes and shown in hours with one decimal.",
-                "Median and average over an empty set show a dash, not zero — zero would be misleading.",
-                "The export download can only be opened by the account that created it.",
+                L["DzReportWarn1"],
+                L["DzReportWarn2"],
+                L["DzReportWarn3"],
+                L["DzReportWarn4"],
             },
             Technical = new[]
             {
@@ -305,61 +305,61 @@ public static class DeckZaFlowCatalog
         new Flow
         {
             Key = "guest-guide",
-            Title = "Guest Guide",
-            Tab = "Guest Guide",
+            Title = L["DzGuestGuideTitle"],
+            Tab = L["DzGuestGuideTitle"],
             Icon = Icons.Material.Filled.PersonOutline,
-            Summary = "What a Guest account can and cannot do, and how to move up to Member.",
-            Audience = "Guest (group 99)",
-            Approval = "Payment approval",
+            Summary = L["DzGuestGuideSummary"],
+            Audience = L["DzGuestGuideAudience"],
+            Approval = L["DzGuestGuideApproval"],
             Prerequisites = new[]
             {
-                "You registered from the login page and an administrator approved your account.",
+                L["DzGuestGuidePre1"],
             },
             Steps = new[]
             {
                 new Step
                 {
-                    Title = "Set up your master data",
-                    Detail = "Add Application, Task Type, Priority, and Status. The Guest plan allows at most 3 active rows per table.",
+                    Title = L["DzGuestGuideStep1Title"],
+                    Detail = L["DzGuestGuideStep1Detail"],
                 },
                 new Step
                 {
-                    Title = "Create tasks",
-                    Detail = "Use the Kanban board as usual. The Guest plan allows at most 50 active tasks, and deleting a task frees a slot.",
+                    Title = L["DzGuestGuideStep2Title"],
+                    Detail = L["DzGuestGuideStep2Detail"],
                 },
                 new Step
                 {
-                    Title = "Read the report",
-                    Detail = "Only the current calendar month is available. Other ranges are clamped by the server.",
+                    Title = L["DzGuestGuideStep3Title"],
+                    Detail = L["DzGuestGuideStep3Detail"],
                 },
                 new Step
                 {
-                    Title = "Open Upgrade Plan",
-                    Detail = "Go to the Upgrade Plan page from your profile menu to compare the Guest and Member plans.",
+                    Title = L["DzGuestGuideStep4Title"],
+                    Detail = L["DzGuestGuideStep4Detail"],
                 },
                 new Step
                 {
-                    Title = "Submit the payment",
-                    Detail = "Open Billing, transfer the amount to the account shown, then upload the payment proof and submit the request.",
+                    Title = L["DzGuestGuideStep5Title"],
+                    Detail = L["DzGuestGuideStep5Detail"],
                 },
                 new Step
                 {
-                    Title = "Wait for approval",
-                    Detail = "An administrator reviews the proof. While the request is pending the form is locked, so you cannot submit a second request.",
+                    Title = L["DzGuestGuideStep6Title"],
+                    Detail = L["DzGuestGuideStep6Detail"],
                 },
                 new Step
                 {
-                    Title = "Sign in again",
-                    Detail = "After approval your session is closed and your account becomes Member. Sign in again to receive the Member menu and features.",
+                    Title = L["DzGuestGuideStep7Title"],
+                    Detail = L["DzGuestGuideStep7Detail"],
                 },
             },
             Warnings = new[]
             {
-                "Guest plan has no Excel import and no import template.",
-                "Guest plan has no Calendar page.",
-                "Guest plan report is limited to the current calendar month.",
-                "Guest plan allows at most 3 active master rows per table.",
-                "The upgrade price is a one-time payment. Your data and tasks carry over — nothing is lost when you become Member.",
+                L["DzGuestGuideWarn1"],
+                L["DzGuestGuideWarn2"],
+                L["DzGuestGuideWarn3"],
+                L["DzGuestGuideWarn4"],
+                L["DzGuestGuideWarn5"],
             },
             Technical = new[]
             {

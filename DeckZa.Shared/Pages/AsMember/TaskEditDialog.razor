@@ -1,16 +1,18 @@
 @using DeckZa.Application.DTOs.Tasks
+@implements IDisposable
 @inject ISnackbar Snackbar
+@inject LanguageService L
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">@(IsReadOnly ? "Task Detail" : IsEdit ? "Edit Task" : "New Task")</MudText>
+        <MudText Typo="Typo.h6">@DialogTitle</MudText>
     </TitleContent>
     <DialogContent>
         <MudForm @ref="_form">
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="6">
                     <MudTextField @bind-Value="_model.Title"
-                                  Label="Title"
+                                  Label="@L["Title"]"
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   Disabled="@IsReadOnly" />
@@ -18,7 +20,7 @@
                 <MudItem xs="12" sm="6">
                     <MudSelect T="string"
                                @bind-Value="_model.ApplicationId"
-                               Label="Application"
+                               Label="@L["Application"]"
                                Variant="Variant.Outlined"
                                Required="true"
                                Disabled="@IsReadOnly">
@@ -30,28 +32,28 @@
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTextField @bind-Value="_model.RequestBy"
-                                  Label="Request By"
+                                  Label="@L["RequestBy"]"
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudDatePicker @bind-Date="_requestDate"
-                                   Label="Request Date"
+                                   Label="@L["RequestDate"]"
                                    Variant="Variant.Outlined"
                                    Required="true"
                                    Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTimePicker @bind-Time="_requestTime"
-                                   Label="Request Time"
+                                   Label="@L["RequestTime"]"
                                    Variant="Variant.Outlined"
                                    Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSelect T="string"
                                @bind-Value="_model.TaskTypeId"
-                               Label="Task Type"
+                               Label="@L["TaskType"]"
                                Variant="Variant.Outlined"
                                Required="true"
                                Disabled="@IsReadOnly">
@@ -64,7 +66,7 @@
                 <MudItem xs="12" sm="6">
                     <MudSelect T="string"
                                @bind-Value="_model.TaskPriorityId"
-                               Label="Priority"
+                               Label="@L["Priority"]"
                                Variant="Variant.Outlined"
                                Required="true"
                                Disabled="@IsReadOnly">
@@ -77,7 +79,7 @@
                 <MudItem xs="12" sm="6">
                     <MudSelect T="string"
                                @bind-Value="_model.StatusId"
-                               Label="Status"
+                               Label="@L["Status"]"
                                Variant="Variant.Outlined"
                                Required="true"
                                Disabled="@IsReadOnly">
@@ -89,19 +91,19 @@
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudDatePicker @bind-Date="_dueDate"
-                                   Label="Due Date"
+                                   Label="@L["DueDate"]"
                                    Variant="Variant.Outlined"
                                    Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTimePicker @bind-Time="_dueTime"
-                                   Label="Due Time"
+                                   Label="@L["DueTime"]"
                                    Variant="Variant.Outlined"
                                    Disabled="@IsReadOnly" />
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Description"
-                                  Label="Description"
+                                  Label="@L["Description"]"
                                   Variant="Variant.Outlined"
                                   Lines="3"
                                   Disabled="@IsReadOnly" />
@@ -112,14 +114,14 @@
     <DialogActions>
         @if (IsReadOnly)
         {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(_ => MudDialog.Close())">Close</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(_ => MudDialog.Close())">@L["Close"]</MudButton>
         }
         else
         {
-            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">Cancel</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@(_ => MudDialog.Cancel())">@L["Cancel"]</MudButton>
             <PermissionGate Action="PermissionAction.AddEdit">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="@("ryz-busy-button" + (_saving ? " is-busy" : string.Empty))" Disabled="@_saving" OnClick="@(_ => SubmitAsync())">
-                    @(_saving ? "Saving..." : "Save")
+                    @(_saving ? L["Saving"] : L["Save"])
                 </MudButton>
             </PermissionGate>
         }
@@ -162,8 +164,12 @@
     private TimeSpan? _dueTime;
     private bool _saving;
 
+    private string DialogTitle => IsReadOnly ? L["TaskDetail"] : IsEdit ? L["EditTask"] : L["NewTask"];
+
     protected override void OnInitialized()
     {
+        L.OnChange += HandleLanguageChanged;
+
         _model = Model == null
             ? new TaskEditDto
             {
@@ -193,6 +199,8 @@
         }
     }
 
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
+
     private async Task SubmitAsync()
     {
         if (_saving)
@@ -202,43 +210,43 @@
 
         if (string.IsNullOrWhiteSpace(_model.Title))
         {
-            Snackbar.Add("Title is required.", Severity.Warning);
+            Snackbar.Add(L["TitleRequired"], Severity.Warning);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_model.ApplicationId))
         {
-            Snackbar.Add("Application is required.", Severity.Warning);
+            Snackbar.Add(L["ApplicationRequired"], Severity.Warning);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_model.RequestBy))
         {
-            Snackbar.Add("Request By is required.", Severity.Warning);
+            Snackbar.Add(L["RequestByRequired"], Severity.Warning);
             return;
         }
 
         if (_requestDate == null)
         {
-            Snackbar.Add("Request Date is required.", Severity.Warning);
+            Snackbar.Add(L["RequestDateRequired"], Severity.Warning);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_model.TaskTypeId))
         {
-            Snackbar.Add("Task Type is required.", Severity.Warning);
+            Snackbar.Add(L["TaskTypeRequired"], Severity.Warning);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_model.TaskPriorityId))
         {
-            Snackbar.Add("Priority is required.", Severity.Warning);
+            Snackbar.Add(L["PriorityRequired"], Severity.Warning);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_model.StatusId))
         {
-            Snackbar.Add("Status is required.", Severity.Warning);
+            Snackbar.Add(L["StatusRequired"], Severity.Warning);
             return;
         }
 
@@ -259,4 +267,6 @@
 
         await Task.CompletedTask;
     }
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

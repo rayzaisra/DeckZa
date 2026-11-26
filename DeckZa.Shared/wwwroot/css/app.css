@@ -4522,6 +4522,7 @@ html.ryz-boot-ready .ryz-boot {
     border-radius: 18px;
     background: var(--mud-palette-surface, #ffffff);
     box-shadow: 0 24px 70px color-mix(in srgb, var(--app-secondary) 22%, transparent);
+    text-align: center;
     animation: ryz-boot-in 360ms var(--ryz-ease-out) both;
 }
 
@@ -4545,11 +4546,25 @@ html.ryz-boot-repeat .ryz-boot-card {
 
 .ryz-boot-kicker {
     margin-top: 8px;
+    max-width: 100%;
     color: var(--mud-palette-primary, #004481);
     font-size: .72rem;
     font-weight: 800;
     letter-spacing: .08em;
+    line-height: 1.4;
+    text-align: center;
     text-transform: uppercase;
+}
+
+/* Teks loader ditulis di index.html sebelum Blazor hidup, jadi bahasa dipilih
+   lewat atribut data-language yang sudah diset skrip inline lebih awal. */
+.ryz-boot-i18n {
+    display: none;
+}
+
+html[data-language="id"] .ryz-boot-i18n[data-lang="id"],
+html:not([data-language="id"]) .ryz-boot-i18n[data-lang="en"] {
+    display: inline;
 }
 
 .ryz-boot-stage {

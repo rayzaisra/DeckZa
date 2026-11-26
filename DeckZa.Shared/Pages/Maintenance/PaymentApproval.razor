@@ -1,22 +1,24 @@
 @page "/dashboard/maintenance/payment-approval"
 @layout AuthenticatedLayout
 @attribute [Authorize]
+@implements IDisposable
 @inject PaymentApiService PaymentApi
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject LanguageService L
 
 <MudBreadcrumbs Items="_breadcrumbs" Separator=">" Class="mb-3" />
 
 <div class="page-heading">
     <div>
-        <div class="dashboard-kicker">Payment</div>
-        <h1>Payment Approval</h1>
-        <p>Review pending payment submissions and activate the plan.</p>
+        <div class="dashboard-kicker">@L["Payment"]</div>
+        <h1>@L["PaymentApprovalPageTitle"]</h1>
+        <p>@L["PaymentApprovalPageSubtitle"]</p>
     </div>
     <PermissionGate Action="PermissionAction.Approve">
         <div class="d-flex gap-2">
-            <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.DoneAll" OnClick="ApproveAll">Approve All</MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DoNotDisturb" OnClick="RejectAll">Reject All</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.DoneAll" OnClick="ApproveAll">@L["ApproveAllAction"]</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DoNotDisturb" OnClick="RejectAll">@L["RejectAllAction"]</MudButton>
         </div>
     </PermissionGate>
 </div>
@@ -34,8 +36,8 @@
             <MudSpacer />
             <MudTextField @bind-Value="_search"
                           @bind-Value:after="OnSearchChanged"
-                          Label="Search"
-                          Placeholder="Search by request no, user..."
+                          Label="@L["Search"]"
+                          Placeholder="@L["SearchByRequestNoUser"]"
                           Variant="Variant.Outlined"
                           Margin="Margin.Dense"
                           Adornment="Adornment.End"
@@ -44,43 +46,43 @@
                           Class="approval-search" />
         </ToolBarContent>
         <HeaderContent>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="requestno">Request No.</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="userid">User</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="planname">Plan</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="amount">Amount</MudTableSortLabel></MudTh>
-            <MudTh Style="text-align:center;">Proof</MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="requestno">@L["RequestNo"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="userid">@L["User"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="planname">@L["Plan"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="PaymentApprovalListItemDto" SortLabel="amount">@L["Amount"]</MudTableSortLabel></MudTh>
+            <MudTh Style="text-align:center;">@L["Proof"]</MudTh>
             <PermissionGate AnyOf="PermissionSets.ApproveReject">
-                <MudTh Style="text-align:center;">Action</MudTh>
+                <MudTh Style="text-align:center;">@L["Action"]</MudTh>
             </PermissionGate>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Request No.">@context.RequestNo</MudTd>
-            <MudTd DataLabel="User">
+            <MudTd DataLabel="@L["RequestNo"]">@context.RequestNo</MudTd>
+            <MudTd DataLabel="@L["User"]">
                 <div>@(context.UserName ?? context.UserId)</div>
                 @if (!string.IsNullOrWhiteSpace(context.UserId) && context.UserName != context.UserId)
                 {
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@context.UserId</MudText>
                 }
             </MudTd>
-            <MudTd DataLabel="Plan">@(context.PlanName ?? context.PlanId)</MudTd>
-            <MudTd DataLabel="Amount">@FormatAmount(context.Amount, context.Currency)</MudTd>
-            <MudTd DataLabel="Proof" Style="text-align:center;">
+            <MudTd DataLabel="@L["Plan"]">@(context.PlanName ?? context.PlanId)</MudTd>
+            <MudTd DataLabel="@L["Amount"]">@FormatAmount(context.Amount, context.Currency)</MudTd>
+            <MudTd DataLabel="@L["Proof"]" Style="text-align:center;">
                 <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.Visibility"
-                           OnClick="@(() => ShowProofAsync(context))">View</MudButton>
+                           OnClick="@(() => ShowProofAsync(context))">@L["View"]</MudButton>
             </MudTd>
             <PermissionGate AnyOf="PermissionSets.ApproveReject">
-                <MudTd DataLabel="Action" Style="text-align:center;">
+                <MudTd DataLabel="@L["Action"]" Style="text-align:center;">
                     <MudRadioGroup @bind-Value="context.SelectedAction" Class="approval-radios">
-                        <MudRadio T="int" Value="1" Color="Color.Primary">Approve</MudRadio>
-                        <MudRadio T="int" Value="2" Color="Color.Default">Pending</MudRadio>
-                        <MudRadio T="int" Value="0" Color="Color.Error">Reject</MudRadio>
+                        <MudRadio T="int" Value="1" Color="Color.Primary">@L["Approve"]</MudRadio>
+                        <MudRadio T="int" Value="2" Color="Color.Default">@L["Pending"]</MudRadio>
+                        <MudRadio T="int" Value="0" Color="Color.Error">@L["Reject"]</MudRadio>
                     </MudRadioGroup>
                 </MudTd>
             </PermissionGate>
         </RowTemplate>
         <NoRecordsContent>
-            <MudText>No pending payment requests.</MudText>
+            <MudText>@L["NoPendingPaymentRequests"]</MudText>
         </NoRecordsContent>
         <LoadingContent>
             <MudProgressLinear Indeterminate="true" />
@@ -93,7 +95,7 @@
     <PermissionGate Action="PermissionAction.Approve">
         <div class="d-flex justify-center mt-4">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Gavel" Class="@("ryz-busy-button" + (_submitting ? " is-busy" : string.Empty))" Disabled="@_submitting" OnClick="SubmitApprovalsAsync">
-                @(_submitting ? "Submitting..." : "Submit")
+                @(_submitting ? L["Submitting"] : L["Submit"])
             </MudButton>
         </div>
     </PermissionGate>
@@ -102,17 +104,21 @@
 @code {
     private const string PaymentStatusPending = "PENDING";
 
-    private readonly List<BreadcrumbItem> _breadcrumbs =
-    [
-        new("Dashboard", href: "/dashboard"),
-        new("Payment", href: null),
-        new("Approval", href: null, disabled: true),
-    ];
+    private List<BreadcrumbItem> _breadcrumbs => new()
+    {
+        new(L["Dashboard"], href: "/dashboard"),
+        new(L["Payment"], href: null),
+        new(L["Approval"], href: null, disabled: true),
+    };
 
     private MudTable<PaymentApprovalListItemDto>? _table;
     private List<PaymentApprovalListItemDto> _currentItems = new();
     private string? _search;
     private bool _submitting;
+
+    protected override void OnInitialized() => L.OnChange += HandleLanguageChanged;
+
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
 
     private async Task<TableData<PaymentApprovalListItemDto>> LoadServerData(TableState state, CancellationToken cancellationToken)
     {
@@ -173,7 +179,7 @@
             { x => x.ContentType, item.ProofContentType },
         };
 
-        await DialogService.ShowAsync<PaymentProofDialog>("Payment Proof", parameters);
+        await DialogService.ShowAsync<PaymentProofDialog>(L["PaymentProofTitle"], parameters);
     }
 
     private async Task SubmitApprovalsAsync()
@@ -188,7 +194,7 @@
 
         if (approveItems.Count == 0 && rejectItems.Count == 0)
         {
-            Snackbar.Add("No approvals or rejections selected.", Severity.Warning);
+            Snackbar.Add(L["NoApprovalsSelected"], Severity.Warning);
             return;
         }
 
@@ -200,11 +206,11 @@
         foreach (var item in approveItems)
         {
             var note = await AskNoteAsync(
-                "Approve Payment Request",
-                $"Approve {item.RequestNo} for {item.PlanName ?? item.PlanId} ({FormatAmount(item.Amount, item.Currency)})?",
-                "Approve",
+                L["ApprovePaymentRequest"],
+                L.Format("ApprovePaymentMessage", item.RequestNo, item.PlanName ?? item.PlanId, FormatAmount(item.Amount, item.Currency)),
+                L["Approve"],
                 Color.Success,
-                "Optional note for the applicant");
+                L["OptionalNoteForApplicant"]);
 
             if (note == null)
             {
@@ -218,11 +224,11 @@
         foreach (var item in rejectItems)
         {
             var note = await AskNoteAsync(
-                "Reject Payment Request",
-                $"Reject {item.RequestNo} for {item.PlanName ?? item.PlanId} ({FormatAmount(item.Amount, item.Currency)})?",
-                "Reject",
+                L["RejectPaymentRequest"],
+                L.Format("RejectPaymentMessage", item.RequestNo, item.PlanName ?? item.PlanId, FormatAmount(item.Amount, item.Currency)),
+                L["Reject"],
                 Color.Error,
-                "Reason shown to the applicant");
+                L["ReasonShownToApplicant"]);
 
             if (note == null)
             {
@@ -253,7 +259,7 @@
                 else
                 {
                     failed++;
-                    Snackbar.Add(response.Message ?? $"Approval of {item.RequestNo} failed.", Severity.Error);
+                    Snackbar.Add(ResponseText(response, "ApprovalFailedFor", item.RequestNo), Severity.Error);
                 }
             }
 
@@ -267,17 +273,17 @@
                 else
                 {
                     failed++;
-                    Snackbar.Add(response.Message ?? $"Rejection of {item.RequestNo} failed.", Severity.Error);
+                    Snackbar.Add(ResponseText(response, "RejectionFailedFor", item.RequestNo), Severity.Error);
                 }
             }
 
             if (failed == 0 && processed > 0)
             {
-                Snackbar.Add("Approval processed successfully.", Severity.Success);
+                Snackbar.Add(L["ApprovalProcessedSuccess"], Severity.Success);
             }
             else if (processed > 0 && failed > 0)
             {
-                Snackbar.Add($"{processed} request(s) processed, {failed} failed.", Severity.Warning);
+                Snackbar.Add(L.Format("ProcessedAndFailed", processed, failed), Severity.Warning);
             }
 
             if (_table != null && processed > 0)
@@ -312,6 +318,22 @@
         return result is { Canceled: false } && result.Data is string note ? note : null;
     }
 
+    /// <summary>
+    /// Pesan respons API dalam bahasa aktif. Bila server tidak mengirim pesan
+    /// maupun kunci, dipakai template terlokalisasi dengan nomor pengajuan.
+    /// </summary>
+    private string ResponseText(BaseGeneralResponse response, string fallbackKey, string requestNo)
+    {
+        if (!string.IsNullOrWhiteSpace(response.MessageKey) || !string.IsNullOrWhiteSpace(response.Message))
+        {
+            return L.Message(ApiMessageSource.From(response));
+        }
+
+        return L.Format(fallbackKey, requestNo);
+    }
+
     private static string FormatAmount(decimal amount, string currency)
         => $"{currency} {amount.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("id-ID"))}";
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }

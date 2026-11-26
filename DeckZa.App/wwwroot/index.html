@@ -18,12 +18,15 @@
                 if (savedStyle) style = savedStyle;
                 var savedMode = localStorage.getItem("enterprise-ui-theme-mode");
                 if (savedMode) mode = savedMode;
+                var savedLang = localStorage.getItem("enterprise-ui-language");
+                if (savedLang) document.documentElement.setAttribute("data-language", savedLang);
             } catch (e) { }
             if (allowed.indexOf(palette) < 0) palette = "default";
             if (style !== "default" && style !== "neo") style = "neo";
             document.documentElement.setAttribute("data-palette", palette);
             document.documentElement.setAttribute("data-style", style);
             document.documentElement.setAttribute("data-theme-mode", mode);
+            if (!document.documentElement.getAttribute("data-language")) document.documentElement.setAttribute("data-language", "en");
         })();
     </script>
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />

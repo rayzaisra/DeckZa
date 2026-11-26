@@ -126,17 +126,17 @@ public class TaskService : ITaskService
 
             if (string.IsNullOrWhiteSpace(title))
             {
-                return Fail("Title is required.");
+                return FailKey("TitleRequired", "Title is required.");
             }
 
             if (string.IsNullOrWhiteSpace(requestBy))
             {
-                return Fail("Request By is required.");
+                return FailKey("RequestByRequired", "Request By is required.");
             }
 
             if (dto.RequestDate == default)
             {
-                return Fail("Request Date is required.");
+                return FailKey("RequestDateRequired", "Request Date is required.");
             }
 
             var statusFlags = await _referenceQueryService.GetStatusFlagsMapAsync(userId, cancellationToken);
@@ -145,7 +145,7 @@ public class TaskService : ITaskService
 
             if (string.IsNullOrWhiteSpace(statusId))
             {
-                return Fail("No default status found. Please set up My Master Data first.");
+                return FailKey("NoDefaultStatus", "No default status found. Please set up My Master Data first.");
             }
 
             var validationError = await ValidateReferencesAsync(
@@ -196,12 +196,12 @@ public class TaskService : ITaskService
             await _unitOfWork.Tasks.AddAsync(task, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Success("Task created successfully.");
+            return SuccessKey("TaskCreatedSuccess", "Task created successfully.");
         }
         catch (Exception exception)
         {
             await LogErrorAsync(exception);
-            return Fail("Failed to create the task.");
+            return FailKey("FailedCreateTask", "Failed to create the task.");
         }
     }
 
@@ -221,7 +221,7 @@ public class TaskService : ITaskService
             var task = await _unitOfWork.Tasks.GetByIdForUserAsync(taskId, userId, cancellationToken);
             if (task == null)
             {
-                return Fail("Task not found.");
+                return FailKey("TaskNotFoundApi", "Task not found.");
             }
 
             var title = (dto.Title ?? string.Empty).Trim();
@@ -233,17 +233,17 @@ public class TaskService : ITaskService
 
             if (string.IsNullOrWhiteSpace(title))
             {
-                return Fail("Title is required.");
+                return FailKey("TitleRequired", "Title is required.");
             }
 
             if (string.IsNullOrWhiteSpace(requestBy))
             {
-                return Fail("Request By is required.");
+                return FailKey("RequestByRequired", "Request By is required.");
             }
 
             if (dto.RequestDate == default)
             {
-                return Fail("Request Date is required.");
+                return FailKey("RequestDateRequired", "Request Date is required.");
             }
 
             var statusFlags = await _referenceQueryService.GetStatusFlagsMapAsync(userId, cancellationToken);
@@ -349,12 +349,12 @@ public class TaskService : ITaskService
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Success("Task updated successfully.");
+            return SuccessKey("TaskUpdatedSuccess", "Task updated successfully.");
         }
         catch (Exception exception)
         {
             await LogErrorAsync(exception);
-            return Fail("Failed to update the task.");
+            return FailKey("FailedUpdateTask", "Failed to update the task.");
         }
     }
 
@@ -374,23 +374,23 @@ public class TaskService : ITaskService
             var statusId = (dto.StatusId ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(statusId))
             {
-                return Fail("Status is required.");
+                return FailKey("StatusRequired", "Status is required.");
             }
 
             if (!await _referenceQueryService.StatusExistsAsync(statusId, userId, cancellationToken))
             {
-                return Fail("Status is not valid or inactive.");
+                return FailKey("TaskStatusInvalid", "Status is not valid or inactive.");
             }
 
             var task = await _unitOfWork.Tasks.GetByIdForUserAsync(taskId, userId, cancellationToken);
             if (task == null)
             {
-                return Fail("Task not found.");
+                return FailKey("TaskNotFoundApi", "Task not found.");
             }
 
             if (string.Equals(task.status_id, statusId, StringComparison.Ordinal))
             {
-                return Success("Task status is unchanged.");
+                return SuccessKey("TaskStatusUnchanged", "Task status is unchanged.");
             }
 
             var previousStatusId = task.status_id;
@@ -433,12 +433,12 @@ public class TaskService : ITaskService
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Success("Task status updated successfully.");
+            return SuccessKey("TaskMovedSuccess", "Task status updated successfully.");
         }
         catch (Exception exception)
         {
             await LogErrorAsync(exception);
-            return Fail("Failed to move the task.");
+            return FailKey("FailedMoveTask", "Failed to move the task.");
         }
     }
 
@@ -455,7 +455,7 @@ public class TaskService : ITaskService
             var task = await _unitOfWork.Tasks.GetByIdForUserAsync(taskId, userId, cancellationToken);
             if (task == null)
             {
-                return Fail("Task not found.");
+                return FailKey("TaskNotFoundApi", "Task not found.");
             }
 
             var now = DateTime.Now;
@@ -470,12 +470,12 @@ public class TaskService : ITaskService
             await _unitOfWork.Tasks.UpdateAsync(task);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Success("Task deleted successfully.");
+            return SuccessKey("TaskDeletedSuccess", "Task deleted successfully.");
         }
         catch (Exception exception)
         {
             await LogErrorAsync(exception);
-            return Fail("Failed to delete the task.");
+            return FailKey("FailedDeleteTask", "Failed to delete the task.");
         }
     }
 
@@ -599,10 +599,26 @@ public class TaskService : ITaskService
         Message = message,
     };
 
+    private static BaseGeneralResponse SuccessKey(string messageKey, string message) => new()
+    {
+        Success = true,
+        Code = Const.SUCCESS_CODE,
+        Message = message,
+        MessageKey = messageKey,
+    };
+
     private static BaseGeneralResponse Fail(string message) => new()
     {
         Success = false,
         Code = Const.ERROR_CODE,
         Message = message,
+    };
+
+    private static BaseGeneralResponse FailKey(string messageKey, string message) => new()
+    {
+        Success = false,
+        Code = Const.ERROR_CODE,
+        Message = message,
+        MessageKey = messageKey,
     };
 }

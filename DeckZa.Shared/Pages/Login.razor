@@ -3,6 +3,7 @@
 @page "/reset-password"
 @layout MainLayout
 @attribute [AllowAnonymous]
+@implements IDisposable
 @using DeckZa.Application.Common
 @inject AuthService AuthService
 @inject ITokenStorage TokenStorage
@@ -11,6 +12,7 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
 @inject ThemePreferenceService ThemeService
+@inject LanguageService L
 @inject MotionService Motion
 
 <MudThemeProvider Theme="ThemeService.LoginTheme" />
@@ -44,31 +46,31 @@
                     <DataAnnotationsValidator />
                     <div class="maui-auth-fields">
                         <MudTextField @bind-Value="_firstLoginModel.CurrentPassword"
-                                      Label="Current Password"
-                                      Placeholder="Enter your current password"
+                                      Label="@L["CurrentPassword"]"
+                                      Placeholder="@L["EnterCurrentPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       InputType="InputType.Password"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudTextField @bind-Value="_firstLoginModel.NewPassword"
-                                      Label="New Password"
-                                      Placeholder="Enter your new password"
+                                      Label="@L["NewPassword"]"
+                                      Placeholder="@L["EnterNewPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       InputType="InputType.Password"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudTextField @bind-Value="_firstLoginModel.ConfirmNewPassword"
-                                      Label="Confirm New Password"
-                                      Placeholder="Repeat your new password"
+                                      Label="@L["ConfirmNewPassword"]"
+                                      Placeholder="@L["RepeatNewPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       InputType="InputType.Password"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            Minimum 8 characters, with uppercase, lowercase, number, and special character.
+                            @L["PasswordMinLength"]
                         </MudText>
                     </div>
                     <MudButton ButtonType="ButtonType.Submit"
@@ -84,7 +86,7 @@
                         }
                         else
                         {
-                            <span>Reset Password</span>
+                            <span>@L["ResetPassword"]</span>
                         }
                     </MudButton>
                 </EditForm>
@@ -95,14 +97,14 @@
                     <DataAnnotationsValidator />
                     <div class="maui-auth-fields">
                         <MudTextField @bind-Value="_forgotModel.UserIdOrEmail"
-                                      Label="Username or Email"
-                                      Placeholder="Enter your username or email"
+                                      Label="@L["UsernameOrEmail"]"
+                                      Placeholder="@L["EnterUsernameOrEmail"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Person" />
                     </div>
-                    <button type="button" class="login-text-link maui-auth-back" @onclick="ShowSignIn">Back to Sign In</button>
+                    <button type="button" class="login-text-link maui-auth-back" @onclick="ShowSignIn">@L["BackToSignIn"]</button>
                     <MudButton ButtonType="ButtonType.Submit"
                                Variant="Variant.Filled"
                                Color="Color.Primary"
@@ -116,7 +118,7 @@
                         }
                         else
                         {
-                            <span>Send Reset</span>
+                            <span>@L["SendReset"]</span>
                         }
                     </MudButton>
                 </EditForm>
@@ -124,33 +126,33 @@
             else if (_mode == LoginMode.Reset)
             {
                 <div class="maui-auth-fields">
-                    <button type="button" class="login-text-link maui-auth-back" @onclick="ShowSignIn">Back to Sign In</button>
+                    <button type="button" class="login-text-link maui-auth-back" @onclick="ShowSignIn">@L["BackToSignIn"]</button>
                     @if (_resetTokenInvalid)
                     {
-                        <MudAlert Severity="Severity.Error">Reset token is invalid or has expired.</MudAlert>
+                        <MudAlert Severity="Severity.Error">@L["ResetTokenInvalidOrExpired"]</MudAlert>
                     }
                     else
                     {
                         <EditForm Model="@_resetModel" OnValidSubmit="@OnResetPasswordAsync">
                             <DataAnnotationsValidator />
                             <MudTextField @bind-Value="_resetModel.NewPassword"
-                                          Label="New Password"
-                                          Placeholder="Enter your new password"
+                                          Label="@L["NewPassword"]"
+                                          Placeholder="@L["EnterNewPassword"]"
                                           Variant="Variant.Outlined"
                                           FullWidth="true"
                                           InputType="InputType.Password"
                                           Adornment="Adornment.Start"
                                           AdornmentIcon="@Icons.Material.Filled.Lock" />
                             <MudTextField @bind-Value="_resetModel.ConfirmNewPassword"
-                                          Label="Confirm New Password"
-                                          Placeholder="Repeat your new password"
+                                          Label="@L["ConfirmNewPassword"]"
+                                          Placeholder="@L["RepeatNewPassword"]"
                                           Variant="Variant.Outlined"
                                           FullWidth="true"
                                           InputType="InputType.Password"
                                           Adornment="Adornment.Start"
                                           AdornmentIcon="@Icons.Material.Filled.Lock" />
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                Minimum 8 characters, with uppercase, lowercase, number, and special character.
+                                @L["PasswordMinLength"]
                             </MudText>
                             <MudButton ButtonType="ButtonType.Submit"
                                        Variant="Variant.Filled"
@@ -165,7 +167,7 @@
                                 }
                                 else
                                 {
-                                    <span>Reset Password</span>
+                                    <span>@L["ResetPassword"]</span>
                                 }
                             </MudButton>
                         </EditForm>
@@ -178,24 +180,24 @@
                     <DataAnnotationsValidator />
                     <div class="maui-auth-fields">
                         <MudTextField @bind-Value="_signUpModel.UserId"
-                                      Label="User ID"
-                                      Placeholder="Choose your user ID"
+                                      Label="@L["UserId"]"
+                                      Placeholder="@L["ChooseUserId"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Badge" />
                         <MudTextField @bind-Value="_signUpModel.FullName"
-                                      Label="Full Name"
-                                      Placeholder="Enter your full name"
+                                      Label="@L["FullName"]"
+                                      Placeholder="@L["EnterFullName"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Person" />
                         <MudTextField @bind-Value="_signUpModel.Email"
-                                      Label="Email"
-                                      Placeholder="Enter your email"
+                                      Label="@L["Email"]"
+                                      Placeholder="@L["EnterEmail"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
@@ -203,8 +205,8 @@
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Email" />
                         <MudTextField @bind-Value="_signUpModel.Password"
-                                      Label="Password"
-                                      Placeholder="Enter your password"
+                                      Label="@L["Password"]"
+                                      Placeholder="@L["EnterPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
@@ -212,8 +214,8 @@
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudTextField @bind-Value="_signUpModel.ConfirmPassword"
-                                      Label="Confirm Password"
-                                      Placeholder="Repeat your password"
+                                      Label="@L["ConfirmPassword"]"
+                                      Placeholder="@L["RepeatPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
@@ -221,7 +223,7 @@
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            Minimum 8 characters, with uppercase, lowercase, number, and special character.
+                            @L["PasswordMinLength"]
                         </MudText>
                     </div>
                     @if (_googleEnabled && !IsMauiApp)
@@ -236,7 +238,7 @@
                             @if (_googleLoading)
                             {
                                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                <span>Connecting...</span>
+                                <span>@L["Connecting"]</span>
                             }
                             else
                             {
@@ -248,10 +250,10 @@
                                         <path fill="#FBBC05" d="M9 3.5782c1.3218 0 2.5091.4545 3.4418 1.3455l2.5818-2.5818C13.4636.8918 11.4264 0 9 0 5.4818 0 2.4373 1.9836.9564 4.9373l3.0182 2.3455C4.6836 5.1545 6.6655 3.5782 9 3.5782z"/>
                                     </svg>
                                 </span>
-                                <span>Masuk dengan Google</span>
+                                <span>@L["SignInWithGoogle"]</span>
                             }
                         </MudButton>
-                        <div class="login-or-divider"><span>atau</span></div>
+                        <div class="login-or-divider"><span>@L["OrDivider"]</span></div>
                     }
                     <MudButton ButtonType="ButtonType.Submit"
                                Variant="Variant.Filled"
@@ -266,10 +268,10 @@
                         }
                         else
                         {
-                            <span>Register</span>
+                            <span>@L["Register"]</span>
                         }
                     </MudButton>
-                    <button type="button" class="login-text-link maui-auth-back" @onclick="ShowSignIn">Back to Login</button>
+                    <button type="button" class="login-text-link maui-auth-back" @onclick="ShowSignIn">@L["BackToLogin"]</button>
                 </EditForm>
             }
             else
@@ -278,23 +280,23 @@
                     <DataAnnotationsValidator />
                     <div class="maui-auth-fields">
                         <MudTextField @bind-Value="_loginModel.UserId"
-                                      Label="Username"
-                                      Placeholder="Enter your username"
+                                      Label="@L["Username"]"
+                                      Placeholder="@L["EnterUsername"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Badge" />
                         <MudTextField @bind-Value="_loginModel.Password"
-                                      Label="Password"
-                                      Placeholder="Enter your password"
+                                      Label="@L["Password"]"
+                                      Placeholder="@L["EnterPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       InputType="InputType.Password"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <div class="maui-auth-options">
-                            <MudCheckBox T="bool" @bind-Value="_loginModel.RememberMe" Color="Color.Primary">Remember this device</MudCheckBox>
-                            <button type="button" class="login-text-link" @onclick="ShowForgot">Forgot Password?</button>
+                            <MudCheckBox T="bool" @bind-Value="_loginModel.RememberMe" Color="Color.Primary">@L["RememberThisDevice"]</MudCheckBox>
+                            <button type="button" class="login-text-link" @onclick="ShowForgot">@L["ForgotPasswordQuestion"]</button>
                         </div>
                     </div>
                     @if (_googleEnabled && !IsMauiApp)
@@ -309,7 +311,7 @@
                             @if (_googleLoading)
                             {
                                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                <span>Connecting...</span>
+                                <span>@L["Connecting"]</span>
                             }
                             else
                             {
@@ -321,10 +323,10 @@
                                         <path fill="#FBBC05" d="M9 3.5782c1.3218 0 2.5091.4545 3.4418 1.3455l2.5818-2.5818C13.4636.8918 11.4264 0 9 0 5.4818 0 2.4373 1.9836.9564 4.9373l3.0182 2.3455C4.6836 5.1545 6.6655 3.5782 9 3.5782z"/>
                                     </svg>
                                 </span>
-                                <span>Masuk dengan Google</span>
+                                <span>@L["SignInWithGoogle"]</span>
                             }
                         </MudButton>
-                        <div class="login-or-divider"><span>atau</span></div>
+                        <div class="login-or-divider"><span>@L["OrDivider"]</span></div>
                     }
                     <MudButton ButtonType="ButtonType.Submit"
                                Variant="Variant.Filled"
@@ -339,7 +341,7 @@
                         }
                         else
                         {
-                            <span>Login</span>
+                            <span>@L["Login"]</span>
                         }
                     </MudButton>
                     <MudDivider Class="login-divider my-4" />
@@ -348,7 +350,7 @@
                                FullWidth="true"
                                Size="Size.Large"
                                OnClick="ShowSignUp">
-                        Register
+                        @L["Register"]
                     </MudButton>
                 </EditForm>
             }
@@ -367,24 +369,24 @@ else
                 </div>
                 <div>
                     <div class="login-brand-name">@BrandName</div>
-                        <div class="login-brand-subtitle">Personal Task and Report Management</div>
+                        <div class="login-brand-subtitle">@L["PersonalTaskAndReportManagement"]</div>
                 </div>
             </div>
 
             <div class="login-brand-visual">
                 <img src="/images/login/login-illustration.png"
-                     alt="Enterprise workspace illustration"
+                     alt="@L["EnterpriseWorkspaceIllustration"]"
                      loading="eager" />
             </div>
 
             <div class="login-brand-copy">
-                <h1>Built on bedrock</h1>
-                <p>Tasks, schedules, and reports in one workspace.</p>
-                <div class="login-brand-proof" aria-label="DeckZa capabilities">
-                    <span class="login-brand-proof-chip">Tasks</span>
-                    <span class="login-brand-proof-chip">Calendar</span>
-                    <span class="login-brand-proof-chip">Reports</span>
-                    <span class="login-brand-proof-chip">Billing</span>
+                <h1>@L["BuiltOnBedrock"]</h1>
+                <p>@L["TasksSchedulesReports"]</p>
+                <div class="login-brand-proof" aria-label="@L["DeckZaCapabilities"]">
+                    <span class="login-brand-proof-chip">@L["Task"]</span>
+                    <span class="login-brand-proof-chip">@L["CalendarTitle"]</span>
+                    <span class="login-brand-proof-chip">@L["ReportTitle"]</span>
+                    <span class="login-brand-proof-chip">@L["BillingTitle"]</span>
                 </div>
             </div>
         </MudPaper>
@@ -412,31 +414,31 @@ else
                     <DataAnnotationsValidator />
                     <div class="login-form-fields">
                         <MudTextField @bind-Value="_firstLoginModel.CurrentPassword"
-                                      Label="Old Password"
-                                      Placeholder="Enter your default password"
+                                      Label="@L["OldPassword"]"
+                                      Placeholder="@L["EnterDefaultPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       InputType="InputType.Password"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudTextField @bind-Value="_firstLoginModel.NewPassword"
-                                      Label="New Password"
-                                      Placeholder="Enter your new password"
+                                      Label="@L["NewPassword"]"
+                                      Placeholder="@L["EnterNewPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       InputType="InputType.Password"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudTextField @bind-Value="_firstLoginModel.ConfirmNewPassword"
-                                      Label="Confirm New Password"
-                                      Placeholder="Repeat your new password"
+                                      Label="@L["ConfirmNewPassword"]"
+                                      Placeholder="@L["RepeatNewPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       InputType="InputType.Password"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            Minimum 8 characters, with uppercase, lowercase, number, and special character.
+                            @L["PasswordMinLength"]
                         </MudText>
                         <MudButton ButtonType="ButtonType.Submit"
                                    Variant="Variant.Filled"
@@ -450,11 +452,11 @@ else
                             }
                             else
                             {
-                                <span>Change Password</span>
+                                <span>@L["ChangePassword"]</span>
                             }
                         </MudButton>
                         <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" OnClick="CancelFirstLogin">
-                            Back to Sign In
+                            @L["BackToSignIn"]
                         </MudButton>
                     </div>
                 </EditForm>
@@ -465,8 +467,8 @@ else
                     <DataAnnotationsValidator />
                     <div class="login-form-fields">
                         <MudTextField @bind-Value="_forgotModel.UserIdOrEmail"
-                                      Label="Username or Email"
-                                      Placeholder="Enter your username or email"
+                                      Label="@L["UsernameOrEmail"]"
+                                      Placeholder="@L["EnterUsernameOrEmail"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Adornment="Adornment.Start"
@@ -483,10 +485,10 @@ else
                             }
                             else
                             {
-                                <span>Send Reset Instructions</span>
+                                <span>@L["ResetInstructionsSent"]</span>
                             }
                         </MudButton>
-                        <button type="button" class="login-text-link" @onclick="ShowSignIn">Back to Sign In</button>
+                        <button type="button" class="login-text-link" @onclick="ShowSignIn">@L["BackToSignIn"]</button>
                     </div>
                 </EditForm>
             }
@@ -495,30 +497,30 @@ else
                 <div class="login-form-fields">
                     @if (_resetTokenInvalid)
                     {
-                        <MudAlert Severity="Severity.Error">Reset token is invalid or has expired.</MudAlert>
+                        <MudAlert Severity="Severity.Error">@L["ResetTokenInvalidOrExpired"]</MudAlert>
                     }
                     else
                     {
                         <EditForm Model="@_resetModel" OnValidSubmit="@OnResetPasswordAsync">
                             <DataAnnotationsValidator />
                             <MudTextField @bind-Value="_resetModel.NewPassword"
-                                          Label="New Password"
-                                          Placeholder="Enter your new password"
+                                          Label="@L["NewPassword"]"
+                                          Placeholder="@L["EnterNewPassword"]"
                                           Variant="Variant.Outlined"
                                           FullWidth="true"
                                           InputType="InputType.Password"
                                           Adornment="Adornment.Start"
                                           AdornmentIcon="@Icons.Material.Filled.Lock" />
                             <MudTextField @bind-Value="_resetModel.ConfirmNewPassword"
-                                          Label="Confirm New Password"
-                                          Placeholder="Repeat your new password"
+                                          Label="@L["ConfirmNewPassword"]"
+                                          Placeholder="@L["RepeatNewPassword"]"
                                           Variant="Variant.Outlined"
                                           FullWidth="true"
                                           InputType="InputType.Password"
                                           Adornment="Adornment.Start"
                                           AdornmentIcon="@Icons.Material.Filled.Lock" />
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                Minimum 8 characters, with uppercase, lowercase, number, and special character.
+                                @L["PasswordMinLength"]
                             </MudText>
                             <MudButton ButtonType="ButtonType.Submit"
                                        Variant="Variant.Filled"
@@ -532,12 +534,12 @@ else
                                 }
                                 else
                                 {
-                                    <span>Reset Password</span>
+                                    <span>@L["ResetPassword"]</span>
                                 }
                             </MudButton>
                         </EditForm>
                     }
-                    <button type="button" class="login-text-link" @onclick="ShowSignIn">Back to Sign In</button>
+                    <button type="button" class="login-text-link" @onclick="ShowSignIn">@L["BackToSignIn"]</button>
                 </div>
             }
             else if (_mode == LoginMode.SignUp)
@@ -546,24 +548,24 @@ else
                     <DataAnnotationsValidator />
                     <div class="login-form-fields">
                         <MudTextField @bind-Value="_signUpModel.UserId"
-                                      Label="User ID"
-                                      Placeholder="Choose your user ID"
+                                      Label="@L["UserId"]"
+                                      Placeholder="@L["ChooseUserId"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Badge" />
                         <MudTextField @bind-Value="_signUpModel.FullName"
-                                      Label="Full Name"
-                                      Placeholder="Enter your full name"
+                                      Label="@L["FullName"]"
+                                      Placeholder="@L["EnterFullName"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Person" />
                         <MudTextField @bind-Value="_signUpModel.Email"
-                                      Label="Email"
-                                      Placeholder="Enter your email"
+                                      Label="@L["Email"]"
+                                      Placeholder="@L["EnterEmail"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
@@ -571,8 +573,8 @@ else
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Email" />
                         <MudTextField @bind-Value="_signUpModel.Password"
-                                      Label="Password"
-                                      Placeholder="Enter your password"
+                                      Label="@L["Password"]"
+                                      Placeholder="@L["EnterPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
@@ -580,8 +582,8 @@ else
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudTextField @bind-Value="_signUpModel.ConfirmPassword"
-                                      Label="Confirm Password"
-                                      Placeholder="Repeat your password"
+                                      Label="@L["ConfirmPassword"]"
+                                      Placeholder="@L["RepeatPassword"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Required="true"
@@ -589,7 +591,7 @@ else
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            Minimum 8 characters, with uppercase, lowercase, number, and special character.
+                            @L["PasswordMinLength"]
                         </MudText>
                         @if (_googleEnabled)
                         {
@@ -603,7 +605,7 @@ else
                                 @if (_googleLoading)
                                 {
                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                    <span>Connecting...</span>
+                                    <span>@L["Connecting"]</span>
                                 }
                                 else
                                 {
@@ -615,10 +617,10 @@ else
                                             <path fill="#FBBC05" d="M9 3.5782c1.3218 0 2.5091.4545 3.4418 1.3455l2.5818-2.5818C13.4636.8918 11.4264 0 9 0 5.4818 0 2.4373 1.9836.9564 4.9373l3.0182 2.3455C4.6836 5.1545 6.6655 3.5782 9 3.5782z"/>
                                         </svg>
                                     </span>
-                                    <span>Masuk dengan Google</span>
+                                    <span>@L["SignInWithGoogle"]</span>
                                 }
                             </MudButton>
-                            <div class="login-or-divider"><span>atau</span></div>
+                            <div class="login-or-divider"><span>@L["OrDivider"]</span></div>
                         }
                         <MudButton ButtonType="ButtonType.Submit"
                                    Variant="Variant.Filled"
@@ -632,10 +634,10 @@ else
                             }
                             else
                             {
-                                <span>Register</span>
+                                <span>@L["Register"]</span>
                             }
                         </MudButton>
-                        <button type="button" class="login-text-link" @onclick="ShowSignIn">Back to Login</button>
+                        <button type="button" class="login-text-link" @onclick="ShowSignIn">@L["BackToLogin"]</button>
                     </div>
                 </EditForm>
             }
@@ -645,14 +647,14 @@ else
                     <DataAnnotationsValidator />
                     <div class="login-form-fields">
                         <MudTextField @bind-Value="_loginModel.UserId"
-                                      Label="Username"
-                                      Placeholder="Enter your ID"
+                                      Label="@L["Username"]"
+                                      Placeholder="@L["EnterUserId"]"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Badge" />
                         <MudTextField @bind-Value="_loginModel.Password"
-                                      Label="Password"
+                                      Label="@L["Password"]"
                                       Placeholder="••••••••"
                                       Variant="Variant.Outlined"
                                       FullWidth="true"
@@ -660,8 +662,8 @@ else
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Lock" />
                         <div class="login-form-options">
-                            <MudCheckBox T="bool" @bind-Value="_loginModel.RememberMe" Color="Color.Primary">Remember this device</MudCheckBox>
-                            <button type="button" class="login-text-link" @onclick="ShowForgot">Forgot Password?</button>
+                            <MudCheckBox T="bool" @bind-Value="_loginModel.RememberMe" Color="Color.Primary">@L["RememberThisDevice"]</MudCheckBox>
+                            <button type="button" class="login-text-link" @onclick="ShowForgot">@L["ForgotPasswordQuestion"]</button>
                         </div>
                         @if (_googleEnabled)
                         {
@@ -675,7 +677,7 @@ else
                                 @if (_googleLoading)
                                 {
                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                    <span>Connecting...</span>
+                                    <span>@L["Connecting"]</span>
                                 }
                                 else
                                 {
@@ -687,10 +689,10 @@ else
                                             <path fill="#FBBC05" d="M9 3.5782c1.3218 0 2.5091.4545 3.4418 1.3455l2.5818-2.5818C13.4636.8918 11.4264 0 9 0 5.4818 0 2.4373 1.9836.9564 4.9373l3.0182 2.3455C4.6836 5.1545 6.6655 3.5782 9 3.5782z"/>
                                         </svg>
                                     </span>
-                                    <span>Masuk dengan Google</span>
+                                    <span>@L["SignInWithGoogle"]</span>
                                 }
                             </MudButton>
-                            <div class="login-or-divider"><span>atau</span></div>
+                            <div class="login-or-divider"><span>@L["OrDivider"]</span></div>
                         }
                         <MudButton ButtonType="ButtonType.Submit"
                                    Variant="Variant.Filled"
@@ -704,7 +706,7 @@ else
                             }
                             else
                             {
-                                <span>Login</span>
+                                <span>@L["Login"]</span>
                             }
                         </MudButton>
                         <MudDivider Class="login-divider my-4" />
@@ -728,9 +730,9 @@ else
     private const string BrandName = "DeckZa";
     private static bool IsMauiApp => !OperatingSystem.IsBrowser();
     private string LoginPageClass => $"login-page {(ThemeService.IsNeoBrutalism ? "neo-brutalism" : "classic-login")} palette-{ThemeService.Palette}";
-    private string MauiHeaderTitle => _requiresPasswordChange ? "Reset Password" : HeaderTitle;
+    private string MauiHeaderTitle => _requiresPasswordChange ? L["ResetPassword"] : HeaderTitle;
     private string MauiHeaderSubtitle => _requiresPasswordChange
-        ? "Set a new password for your account."
+        ? L["ChooseNewPassword"]
         : HeaderSubtitle;
 
     [SupplyParameterFromQuery(Name = "token")]
@@ -777,27 +779,33 @@ else
     }
 
     private string HeaderTitle => _requiresPasswordChange
-        ? "Change Password"
+        ? L["ChangePassword"]
         : _mode switch
         {
-            LoginMode.Forgot => "Forgot Password",
-            LoginMode.Reset => "Reset Password",
-            LoginMode.SignUp => "Register",
-            _ => "Sign In",
+            LoginMode.Forgot => L["ForgotPassword"],
+            LoginMode.Reset => L["ResetPassword"],
+            LoginMode.SignUp => L["Register"] == "Register" ? "Register" : L["Register"],
+            _ => L["SignIn"],
         };
 
     private string HeaderSubtitle => _requiresPasswordChange
-        ? "This is your first login. Please set a new password before continuing."
+        ? L["FirstLoginPasswordSubtitle"]
         : _mode switch
         {
-            LoginMode.Forgot => "Enter your username or email. If the account is registered, reset instructions will be sent.",
-            LoginMode.Reset => "Choose a new password for your account.",
-            LoginMode.SignUp => "Create your account",
-            _ => "Enter your credentials to continue.",
+            LoginMode.Forgot => L["ForgotPasswordSubtitle"],
+            LoginMode.Reset => L["ChooseNewPassword"],
+            LoginMode.SignUp => L["Register"] == "Register" ? "Create your account" : L["Register"],
+            _ => L["EnterCredentialsToContinue"],
         };
+
+    protected override void OnInitialized()
+    {
+        L.OnChange += HandleLanguageChanged;
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        await L.InitializeAsync();
         await ThemeService.InitializeAsync();
 
         var path = Navigation.ToBaseRelativePath(Navigation.Uri).Split('?')[0].Trim('/');
@@ -814,7 +822,7 @@ else
             if (string.IsNullOrWhiteSpace(_resetModel.Token))
             {
                 _resetTokenInvalid = true;
-                Snackbar.Add("Reset token is missing.", Severity.Error);
+                Snackbar.Add(L["ResetTokenMissing"], Severity.Error);
                 return;
             }
 
@@ -837,7 +845,7 @@ else
 
             if (_resetTokenInvalid)
             {
-                Snackbar.Add("Reset token is invalid or has expired.", Severity.Error);
+                Snackbar.Add(L["ResetTokenInvalidOrExpired"], Severity.Error);
             }
 
             return;
@@ -910,7 +918,7 @@ else
         try
         {
             await AuthService.RequestPasswordResetAsync(_forgotModel.UserIdOrEmail);
-            Snackbar.Add("Reset instructions have been queued. Check your email or contact an administrator.", Severity.Success);
+            Snackbar.Add(L["ResetInstructionsQueued"], Severity.Success);
             ShowSignIn();
         }
         catch (Exception ex)
@@ -1029,7 +1037,7 @@ else
 
         if (!string.Equals(_resetModel.NewPassword, _resetModel.ConfirmNewPassword, StringComparison.Ordinal))
         {
-            Snackbar.Add("New password and confirmation do not match.", Severity.Error);
+            Snackbar.Add(L["NewPasswordAndConfirmationDoNotMatch"], Severity.Error);
             return;
         }
 
@@ -1037,7 +1045,7 @@ else
         try
         {
             await AuthService.ResetPasswordAsync(_resetModel);
-            Snackbar.Add("Password reset successfully. Please sign in with your new password.", Severity.Success);
+            Snackbar.Add(L["PasswordResetSuccessSignIn"], Severity.Success);
             ShowSignIn();
         }
         catch (Exception ex)
@@ -1392,4 +1400,8 @@ else
             .Replace('+', '-')
             .Replace('/', '_');
     }
+
+    private void HandleLanguageChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => L.OnChange -= HandleLanguageChanged;
 }
